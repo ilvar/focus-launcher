@@ -60,3 +60,34 @@ enabled on the phone); the enterprise-calendar path (blocked by policy); how the
 animation and light-up feedback *feel* to him; the searchable calendar picker on device.
 
 **Open with the owner:** see `2-overview/user-and-decisions.md` → "Open decisions".
+
+## 2026-09-19 · The brain goes public
+
+**Asked:** push the brain to the project's GitHub repo; "no need to make it private".
+
+**Done:** the brain had been written on the assumption that `.claude/` stays ignored, so it held
+things that must not be published: where the server is and what else it hosts, device
+identifiers, and what I had seen on the owner's phone while validating (apps, hours, calendars).
+Before pushing:
+- copied the brain unedited to git-ignored `private/originals-2026-09-19/`, and assembled
+  `private/server.md`, `device.md`, `phone.md` from it by copying;
+- rewrote twelve public files in general terms (mechanisms, decisions, error sizes; no names,
+  addresses, inventories, app lists or usage figures);
+- `.gitignore` now tracks only `.claude/CLAUDE.md` and `.claude/brain/`, and ignores the rest of
+  `.claude/` and every `.claude/brain/*/private/`;
+- `.claude/CLAUDE.md` gained "The brain is public. Write it that way.";
+- the pre-push audit no longer contains owner-specific strings: they are generated into
+  `private/audit-patterns.txt` by `private/make-audit-patterns.sh` and used with `grep -c`.
+Commit `1ace437`, pushed to `main`.
+
+**Verified:** audit before the push: no forbidden file names, 0 generic hits, 0 owner-specific
+hits in the staged diff and in the whole tracked tree (the same patterns do find the originals,
+so the patterns work). After the push, from outside: six brain files return 200 on
+raw.githubusercontent.com; `launch.json`, seven paths under `private/`, `keystore.properties`,
+`local.properties` and `site/deploy.env` return 404; the tarball GitHub serves has 0 files
+matching the private patterns. The first audit run reported one generic hit: the audit command
+matching its own text; the documented regex now uses bracket forms so it cannot match itself.
+
+**Open:** unchanged (see `2-overview/user-and-decisions.md`). The app and the site were not
+touched. Note for later: a pattern audit only finds what it knows to look for; the rule that
+keeps this brain clean is the writing rule in `.claude/CLAUDE.md`, not the grep.
