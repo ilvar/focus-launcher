@@ -1,13 +1,19 @@
 #!/bin/bash
 # Assembles site/public from site/src plus the signed APK.
 # Usage: site/build.sh            (expects ./gradlew :app:assembleDist to have been run)
+#        FOCUS_APK=/path/to.apk site/build.sh     (publish that APK instead, e.g. a release asset)
 set -euo pipefail
 cd "$(dirname "$0")"
 ROOT=..
-APK_SRC="$ROOT/app/build/outputs/apk/dist/app-dist.apk"
+APK_SRC="${FOCUS_APK:-$ROOT/app/build/outputs/apk/dist/app-dist.apk}"
 [ -f "$APK_SRC" ] || { echo "Build the APK first:  ./gradlew :app:assembleDist" >&2; exit 1; }
 
-VERSION=$(grep -E '^\s*versionName\s*=' "$ROOT/app/build.gradle.kts" | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+# The version on the page is read out of the APK itself, so the two can never disagree.
+SDK="${ANDROID_HOME:-$(sed -n 's/^sdk\.dir=//p' "$ROOT/local.properties" 2>/dev/null || true)}"
+AAPT2=$(ls "$SDK"/build-tools/*/aapt2 2>/dev/null | sort -V | tail -1 || true)
+[ -n "$AAPT2" ] || { echo "aapt2 not found: set ANDROID_HOME, or sdk.dir in local.properties" >&2; exit 1; }
+VERSION=$("$AAPT2" dump badging "$APK_SRC" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
+[ -n "$VERSION" ] || { echo "could not read versionName from $APK_SRC" >&2; exit 1; }
 APK_FILE="focus-launcher-$VERSION.apk"
 
 rm -rf public && mkdir -p public

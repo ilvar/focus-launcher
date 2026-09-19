@@ -20,7 +20,7 @@ git add -A
 # 1. no forbidden files
 git diff --cached --name-only | grep -E "keystore\.properties|local\.properties|deploy\.env$|\.jks$|\.apk$|/private/|^\.claude/launch\.json|^site/public/" && echo STOP
 # 2. no forbidden content: generic patterns ...
-git diff --cached | grep -cE "^\+.*(/Users[/]|storePassword[=]|keyPassword[=]|PRIVATE[ ]KEY)"   # brackets: so this line does not match itself
+git diff --cached | grep -cE "^\+.*(/Users[/]|(storePassword|keyPassword)[=][^%\$\"' ]|PRIVATE[ ]KEY)"   # brackets: so this line does not match itself; a value after "=" counts, a %s or $VAR does not
 # 3. ... and the owner-specific ones, kept out of the repo on purpose (count only, never print matches)
 git diff --cached | grep -cEf .claude/brain/chaitany-claude/private/audit-patterns.txt
 ```
@@ -56,13 +56,21 @@ updated: the owner was told to back both up. A `dist` APK cannot be installed ov
 - **Releases**: https://github.com/patelchaitany/focus-launcher/releases , tag `v<version>`, with
   the very APK the website serves (same SHA-256) plus its `.sha256`. `verify-release.yml` fails
   if an attached APK is not signed with the release key.
-- **The release key is not on GitHub, on purpose**: a repository secret is usable by everyone with
-  write access, and the repo has a collaborator who can merge. Signing in CI is the owner's call.
+- **Publishing from CI** (owner's choice, 2026-09-20: automatic, with his approval):
+  `.github/workflows/publish.yml` signs with the real key, uploads the site and creates the
+  release, but only in the protected environment `release`, whose secrets GitHub hands out only
+  to runs the owner approved, and only from `main`. The build workflow still never sees the key.
+  It is switched on by the owner running `site/setup-ci-publishing.sh` once (**never run that
+  script as an agent**: it handles his keys); until then the workflow skips itself.
+- **Versions** are `<baseVersion>.<number of commits>`; the build number is the `versionCode`.
 - **Collaborators' pull requests** are reviewed before anything is built for the phone or the
   public download. Checklist and reasoning: `3-details/ci-and-releases.md`.
 
 ## Releasing a new version
-1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
+With CI publishing on: merge to `main`, the owner approves the waiting Publish run, done (site,
+release page, checksums). Bump `baseVersion` when the change deserves a new 1.x. By hand, from
+the machine that has the key:
+1. Decide whether `baseVersion` in `app/build.gradle.kts` changes (the build number is automatic).
 2. `./gradlew :app:testDebugUnitTest :app:lintDebug` clean. Keep a copy of the previous `dist` APK.
 3. Owner's phone: `assembleRelease` → `adb install --user 0 -r` → `compile -m speed-profile -f`.
 4. If the app's look changed, update the site's copy and mockups; preview `site/public` locally.
@@ -73,7 +81,7 @@ updated: the owner was told to back both up. A `dist` APK cannot be installed ov
 
 ## Open
 No LICENSE · `gradle.properties` pins a local JDK path (CI overrides it on the command line) ·
-whether to sign releases in CI.
+CI publishing is built but waits for the owner to run the setup script.
 
 ## Tier 3 pointers
 `ci-and-releases.md` · `signing-keys.md` · `toolchain-and-build.md` · `brain-upkeep.md` (the
