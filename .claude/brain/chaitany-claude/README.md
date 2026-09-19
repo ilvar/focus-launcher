@@ -32,6 +32,7 @@ git-ignored and exists only on the owner's machine.
     mistakes-and-lessons.md             what went wrong here and the platform traps behind it
     brain-upkeep.md                     keeping this brain complete, true and publishable; fact-check commands
     ci-and-releases.md                  the CI workflow, the release page, cutting a release, reviewing a contributor's PR
+    fdroid.md                           F-Droid: what inclusion needed, versions from tags, reproducible build, the manual workflow
 journal.md                      append-only record of each finished piece of work
 private/                        NOT COMMITTED. Server, device and phone specifics; audit patterns.
 ```

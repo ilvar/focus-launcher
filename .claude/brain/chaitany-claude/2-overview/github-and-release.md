@@ -66,6 +66,14 @@ updated: the owner was told to back both up. A `dist` APK cannot be installed ov
 - **Collaborators' pull requests** are reviewed before anything is built for the phone or the
   public download. Checklist and reasoning: `3-details/ci-and-releases.md`.
 
+## F-Droid (asked for 2026-09-20)
+F-Droid builds from source from a recipe in its own GitLab repository; inclusion is a one-time
+merge request there, updates then follow this repo's `vX.Y.Z` tags by themselves. Here:
+`LICENSE` (GPL-3.0-or-later, the owner's choice), `fastlane/metadata/android/en-US/` (listing),
+`fdroid/com.focus.launcher.yml` (recipe template, reproducible build with the project's own
+signature) and the manual workflow `.github/workflows/fdroid.yml` (check with F-Droid's tools;
+submit only with the owner's GitLab token, after his approval). Details: `3-details/fdroid.md`.
+
 ## Releasing a new version
 With CI publishing on: merge to `main`, the owner approves the waiting Publish run, done (site,
 release page, checksums). Bump `baseVersion` when the change deserves a new 1.x. By hand, from
@@ -80,9 +88,9 @@ the machine that has the key:
    older APKs stay on the server so old links keep working). Exact commands: `ci-and-releases.md`.
 
 ## Open
-No LICENSE · `gradle.properties` pins a local JDK path (CI overrides it on the command line) ·
-CI publishing is built but waits for the owner to run the setup script.
+CI publishing is built but waits for the owner to run the setup script · the F-Droid merge
+request waits for the owner's GitLab account and token.
 
 ## Tier 3 pointers
-`ci-and-releases.md` · `signing-keys.md` · `toolchain-and-build.md` · `brain-upkeep.md` (the
+`ci-and-releases.md` · `fdroid.md` · `signing-keys.md` · `toolchain-and-build.md` · `brain-upkeep.md` (the
 brain is part of the repo)

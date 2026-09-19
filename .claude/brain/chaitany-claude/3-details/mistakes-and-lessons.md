@@ -107,6 +107,10 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   `site/build.sh` fed that text into Python and died, but only on the runner. → `wc -c < FILE`.
   More generally: a script that will run in CI must be run in CI before the day it matters; the
   build workflow now builds the site on every run for exactly that reason.
+- **zsh and unquoted variables, fourth time** (`G="./gradlew -D…"; $G task` ran nothing, and a
+  stale APK from the build before made it look as if the flag had no effect). → A command with
+  arguments is a shell *function* here, never a string. And delete old outputs before a build
+  whose output you are going to inspect.
 - **zsh and unquoted variables, third time:** `set -- $spec` in a loop did not split, every API
   path was wrong and everything answered 404, which looked like a permissions problem. → In this
   shell, write a function with real arguments instead of splitting a string.

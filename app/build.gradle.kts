@@ -57,7 +57,13 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            // -Pfocus.unsigned leaves the APK unsigned. That is how F-Droid builds it: it then checks
+            // that its build is identical to the published APK and ships that one, signature and all.
+            signingConfig = if (project.hasProperty("focus.unsigned")) null else signingConfigs.getByName("debug")
+            // The build plugin would stamp the git state into the APK. The version already says which
+            // commit it is, and the stamp differs between checkouts of the same commit, which is
+            // exactly what a reproducible build cannot have.
+            vcsInfo { include = false }
         }
         // The same optimized build, signed with the real key: this is the APK on the website.
         // Android refuses to install it over a debug-signed build (different signature), and
@@ -81,6 +87,14 @@ android {
 
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+    }
+
+    // Google's build plugin can add an encrypted list of dependencies to the APK that only Google
+    // can read. It serves Play; elsewhere it is an opaque blob in a free-software app (F-Droid
+    // asks for it to be left out), and it keeps two builds of the same source from being identical.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 }
 
