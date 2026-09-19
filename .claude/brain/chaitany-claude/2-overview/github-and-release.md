@@ -25,7 +25,8 @@ git diff --cached | grep -cE "^\+.*(/Users[/]|storePassword[=]|keyPassword[=]|PR
 git diff --cached | grep -cEf .claude/brain/chaitany-claude/private/audit-patterns.txt
 ```
 Step 1 must print nothing; steps 2 and 3 must print `0`. Step 3 uses `-c` so that a hit is never
-echoed into a log. `private/audit-patterns.txt` is generated from the machine's own config by
+echoed into a log. A `0` only means something if there was input: `git diff --cached | wc -l`
+must be greater than zero, or the check read nothing. `private/audit-patterns.txt` is generated from the machine's own config by
 `private/make-audit-patterns.sh`; regenerate it when the server, key or device changes. Then
 commit and push. No force-pushes to `main` without being asked.
 
@@ -59,4 +60,4 @@ updated: the owner was told to back both up. A `dist` APK cannot be installed ov
 No LICENSE · no GitHub Release with the APK · `gradle.properties` pins a local JDK path.
 
 ## Tier 3 pointers
-`signing-keys.md` · `toolchain-and-build.md`
+`signing-keys.md` · `toolchain-and-build.md` · `brain-upkeep.md` (the brain is part of the repo)

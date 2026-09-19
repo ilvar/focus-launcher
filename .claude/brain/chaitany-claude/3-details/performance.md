@@ -22,7 +22,7 @@ adb logcat -s FocusLaunch                                                       
   resources: seconds) although the list was cached, and every package change rescanned everything;
   (3) three calendar provider queries per resume.
 - First process observed: 32.9 s CPU in 7m39s (main 10.3, RenderThread 8.6, workers 5.9). The UI
-  part was the owner actively swiping a *debuggable, un-compiled* build.
+  part was active swiping on a *debuggable, un-compiled* build, so it says little about the app.
 
 ## Changes
 `DayAccumulator` (events consumed once; same object returned when unchanged) · label reuse keyed

@@ -91,3 +91,43 @@ matching its own text; the documented regex now uses bracket forms so it cannot 
 **Open:** unchanged (see `2-overview/user-and-decisions.md`). The app and the site were not
 touched. Note for later: a pattern audit only finds what it knows to look for; the rule that
 keeps this brain clean is the writing rule in `.claude/CLAUDE.md`, not the grep.
+
+## 2026-09-19 · Brain brought up to date with everything done so far
+
+**Asked:** "update the brain [with] what you have done up till this point".
+
+**Done:** treated it as a request for coverage and truth, not just another journal line.
+- **Fact-check** of the whole brain against the code, the repo and the live site: 35 Kotlin files
+  / 6,813 lines, 19 tests (13 + 6), `CACHE_VERSION` 3, grace 3000 ms, settle 1500 ms, the settings
+  defaults, all dependency versions, the 12 settings routes, APK 1,366,063 bytes for both
+  `release` and `dist`. 70 back-ticked file paths and 35 symbols named in the brain all exist.
+  The site and the main site both answer 200; the APK is served with the right type and length.
+  Nothing in the brain contradicted the code; one figure was loose (APK "≈ 1.3 MB") and is now
+  exact.
+- **Coverage gaps filled**, after reading the code: new `3-details/weekly-review.md` (when the
+  review becomes due, alarm + resume check, what each section shows, how the week is summed, the
+  4-day rule for the comparison) and `3-details/home-drawer-menu-setup.md` (home sections,
+  shortcuts and their intents, gestures, the 24-hour "recently installed" rule, the long-press
+  menu in the owner's order and what each row does, the Setup page). Both were features asked for
+  by name and had no detail note.
+- New `3-details/brain-upkeep.md`: what "up to date" means, the fact-check commands, how to write
+  for a public brain, what to do before and after a push.
+- Tier 2: `app.md` lists the newly documented features and the exact size figures;
+  `user-and-decisions.md` records this request and that publishing is a separate, asked-for step;
+  `github-and-release.md` points at the upkeep note. Tier 1: state of the world. README: tree.
+- Lessons added: the self-matching audit line, never quoting sensitive text while cleaning it,
+  the raw-host cache lag after a push, and "the brain covered the hard parts and skipped the
+  plain ones".
+
+**Verified:** every statement in the two new feature notes was read off the source files named
+at their top (several first drafts were corrected that way: what tapping the screen-time section
+does, the wording of the setup notice, how renamed apps are searched). The pre-publication audit
+was run on the 11 changed files (747 lines read): no forbidden names, 0 generic hits, 0
+owner-specific hits. Its first run was worthless and looked fine: an unquoted zsh variable made
+`cat` fail, so `grep -c` counted nothing and printed 0. Caught because `cat` complained; the
+check now reports how much it read, and the lesson is written down.
+**Published:** left uncommitted at first, because no push had been asked for. The owner then said
+"push it": audited once more on the staged diff, committed and pushed to `main` in one commit
+together with this entry.
+
+**Open:** unchanged, see `2-overview/user-and-decisions.md` → "Open decisions".

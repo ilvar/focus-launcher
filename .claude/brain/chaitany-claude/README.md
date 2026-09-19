@@ -20,6 +20,8 @@ git-ignored and exists only on the owner's machine.
     usage-tracking.md                   screen time algorithm, running total, how to prove it
     app-classification.md               social / game / video / tool / unsure
     timers-wall-consent.md              launch gate, wall, consent, the accessibility service
+    weekly-review.md                    when the review appears, what it shows, how the week is summed
+    home-drawer-menu-setup.md           home sections, shortcuts, drawer, long-press menu, Setup page
     ui-system.md                        theme, primitives, touch feedback, layout fit, motion
     calendar.md                         one calendar, emoji, agenda cache, the work-profile limit
     performance.md                      probes, findings, changes, results, honest memory numbers
@@ -28,6 +30,7 @@ git-ignored and exists only on the owner's machine.
     seo.md                              what was done for search, what only the owner can do
     signing-keys.md                     the release key, the debug key, the owner's phone
     mistakes-and-lessons.md             what went wrong here and the platform traps behind it
+    brain-upkeep.md                     keeping this brain complete, true and publishable; fact-check commands
 journal.md                      append-only record of each finished piece of work
 private/                        NOT COMMITTED. Server, device and phone specifics; audit patterns.
 ```
