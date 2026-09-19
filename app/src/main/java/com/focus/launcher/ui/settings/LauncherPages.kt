@@ -34,6 +34,7 @@ import com.focus.launcher.data.RingMode
 import com.focus.launcher.data.SHORTCUT_CAMERA
 import com.focus.launcher.data.SHORTCUT_PHONE
 import com.focus.launcher.data.Settings
+import com.focus.launcher.data.SplitSide
 import com.focus.launcher.data.TimeFormat
 import com.focus.launcher.ui.components.AppPickerDialog
 import com.focus.launcher.ui.components.ChoiceDialog
@@ -52,7 +53,7 @@ private fun update(transform: (Settings) -> Settings) = Graph.settings.update(tr
 
 // ---- Home screen -----------------------------------------------------------------------------
 
-private enum class HomeDialog { NONE, CLOCK, RING, TAP, TIME_FORMAT, ALIGN, LEFT, RIGHT, CALENDAR }
+private enum class HomeDialog { NONE, CLOCK, SPLIT_SIDE, RING, TAP, TIME_FORMAT, ALIGN, LEFT, RIGHT, CALENDAR }
 
 @Composable
 internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Unit, go: (String) -> Unit) {
@@ -76,13 +77,37 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
 
     Page("Home screen", onBack) {
         Section("Clock")
-        SettingRow("Style", value = settings.clockStyle.label, onClick = { dialog = HomeDialog.CLOCK })
         SettingRow(
-            "Ring shows",
-            subtitle = if (settings.ringMode == RingMode.BATTERY) "A full circle is a full battery." else "The circle fills up as the day passes.",
-            value = settings.ringMode.label,
-            onClick = { dialog = HomeDialog.RING },
+            "Style",
+            subtitle = when (settings.clockStyle) {
+                ClockStyle.SPLIT -> "The clock on the left, one section on the right, a single line between them."
+                ClockStyle.RING -> "The clock inside a circle."
+                ClockStyle.PLAIN -> "The clock as plain text."
+            },
+            value = settings.clockStyle.label,
+            onClick = { dialog = HomeDialog.CLOCK },
         )
+        when (settings.clockStyle) {
+            ClockStyle.SPLIT -> SettingRow(
+                "Next to the clock",
+                subtitle = "What the right half shows. It is not repeated further down. Long-pressing it on the home screen gets you here too.",
+                value = (if (settings.splitSide == SplitSide.CALENDAR && settings.showCalendar) SplitSide.CALENDAR else SplitSide.SCREEN_TIME).label,
+                onClick = { dialog = HomeDialog.SPLIT_SIDE },
+            )
+            ClockStyle.RING -> SettingRow(
+                "Ring shows",
+                subtitle = if (settings.ringMode == RingMode.BATTERY) "A full circle is a full battery." else "The circle fills up as the day passes.",
+                value = settings.ringMode.label,
+                onClick = { dialog = HomeDialog.RING },
+            )
+            ClockStyle.PLAIN -> Unit
+        }
+        // Without a ring the same stored choice decides one thing only: whether the battery is written out.
+        if (settings.clockStyle != ClockStyle.RING) {
+            ToggleRow("Show the battery level", settings.ringMode == RingMode.BATTERY) { v ->
+                update { it.copy(ringMode = if (v) RingMode.BATTERY else RingMode.DAY) }
+            }
+        }
         SettingRow("Tap on the clock", subtitle = "Opens an app of your choice, or alarms, calendar, screen time. Long-pressing the clock gets you here too.", value = clockTapLabel(settings.clockTap, apps), onClick = { dialog = HomeDialog.TAP })
         SettingRow("Time format", value = settings.timeFormat.label, onClick = { dialog = HomeDialog.TIME_FORMAT })
         ToggleRow("Show the date", settings.showDate) { v -> update { it.copy(showDate = v) } }
@@ -127,6 +152,15 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
     when (dialog) {
         HomeDialog.NONE -> Unit
         HomeDialog.CLOCK -> ChoiceDialog("Clock style", ClockStyle.entries.map { it to it.label }, settings.clockStyle, close) { v -> update { it.copy(clockStyle = v) } }
+        HomeDialog.SPLIT_SIDE -> ChoiceDialog(
+            "Next to the clock",
+            SplitSide.entries.map { it to it.label },
+            if (settings.splitSide == SplitSide.CALENDAR && settings.showCalendar) SplitSide.CALENDAR else SplitSide.SCREEN_TIME,
+            close,
+        ) { side ->
+            update { it.copy(splitSide = side, showCalendar = it.showCalendar || side == SplitSide.CALENDAR) }
+            if (side == SplitSide.CALENDAR && !CalendarRepository.hasAccess(context)) askCalendar.launch(Manifest.permission.READ_CALENDAR)
+        }
         HomeDialog.RING -> ChoiceDialog("Ring shows", RingMode.entries.map { it to it.label }, settings.ringMode, close) { v -> update { it.copy(ringMode = v) } }
         HomeDialog.TAP -> ClockTapDialog(settings, apps, close)
         HomeDialog.CALENDAR -> CalendarPickerDialog(

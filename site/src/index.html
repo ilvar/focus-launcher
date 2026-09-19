@@ -50,12 +50,17 @@
   <figure class="phone-wrap" aria-label="The Focus home screen">
     <div class="phone home" aria-hidden="true">
       <div class="screen">
-        <div class="clock">
-          {{RING}}
-          <div class="clock-text">
+        <div class="split">
+          <div class="split-clock">
             <span class="time">9:41</span>
             <span class="date">Tue, 22 Sept</span>
             <span class="battery">72%</span>
+          </div>
+          <div class="split-side">
+            <span class="when">Today 14:00</span>
+            <span class="what">Design review</span>
+            <span class="when gap">Tomorrow 09:30</span>
+            <span class="what">Standup</span>
           </div>
         </div>
         <div class="screen-time">
@@ -63,16 +68,11 @@
           <span class="st-total">2h 41m</span>
           <span class="st-share">11% of today</span>
         </div>
-        <div class="block">
-          <div class="row-between"><span class="cap">Calendar</span><span class="tiny">Work</span></div>
-          <div class="event"><span>Today 14:00</span><span>Design review</span></div>
-          <div class="event"><span>Tomorrow 09:30</span><span>Standup</span></div>
-        </div>
         <div class="favs"><span>Mail</span><span>Messages</span><span>Maps</span><span>Notes</span><span>Music</span></div>
         <div class="corners"><span>Phone</span><span>Camera</span></div>
       </div>
     </div>
-    <figcaption>The whole home screen. The ring is your battery.</figcaption>
+    <figcaption>The whole home screen. One line, no frames.</figcaption>
   </figure>
 </section>
 
@@ -94,7 +94,7 @@
 <section class="home-notes" aria-label="What is on the home screen">
   <p class="label">On the home screen</p>
   <dl>
-    <div><dt>The ring is your battery</dt><dd>Tap it to open one app of your choice. Long-press to change which.</dd></div>
+    <div><dt>The clock, and what comes next</dt><dd>The time on the left, your next events or today's screen time on the right, one line between them. Tap the clock to open an app of your choice. Prefer a ring that shows your battery? It is one setting away.</dd></div>
     <div><dt>Today's screen time, in plain words</dt><dd>The total, and its share of the day's 24 hours, right under the clock. Tap it for the hour-by-hour picture.</dd></div>
     <div><dt>Your next events</dt><dd>From a single calendar you pick, with the emoji left out.</dd></div>
     <div><dt>Five apps, two corners</dt><dd>The few you actually need, in words. Phone and camera in the corners.</dd></div>

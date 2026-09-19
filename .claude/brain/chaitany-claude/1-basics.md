@@ -1,8 +1,8 @@
 # Tier 1 · Basics (read all of it, every time)
 
 **Focus** is a text-only, strictly black-and-white Android launcher (Kotlin + Jetpack Compose, no
-Material, package `com.focus.launcher`, 35 Kotlin files, ~7,000 lines). Home = battery ring clock,
-today's screen time in words under it, one-calendar agenda, up to 5 fast apps, 2 corner shortcuts.
+Material, package `com.focus.launcher`, 35 Kotlin files, ~7,200 lines). Home = split clock (the
+time | the next events or screen time, one line between them), up to 5 fast apps, 2 corner shortcuts.
 Swipe left = searchable app list (sortable; Personal / Work tabs), swipe right = the phone's web
 search, double tap = lock. Social apps and games get daily timers that lock the app; a weekly
 review shows where the time went. No INTERNET permission. Built for, and used daily by, its owner.
@@ -36,7 +36,7 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 | What | Where |
 | --- | --- |
 | App source | `app/src/main/java/com/focus/launcher/` (`data/`, `service/`, `ui/`) |
-| Unit tests | `app/src/test/…/data/` (ForegroundTracker 13, StripEmoji 6) |
+| Unit tests | `app/src/test/…/data/` (ForegroundTracker 13, StripEmoji 6, SettingsMigration 6) |
 | Website source / output | `site/src/` → `site/public/` (generated, ignored) |
 | nginx rules for the site | `site/nginx-focusapp.conf` (installed on the server as a snippet) |
 | Signing key / its password | outside the repo / both named in `keystore.properties` (ignored) |

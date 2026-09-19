@@ -383,3 +383,47 @@ the one-line command.
 **Verified:** PR #4 green after the fix; all workflow files parse; the pre-flight results above.
 **Not verified:** unchanged: signing with the real key on a runner, the upload, and the release
 step run for the first time when the owner has run the setup and approved a run.
+
+## 2026-09-20 · The split clock
+
+**Asked** (with a sketch: a rounded rectangle at the top of the phone, split by a vertical line,
+"Clock" pointing at the left half and "Calendar or mail or any widget here" at the right): change
+the clock style "from the circular to the rectangle with no outside boundary, keep only the center
+vertical boundary".
+
+**Done:**
+- `ClockStyle.SPLIT`, now the default: `SplitClockRow` = time, date and battery on the left, one
+  section on the right, a single vertical line between them, no frame. Both halves hug the line;
+  the row sits near the top as a header. Right half (`Settings.splitSide`): the calendar's next
+  two events (`SplitCalendar`) or today's screen time (`SplitScreenTime`); long-press chooses, and
+  choosing the calendar switches its section on and asks for access. The section shown there is
+  not repeated below. Ring and plain stay as options.
+- Existing installs: `Settings.SCHEMA` = 2, stored as `"v"`. A stored `RING` from before is the
+  old default rather than a choice and becomes `SPLIT` once; a stored `PLAIN` is kept; a ring
+  chosen afterwards is kept. Six tests (`SettingsMigrationTest`; `org.json` added for tests only).
+- Settings → Home screen: "Style" explains each style; "Next to the clock" for split; "Ring shows"
+  only for the ring; "Show the battery level" for the other two.
+- The always-fits height estimate knows the split row (the taller half counts) and leaves out the
+  section that moved into it. The time's size is computed from the screen width, font and AM/PM.
+- Site: hero mockup, caption and the "On the home screen" note show the split clock; README too.
+- Not built, and said so: mail and "any widget" in the right half (open decision 18).
+
+**Verified:** compiles; 25 unit tests pass; lint 0 errors; release build 1.1.19 installed on the
+owner's phone with `--user 0 -r` (data kept, still the default home, no INTERNET permission); the
+site mockup previewed locally in the browser.
+**Verified on the phone afterwards:** the passive watcher waited until the owner was on the home
+screen, unlocked, and took one guarded screenshot (viewed, then deleted; it shows his calendar and
+apps). The stored ring had migrated to the split clock; the time sits right-aligned against the
+line with the date and battery under it, two events left-aligned on the other side with equal
+gaps to the line, the line spans the row, screen time follows below, fast apps and corners are
+where they were. No crash lines; compiled with `speed-profile` after 20 s of running.
+**Not verified:** whether he likes it (alignment, sizes, which section is on the right); the
+screen-time variant of the right half and the long-press chooser on a device; the 12-hour and
+monospace sizes (computed, not seen). No emulator on this machine.
+**Published to GitHub** once he had it on his phone and said to push: branch `split-clock`, a pull
+request so the build workflow checks it on Linux (tests, lint, APK, site build), then merged.
+CI publishing is still off, so nothing went to the website; the public download is still 1.1.
+At that moment a collaborator's pull request (#5, home cards) was open and touches the same home
+screen files: it will have to take `main` in before it can merge, and needs a review first.
+
+**Open:** decisions 18 and 19.

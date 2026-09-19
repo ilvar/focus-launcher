@@ -107,4 +107,5 @@ dependencies {
     implementation(libs.androidx.compose.animation)
 
     testImplementation(libs.junit)
+    testImplementation(libs.org.json)   // the JVM has no org.json of its own; Android does
 }

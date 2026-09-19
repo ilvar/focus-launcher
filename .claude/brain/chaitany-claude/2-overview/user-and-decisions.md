@@ -19,7 +19,8 @@
 | No icons anywhere; black and white only | Includes emoji: stripped from calendar titles, greyscaled in app names |
 | Home layout follows his sketch | clock, section(s), ≤5 fast apps, two corner shortcuts; swipe left = drawer |
 | Long-press menu order | App name · Uninstall · App info · Move to fast apps · App timer · Rename · Hide |
-| Ring shows **battery %** | "Day passed" kept as an option, not the default |
+| **The clock is a split rectangle** (2026-09-20, second sketch): "from the circular to the rectangle with no outside boundary, keep only the center vertical boundary"; left = clock, right = "calendar or mail or any widget" | `ClockStyle.SPLIT`, the default; existing installs that still had the old default ring move over once. Right half = the calendar's next events or today's screen time, chosen by long-press. Ring and plain stay as options. **Mail and "any widget" are not there**: a launcher cannot read mail without notification access, and hosted Android widgets would bring icons and colour (open decision 18) |
+| Ring shows **battery %** | Applies to the ring style. "Day passed" kept as an option, not the default. In the split and plain styles the same setting only decides whether the battery is written out |
 | Tap on the ring opens a **specific app** | Configurable; long-press the ring to choose (Settings alone was not discoverable) |
 | Touch feedback **lights up** | The first version dimmed the pressed item and was rejected |
 | Calendar: **one** calendar, **no emoji**, no "which day it is" | Week strip kept as an off-by-default toggle; "Today/Tomorrow" labels kept. Unsure whether those were meant too: ask if it comes up |
@@ -94,3 +95,12 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
 17. `main` has no branch protection: anyone with write access can push to it directly. With the
     approval gate nothing gets published without him, so this is about history, not about safety.
     Offered: require a pull request for `main`.
+18. **"Mail or any widget" next to the clock.** His sketch names calendar, mail or any widget for
+    the right half. Built: calendar and screen time. Mail as text (unread counts, senders) needs
+    notification access, a new special permission and a listener service; hosted Android widgets
+    are out by his own rule (icons, colour). Offered: a text-only "unread" section behind
+    notification access, if he wants it.
+19. **The split clock renders as designed on his phone (checked 2026-09-20); whether he likes it
+    is his to say.** Both halves hug the line (clock text right-aligned, section text
+    left-aligned) and the row sits near the top. That is a reading of the sketch, easy to change:
+    alignment, sizes, which section is on the right by default.

@@ -5,9 +5,17 @@ Code: `ui/home/HomeScreen.kt`, `ui/home/HomeWidgets.kt`, `ui/drawer/DrawerScreen
 `data/Settings.kt`. Layout fitting, touch feedback and motion are in `ui-system.md`.
 
 ## Home (page 0), top to bottom, after the owner's sketch
-1. **Clock**: ring (`ClockStyle.RING`, arc = battery % or day passed) or plain. Tap = `clockTap`
-   (alarms by default, or calendar / screen time / battery / nothing / any app); long-press opens
-   the chooser (`ClockTapDialog`).
+1. **Clock**, three styles (`ClockStyle`). **SPLIT** is the default since 2026-09-20, from the
+   owner's second sketch: the time, date and battery on the left, one section on the right, and a
+   single vertical line between them; no frame (`SplitClockRow`). Both halves hug the line (clock
+   text right-aligned, section text left-aligned), and the row sits near the top as a header.
+   The right half (`splitSide`) is the calendar's next two events, two lines each
+   (`SplitCalendar`), or today's screen time (`SplitScreenTime`); long-press it to choose, which
+   also switches the calendar section on and asks for access. **Whatever is in the right half is
+   not repeated further down**, and the calendar can only be there while `showCalendar` is on,
+   otherwise it is screen time. RING (arc = battery % or day passed) and PLAIN remain options.
+   Tap the clock = `clockTap` (alarms by default, or calendar / screen time / battery / nothing /
+   any app); long-press opens the chooser (`ClockTapDialog`).
 2. **Screen time** (`ScreenTimeLine`, always there, no setting): "Screen Time", today's total at
    24sp, "N% of today" (of 24 h). Tapping it opens the review, or the usage-access switch if that
    is still missing. The 24-hour bar that used to be a home section now lives only in the review

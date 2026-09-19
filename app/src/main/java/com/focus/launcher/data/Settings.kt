@@ -5,7 +5,14 @@ import org.json.JSONObject
 
 enum class FontChoice(val label: String) { SANS("Sans"), SERIF("Serif"), MONO("Mono") }
 
-enum class ClockStyle(val label: String) { RING("Ring"), PLAIN("Plain") }
+/**
+ * SPLIT: the clock on the left, one section on the right, a single vertical line between them and
+ * no frame around it. RING: the clock inside a circle whose arc is the battery (or the day).
+ */
+enum class ClockStyle(val label: String) { SPLIT("Split"), RING("Ring"), PLAIN("Plain") }
+
+/** What the right half of the split clock shows. The section shown there is not repeated below. */
+enum class SplitSide(val label: String) { CALENDAR("Calendar"), SCREEN_TIME("Screen time") }
 
 /** What the arc of the clock ring stands for. */
 enum class RingMode(val label: String) { BATTERY("Battery level"), DAY("Day passed") }
@@ -48,7 +55,9 @@ data class Settings(
     val launchAnimation: LaunchAnimation = LaunchAnimation.FAST,
 
     // Home
-    val clockStyle: ClockStyle = ClockStyle.RING,
+    val clockStyle: ClockStyle = ClockStyle.SPLIT,
+    /** Right half of the split clock. CALENDAR needs [showCalendar]; without it screen time is shown. */
+    val splitSide: SplitSide = SplitSide.CALENDAR,
     val ringMode: RingMode = RingMode.BATTERY,
     val clockTap: String = TAP_ALARMS,
     val timeFormat: TimeFormat = TimeFormat.SYSTEM,
@@ -106,6 +115,7 @@ data class Settings(
     val doubleTapLock: Boolean = true,
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
+        put("v", SCHEMA)
         put("dark", dark)
         put("font", font.name)
         put("textScale", textScale.toDouble())
@@ -113,6 +123,7 @@ data class Settings(
         put("launchAnimation", launchAnimation.name)
 
         put("clockStyle", clockStyle.name)
+        put("splitSide", splitSide.name)
         put("ringMode", ringMode.name)
         put("clockTap", clockTap)
         put("timeFormat", timeFormat.name)
@@ -158,6 +169,9 @@ data class Settings(
 
     companion object {
         /** Tolerant of missing keys, so older saved settings survive app updates. */
+        /** Version of the stored settings. Bump it only when an old stored value has to be reinterpreted. */
+        const val SCHEMA = 2
+
         fun fromJson(o: JSONObject): Settings {
             val d = Settings()
             return Settings(
@@ -167,7 +181,12 @@ data class Settings(
                 hideStatusBar = o.optBoolean("hideStatusBar", d.hideStatusBar),
                 launchAnimation = enumOr(o.optString("launchAnimation"), d.launchAnimation),
 
-                clockStyle = enumOr(o.optString("clockStyle"), d.clockStyle),
+                // Schema 2 made the split clock the default, at the owner's request. A ring stored by an
+                // older version was the old default, not a choice, so it moves along once; the ring stays
+                // one tap away in Settings. A stored "Plain" was a choice and is kept.
+                clockStyle = enumOr(o.optString("clockStyle"), d.clockStyle)
+                    .let { if (o.optInt("v", 1) < 2 && it == ClockStyle.RING) ClockStyle.SPLIT else it },
+                splitSide = enumOr(o.optString("splitSide"), d.splitSide),
                 ringMode = enumOr(o.optString("ringMode"), d.ringMode),
                 clockTap = o.optString("clockTap", d.clockTap).ifEmpty { d.clockTap },
                 timeFormat = enumOr(o.optString("timeFormat"), d.timeFormat),

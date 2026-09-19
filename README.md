@@ -18,12 +18,17 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
 ## What it does
 
 **Home screen** (page 1)
-- Clock inside a ring. The bright arc is the battery level (a full circle is 100%), with the
-  percentage and "charging" / "low" under the date. It can show the part of the day that has passed
-  instead. Tapping the circle runs an action of your choice: open any app, alarms, calendar,
-  screen time, battery, or nothing. Long-press the circle to change it.
-- Today's screen time in plain words under the clock: a small title, the total ("2h 41m") in
-  large type, and its share of the day's 24 hours ("11% of today"). Tapping it opens the review, where the hour-by-hour picture of the day lives.
+- The clock, in one of three styles. **Split** (the default): the time, date and battery on the
+  left, one section on the right (your next two events, or today's screen time), and a single
+  vertical line between them. No frame around it; the line is the whole design, and both halves
+  hug it. Long-press the right half to choose what it shows; whatever is shown there is not
+  repeated further down. **Ring**: the clock inside a circle whose bright arc is the battery level
+  (a full circle is 100%) or the part of the day that has passed. **Plain**: text only.
+  Tapping the clock runs an action of your choice: open any app, alarms, calendar, screen time,
+  battery, or nothing. Long-press the clock to change it.
+- Today's screen time in plain words: a small title, the total ("2h 41m") in large type, and its
+  share of the day's 24 hours ("11% of today"), under the clock or in the right half of the split
+  clock. Tapping it opens the review, where the hour-by-hour picture of the day lives.
 - Optional calendar section: the next events from **one** calendar of your choice. Until you pick,
   Focus shows the main calendar that actually has events coming up (the first "primary" calendar
   on a phone is often an empty local account). The picker can be searched and shows how many

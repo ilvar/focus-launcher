@@ -36,6 +36,17 @@ clock is (fewer events, no app names under the bar, then a smaller ring, floor 1
 fits the chord of the circle. Ring arc = battery % (or day fraction), `Animatable` from 0, 900 ms.
 Battery via sticky `ACTION_BATTERY_CHANGED`, registered only while STARTED.
 
+**The split clock** (`SplitClockRow`, default style). The one line is drawn with `drawBehind`
+down the middle of the row, over the row's own height, so it needs neither
+`IntrinsicSize` nor a measured child: do not put a `BoxWithConstraints` or auto-sizing text
+inside that row (a subcomposed child cannot answer intrinsic queries, and auto-size text shrinks
+to whatever height it is offered). The time's size is computed in `HomeScreen`, which already
+knows `maxWidth`: half the width minus paddings, minus room for AM/PM, divided by the width of
+"00:00" in em (2.75 for the sans and serif faces, 3.1 for mono), clamped to 30–56sp and divided by
+the text scale, because `T` multiplies it back in. `heightOf` takes the taller half as the
+clock's height and drops the section that moved into the right half from the rest of the sum.
+The line uses `faint`, not `line`: as the only boundary on the screen it has to be seen.
+
 ## Motion (all finite; idle draws 0 frames)
 - Pager pages: `graphicsLayer { alpha = 1 − 1.2·distance; scale = 1 − 0.05·distance }` with
   `CompositingStrategy.ModulateAlpha` (no full-screen off-screen buffer per frame).
