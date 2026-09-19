@@ -57,20 +57,20 @@ Three build types: `debug`, `release` (owner's phone), `dist` (public). `dist` c
 over `release` or the reverse: different signatures. JDK: Gradle 8.14 cannot run on JDK 25;
 `gradle.properties` pins a JDK 21 path.
 
-## State of the world (2026-09-19, late evening)
-**Version 1.1** (`versionCode` 2) is on the owner's phone (release build, speed-profile), on the
-site, and on the GitHub release page next to 1.0. It contains a collaborator's merged PR #1
-(drawer sort and Personal / Work tabs, swipe right = web search, a drawn work badge, today's
-screen time in words instead of the 24-hour bar on home). The owner asked for it to be shipped;
-the points in it that touch his earlier decisions still wait for his word (open decisions 10–14).
-CI builds every push and pull request. **CI publishing** (site + release page, after the owner's
-approval) is built but off until he runs `site/setup-ci-publishing.sh`; agents never run it.
-Versions are `<base>.<commit count>` from 2026-09-20 on.
+## State of the world (2026-09-20)
+**Public: 1.1** (`versionCode` 2) on the site and the release page, next to 1.0. It contains a
+collaborator's merged PR #1 (drawer sort and tabs, swipe right = web search, a drawn work badge,
+screen time in words instead of the 24-hour bar); the points in it that touch the owner's earlier
+decisions still wait for his word (open decisions 10–14). **`main` and the owner's phone are
+ahead of that**: the split clock (his second sketch), versions `<base>.<commit count>`. Nothing
+reaches the site until he switches **CI publishing** on with `site/setup-ci-publishing.sh`
+(agents never run it) and approves a run, or asks for a manual deploy.
+CI builds every push and pull request. A collaborator's PR #5 (home cards) is open, conflicts
+with `main`, and needs a review before anything from it is built for the phone or the public.
 The accessibility service has **not been enabled** on the phone, so mid-session locking and double
 tap to lock are untested there. Google Search Console not done. **No LICENSE** (owner to decide).
-The brain is committed and public, and was fact-checked against the code, the repo and the live
-site on 2026-09-19 (`3-details/brain-upkeep.md`). Publishing happens on request: `git status`
-shows whether there is unpushed work.
+The brain is committed and public (`3-details/brain-upkeep.md`). Publishing happens on request:
+`git status` shows whether there is unpushed work.
 
 ## Tier 2 index: read the area(s) you will touch
 - `2-overview/user-and-decisions.md` — what the owner asked for and decided; open decisions
