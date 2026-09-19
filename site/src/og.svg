@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#000"/>
+  <g transform="translate(905 315)">
+    <circle r="170" fill="none" stroke="#262626" stroke-width="4"/>
+    <circle r="170" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-dasharray="769.06 1068.14" transform="rotate(-90)"/>
+    <text y="18" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="300" font-size="112" fill="#fff" letter-spacing="-3">9:41</text>
+    <text y="74" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="30" fill="#9a9a9a">Tue, 22 Sept</text>
+  </g>
+  <text x="90" y="150" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="500" font-size="34" fill="#fff">Focus</text>
+  <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="300" font-size="72" fill="#fff" letter-spacing="-2">
+    <tspan x="90" y="300">Reclaim your time.</tspan>
+    <tspan x="90" y="384" fill="#9a9a9a">Spend it touching</tspan>
+    <tspan x="90" y="468" fill="#9a9a9a">some grass.</tspan>
+  </text>
+  <text x="90" y="548" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" fill="#9a9a9a">Focus: a home screen with nothing to look at.</text>
+</svg>

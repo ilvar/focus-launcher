@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: lets `adb shell am start` open these screens directly for testing.
+     In release builds both activities stay private to the app. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <activity
+            android:name="com.focus.launcher.ReviewActivity"
+            android:exported="true"
+            tools:replace="android:exported" />
+        <activity
+            android:name="com.focus.launcher.BlockActivity"
+            android:exported="true"
+            tools:replace="android:exported" />
+    </application>
+</manifest>

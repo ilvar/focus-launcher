@@ -1,0 +1,343 @@
+/* Focus landing page. Two colours and three greys, like the app. No scripts, no web fonts. */
+
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --dim: #9a9a9a;
+  --faint: #5c5c5c;
+  --line: #262626;
+  --glow: rgba(255, 255, 255, 0.10);
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --page: min(1120px, 100% - 3rem);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #fff;
+    --fg: #000;
+    --dim: #5f5f5f;
+    --faint: #9c9c9c;
+    --line: #e2e2e2;
+    --glow: rgba(0, 0, 0, 0.07);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 1.0625rem/1.65 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+
+h1, h2 { font-weight: 300; letter-spacing: -0.025em; line-height: 1.08; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.5rem, 5.6vw, 4.6rem); }
+h2 { font-size: clamp(1.9rem, 3.8vw, 3rem); }
+p { margin: 0; }
+/* second half of a two-sentence headline: same words, one step quieter */
+.soft { color: var(--dim); }
+/* the search phrase lives inside the h1 but looks like the small label it always was */
+h1 .eyebrow { display: block; margin-bottom: 1.6rem; line-height: 1.65; letter-spacing: 0.16em; }
+.prose ul.plain { list-style: none; padding: 0; display: grid; gap: 1.1rem; }
+.prose ul.plain li { color: var(--dim); padding-left: 1.4rem; position: relative; }
+.prose ul.plain li::before { content: ""; position: absolute; left: 0; top: 0.78em; width: 0.6rem; height: 1px; background: var(--faint); }
+.prose ul.plain strong { color: var(--fg); font-weight: 500; }
+em { font-style: normal; border-bottom: 1px solid var(--faint); }
+
+.label, .cap {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--dim);
+}
+
+.skip { position: absolute; left: -999px; top: 0; padding: 0.75rem 1rem; background: var(--fg); color: var(--bg); }
+.skip:focus { left: 1rem; top: 1rem; z-index: 2; }
+
+/* ---- header ---------------------------------------------------------------------------- */
+
+.top {
+  width: var(--page);
+  margin: 0 auto;
+  padding: 1.75rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.wordmark { font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; text-decoration: none; }
+.top nav { display: flex; align-items: center; gap: clamp(0.9rem, 2.6vw, 2rem); font-size: 0.95rem; }
+.top nav a { color: var(--dim); text-decoration: none; padding: 0.35rem 0; transition: color 0.2s; }
+.top nav a:hover { color: var(--fg); }
+.top nav .nav-cta { color: var(--fg); border: 1px solid var(--faint); padding: 0.45rem 0.95rem; }
+.top nav .nav-cta:hover { background: var(--glow); }
+@media (max-width: 640px) { .top nav a:not(.nav-cta) { display: none; } }
+
+/* ---- buttons: outlined, or inverted. Touching one lights it up, as in the app. ---------- */
+
+.button {
+  display: inline-block;
+  padding: 0.95rem 1.5rem;
+  border: 1px solid var(--dim);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.2;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.button:hover { background: var(--glow); }
+.button.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.button.primary:hover { background: transparent; color: var(--fg); }
+
+.fineprint { color: var(--dim); font-size: 0.875rem; line-height: 1.7; }
+code { font: 0.8rem/1.6 var(--mono); color: var(--fg); word-break: break-all; }
+
+/* ---- hero ------------------------------------------------------------------------------- */
+
+.hero {
+  width: var(--page);
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 5rem) 0 clamp(4rem, 9vw, 8rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 5rem);
+}
+.hero-copy > * + * { margin-top: 1.6rem; }
+.lede { font-size: clamp(1.1rem, 1.6vw, 1.3rem); line-height: 1.6; color: var(--dim); max-width: 34rem; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; padding-top: 0.6rem; }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; }
+}
+
+/* ---- the phone: real text in a box, sized in container units so it scales as one piece ---- */
+
+.phone-wrap { margin: 0; display: grid; justify-items: center; gap: 1.1rem; }
+.phone-wrap figcaption { color: var(--dim); font-size: 0.875rem; text-align: center; max-width: 22rem; }
+
+.phone {
+  container-type: inline-size;
+  width: min(330px, 82vw);
+  aspect-ratio: 9 / 19;
+  border: 1px solid var(--faint);
+  border-radius: 2.4rem;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 0 0 0.45rem var(--bg), 0 0 0 calc(0.45rem + 1px) var(--line);
+}
+/* Container units resolve against the nearest *ancestor* container, so the element that declares
+   container-type cannot use them for its own padding or font size. Hence the inner .screen. */
+.screen { position: relative; height: 100%; display: flex; flex-direction: column; padding: 9cqw 8cqw 6cqw; font-size: 4cqw; line-height: 1.35; }
+.phone .cap { font-size: 2.7cqw; letter-spacing: 0.17em; color: var(--dim); display: block; }
+.phone .cap.pad { padding-left: 1cqw; }
+.phone .cap.gap, .phone .gap { margin-top: 5cqw; }
+.phone small { color: var(--dim); font-size: 3.1cqw; }
+.phone .tiny { color: var(--faint); font-size: 3cqw; }
+.row-between { display: flex; justify-content: space-between; align-items: baseline; }
+.grow { flex: 1; }
+
+/* home */
+.clock { position: relative; width: 58cqw; margin: 0 auto 6cqw; }
+.ring { display: block; width: 100%; height: auto; overflow: visible; }
+.ring-track { fill: none; stroke: var(--line); stroke-width: 1.1; }
+.ring-arc { fill: none; stroke: var(--fg); stroke-width: 2.3; stroke-linecap: round; animation: draw 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.ring-bead-gap { fill: var(--bg); }
+.ring-bead { fill: var(--fg); }
+@keyframes draw { from { stroke-dasharray: 0 100; } }
+.clock-text { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; }
+.clock-text .time { font-size: 13cqw; font-weight: 300; letter-spacing: -0.03em; line-height: 1.05; }
+.clock-text .date { font-size: 3.7cqw; color: var(--dim); }
+.clock-text .battery { font-size: 3cqw; color: var(--faint); margin-top: 0.8cqw; }
+
+.block { margin-bottom: 5.5cqw; }
+.block .big { font-size: 5.2cqw; }
+.block .big small { font-size: 3cqw; }
+.daybar { display: block; width: 100%; height: 3.4cqw; margin: 2.2cqw 0 1cqw; }
+.daybar .cell { fill: var(--line); }
+.daybar .fill { fill: var(--fg); }
+.scale { display: flex; justify-content: space-between; font-size: 2.6cqw; color: var(--faint); }
+.scale.seven { padding: 0 2.2cqw; margin-top: 1cqw; }
+.event { display: grid; grid-template-columns: 35cqw 1fr; font-size: 3.5cqw; margin-top: 1.6cqw; white-space: nowrap; }
+.event span:first-child { color: var(--dim); }
+
+.favs { display: grid; gap: 3.1cqw; font-size: 6.6cqw; line-height: 1.15; margin-top: 1cqw; }
+.corners { margin-top: auto; display: flex; justify-content: space-between; color: var(--dim); font-size: 3.8cqw; }
+
+/* drawer */
+.search { border: 1px solid var(--faint); padding: 3.2cqw 4cqw; color: var(--faint); font-size: 4.4cqw; margin-bottom: 5cqw; }
+.app { display: flex; justify-content: space-between; align-items: baseline; padding: 2.5cqw 7cqw 2.5cqw 1cqw; font-size: 5cqw; }
+.app.spent span { color: var(--faint); }
+.index { position: absolute; right: 3cqw; top: 25cqw; bottom: 8cqw; display: flex; flex-direction: column; justify-content: space-between; font-size: 2.4cqw; color: var(--faint); }
+
+/* wall */
+.phone.wall .screen { padding-top: 26cqw; }
+.wall-name { font-size: 11cqw; font-weight: 300; letter-spacing: -0.02em; margin: 3cqw 0 4cqw; }
+.wall-bar { display: block; height: 0.8cqw; background: var(--fg); }
+.wall-meta { color: var(--dim); font-size: 3.7cqw; margin-top: 3.4cqw; }
+.wall-note { color: var(--faint); font-size: 3.2cqw; margin-top: 1.4cqw; }
+.btn { display: block; text-align: center; border: 1px solid var(--dim); padding: 3.4cqw 2cqw; font-size: 3.9cqw; font-weight: 500; }
+.btn.solid { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4cqw; margin-top: 2.6cqw; }
+.wall-link { color: var(--dim); font-size: 3.6cqw; padding: 4cqw 0 1cqw; }
+
+/* review */
+.review-total { font-size: 12cqw; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; margin-top: 2cqw; }
+.chart { display: block; width: 100%; margin-top: 2.6cqw; }
+.chart.week { height: 15cqw; }
+.chart.hours { height: 10cqw; margin-bottom: 1cqw; }
+.chart .bar { fill: var(--faint); }
+.chart .bar.peak { fill: var(--fg); }
+.usage { display: grid; grid-template-columns: 1fr auto; align-items: baseline; font-size: 4cqw; margin-top: 2.6cqw; row-gap: 1.4cqw; }
+.usage small { font-size: 2.8cqw; }
+.usage i { grid-column: 1 / -1; height: 0.6cqw; background: var(--fg); display: block; }
+.usage i.w100 { width: 100%; }
+.usage i.w78 { width: 78%; }
+.usage i.w45 { width: 45%; }
+
+/* ---- three ideas -------------------------------------------------------------------------- */
+
+.principles {
+  width: var(--page);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.principles article { padding: clamp(2rem, 4vw, 3.25rem) clamp(1.25rem, 2.5vw, 2.5rem); }
+.principles article + article { border-left: 1px solid var(--line); }
+.principles article:first-child { padding-left: 0; }
+.principles h2 { font-size: 1.45rem; letter-spacing: -0.015em; font-weight: 400; margin-bottom: 0.9rem; }
+.principles p { color: var(--dim); font-size: 1rem; }
+@media (max-width: 860px) {
+  .principles { grid-template-columns: 1fr; }
+  .principles article { padding-left: 0; padding-right: 0; }
+  .principles article + article { border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* ---- what is on the home screen ------------------------------------------------------------ */
+
+.home-notes { width: var(--page); margin: 0 auto; padding: clamp(3.5rem, 7vw, 6rem) 0; border-bottom: 1px solid var(--line); }
+.home-notes dl { margin: 2rem 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(1.5rem, 3vw, 3rem); }
+.home-notes dt { font-size: 1.1rem; line-height: 1.35; margin-bottom: 0.6rem; }
+.home-notes dd { margin: 0; color: var(--dim); font-size: 0.95rem; line-height: 1.6; }
+@media (max-width: 860px) { .home-notes dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .home-notes dl { grid-template-columns: 1fr; } }
+
+/* ---- features ----------------------------------------------------------------------------- */
+
+.features { width: var(--page); margin: 0 auto; }
+.feature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: clamp(2.5rem, 7vw, 6rem);
+  padding: clamp(4.5rem, 10vw, 9rem) 0;
+  border-bottom: 1px solid var(--line);
+}
+.feature.flip .feature-copy { order: 2; }
+.feature-copy > * + * { margin-top: 1.5rem; }
+.feature ul { list-style: none; padding: 0; margin-bottom: 0; display: grid; gap: 1.05rem; max-width: 34rem; }
+.feature li { color: var(--dim); padding-left: 1.4rem; position: relative; }
+.feature li::before { content: ""; position: absolute; left: 0; top: 0.78em; width: 0.6rem; height: 1px; background: var(--faint); }
+@media (max-width: 860px) {
+  .feature { grid-template-columns: 1fr; }
+  .feature.flip .feature-copy { order: 0; }
+}
+
+/* ---- numbers ------------------------------------------------------------------------------ */
+
+.facts {
+  width: var(--page);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 3rem);
+  padding: clamp(4rem, 8vw, 7rem) 0;
+  border-bottom: 1px solid var(--line);
+}
+.facts strong { display: block; font-size: clamp(2rem, 3.6vw, 3rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 0.7rem; }
+.facts span { color: var(--dim); font-size: 0.95rem; line-height: 1.55; display: block; }
+@media (max-width: 860px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---- prose sections: privacy, install, questions ------------------------------------------ */
+
+.prose { width: min(760px, 100% - 3rem); margin: 0 auto; padding: clamp(4.5rem, 9vw, 8rem) 0 0; }
+.prose > * + * { margin-top: 1.5rem; }
+.prose > p:not(.label):not(.fineprint) { color: var(--dim); }
+.prose h2 { margin-top: 1rem; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.97rem; margin-top: 2.25rem; }
+thead th { text-align: left; font-weight: 500; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); padding: 0 0 0.9rem; }
+tbody tr { border-top: 1px solid var(--line); }
+tbody th { text-align: left; font-weight: 500; vertical-align: top; padding: 1.15rem 1.5rem 1.15rem 0; width: 34%; }
+tbody th small { display: block; color: var(--faint); font-weight: 400; font-size: 0.8rem; }
+tbody td { color: var(--dim); padding: 1.15rem 0; vertical-align: top; }
+@media (max-width: 560px) {
+  tbody th, tbody td { display: block; width: 100%; padding: 0; }
+  tbody th { padding-top: 1.1rem; }
+  tbody td { padding: 0.3rem 0 1.1rem; }
+  thead { display: none; }
+}
+
+.steps { counter-reset: step; list-style: none; padding: 0; margin-top: 2.5rem; display: grid; gap: 0; }
+.steps li { counter-increment: step; position: relative; padding: 1.4rem 0 1.4rem 3.4rem; border-top: 1px solid var(--line); color: var(--dim); }
+.steps li:last-child { border-bottom: 1px solid var(--line); }
+.steps li::before { content: counter(step); position: absolute; left: 0; top: 1.15rem; font-size: 1.7rem; font-weight: 300; color: var(--fg); line-height: 1.2; }
+.steps strong { color: var(--fg); font-weight: 500; }
+
+details { border-top: 1px solid var(--line); }
+details:last-of-type { border-bottom: 1px solid var(--line); }
+.prose > details + details { margin-top: 0; }
+summary { list-style: none; cursor: pointer; padding: 1.35rem 2.5rem 1.35rem 0; position: relative; font-size: 1.1rem; transition: background 0.25s; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; position: absolute; right: 0.25rem; top: 1.05rem; font-size: 1.5rem; font-weight: 300; color: var(--dim); }
+details[open] summary::after { content: "–"; }
+summary:hover { background: var(--glow); }
+details p { color: var(--dim); padding: 0 0 1.6rem; max-width: 40rem; }
+
+/* ---- closing ------------------------------------------------------------------------------ */
+
+.closing { width: var(--page); margin: 0 auto; padding: clamp(6rem, 13vw, 11rem) 0; text-align: center; }
+.closing h2 { font-size: clamp(2.2rem, 5.2vw, 4.2rem); margin-bottom: 2.75rem; }
+.closing .fineprint { margin-top: 1.25rem; }
+
+footer {
+  width: var(--page);
+  margin: 0 auto;
+  padding: 2rem 0 3rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  color: var(--dim);
+  font-size: 0.875rem;
+}
+
+/* ---- arrival: one quiet fade, and none at all for people who asked for less motion ---------- */
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero-copy > * { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.hero-copy > :nth-child(2) { animation-delay: 0.06s; }
+.hero-copy > :nth-child(3) { animation-delay: 0.14s; }
+.hero-copy > :nth-child(4) { animation-delay: 0.22s; }
+.hero-copy > :nth-child(5) { animation-delay: 0.3s; }
+.hero .phone-wrap { animation: rise 1.1s 0.15s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
