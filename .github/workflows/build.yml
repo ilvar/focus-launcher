@@ -11,10 +11,10 @@ name: Build
 on:
   push:
     branches: [main]
-    # Notes, the agent's brain and the website do not change the APK.
-    paths-ignore: ['.claude/**', '**.md', 'site/**']
+    # Notes and the agent's brain change neither the APK nor the site.
+    paths-ignore: ['.claude/**', '**.md']
   pull_request:
-    paths-ignore: ['.claude/**', '**.md', 'site/**']
+    paths-ignore: ['.claude/**', '**.md']
   workflow_dispatch:
 
 permissions:
@@ -32,16 +32,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # the build number in the version is the number of commits
 
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: '21'
 
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
       # gradle.properties pins the JDK path of the owner's machine. The runner's JDK is given on
       # the command line instead, which takes precedence, so no tracked file has to change.
@@ -72,7 +72,18 @@ jobs:
             echo "- Signed with a throwaway CI key: for trying out only. It cannot update, or be updated by, the official APK from the website or the release page."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v7
+      # The Publish workflow builds the site with this same script on this same kind of machine.
+      # Doing it here means a change that breaks it is caught in the pull request, not on release day.
+      - name: The site builds around this APK
+        env:
+          APK_NAME: ${{ steps.apk.outputs.name }}
+        run: |
+          command -v rsvg-convert >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin; }
+          FOCUS_APK="$GITHUB_WORKSPACE/out/$APK_NAME" site/build.sh   # absolute: build.sh changes directory
+          test -s site/public/index.html && ! grep -q '{{' site/public/index.html
+          ls -l site/public
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.apk.outputs.name }}
           path: out/
@@ -81,7 +92,7 @@ jobs:
 
       - name: Keep the reports when something fails
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: reports
           path: |
