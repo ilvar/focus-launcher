@@ -50,7 +50,7 @@ updated: the owner was told to back both up. A `dist` APK cannot be installed ov
 ## Releasing a new version
 1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
 2. `./gradlew :app:testDebugUnitTest :app:lintDebug` clean.
-3. Owner's phone: `assembleRelease` → `adb install -r` → `compile -m speed-profile -f`.
+3. Owner's phone: `assembleRelease` → `adb install --user 0 -r` → `compile -m speed-profile -f`.
 4. Public: `./gradlew :app:assembleDist && site/deploy.sh` (the APK file name carries the version;
    older APKs stay on the server so old links keep working).
 5. Audit, commit, push.

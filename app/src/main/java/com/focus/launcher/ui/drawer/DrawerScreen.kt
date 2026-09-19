@@ -7,11 +7,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,10 +56,14 @@ import androidx.compose.ui.unit.sp
 import com.focus.launcher.Graph
 import com.focus.launcher.data.AppEntry
 import com.focus.launcher.data.DayUsage
+import com.focus.launcher.data.DrawerSort
 import com.focus.launcher.data.Settings
+import com.focus.launcher.ui.components.ChoiceDialog
 import com.focus.launcher.ui.components.Label
 import com.focus.launcher.ui.components.T
+import com.focus.launcher.ui.components.TabChip
 import com.focus.launcher.ui.components.VSpace
+import com.focus.launcher.ui.components.WorkBadge
 import com.focus.launcher.ui.components.focusTextStyle
 import com.focus.launcher.ui.components.hasColourGlyphs
 import com.focus.launcher.ui.components.monochrome
@@ -65,14 +71,18 @@ import com.focus.launcher.ui.components.press
 import com.focus.launcher.ui.theme.LocalFocusColors
 import com.focus.launcher.util.formatDuration
 import com.focus.launcher.util.formatMinutes
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.Normalizer
 
 private const val DAY_MS = 86_400_000L
 
 /**
  * Page two of the launcher: a search bar, the apps installed in the last 24 hours, and every app
- * as a plain alphabetical list. No icons anywhere. Long-press a row for its menu.
+ * as a plain list. With a work profile the list splits into Personal / Work tabs; "Sort" orders it
+ * A–Z, by most used or by last used. Search always covers both profiles. No icons anywhere.
+ * Long-press a row for its menu.
  */
 @Composable
 fun DrawerScreen(
@@ -98,19 +108,58 @@ fun DrawerScreen(
     val visible = remember(apps, settings.hidden) { apps.filter { it.key !in settings.hidden } }
     // Stripping accents is the expensive part of search; do it once per list, not per keystroke.
     val searchNames = remember(visible) { visible.associate { it.key to normalize(it.label) } }
-    val results = remember(visible, query) { searchApps(visible, query, searchNames) }
     val searching = query.isNotBlank()
-    val recent = remember(visible, settings.showRecentInstalls) {
+
+    val hasWork = remember(visible) { visible.any { it.isWorkProfile } }
+    var showWork by remember { mutableStateOf(false) }
+    // The tab choice only counts while there is a work profile to show.
+    val workTab = hasWork && showWork
+    val inProfile = remember(visible, hasWork, workTab) {
+        if (hasWork) visible.filter { it.isWorkProfile == workTab } else visible
+    }
+
+    val sort = settings.drawerSort
+    var sortDialog by remember { mutableStateOf(false) }
+    // package -> (foreground ms over the last week, last time used). Only read when a sort needs it.
+    var stats by remember { mutableStateOf<Map<String, Pair<Long, Long>>>(emptyMap()) }
+    // Scrolling through the list is browsing, not typing: give the keyboard's half of the screen back.
+    val listDragged by listState.interactionSource.collectIsDraggedAsState()
+    LaunchedEffect(listDragged) {
+        if (listDragged) {
+            focusManager.clearFocus()
+            keyboard?.hide()
+        }
+    }
+    LaunchedEffect(sort, isActive) {
+        if (isActive && sort != DrawerSort.ALPHA) stats = withContext(Dispatchers.IO) { Graph.usage.sortStats() }
+    }
+    // Usage inside a work profile is invisible to us, so those apps count as 0 and stay
+    // alphabetical. sortedByDescending is stable: ties keep their A–Z order.
+    val sorted = remember(inProfile, sort, stats) {
+        when (sort) {
+            DrawerSort.ALPHA -> inProfile
+            DrawerSort.MOST_USED -> inProfile.sortedByDescending { if (it.isWorkProfile) 0L else stats[it.packageName]?.first ?: 0L }
+            DrawerSort.RECENT -> inProfile.sortedByDescending { if (it.isWorkProfile) 0L else stats[it.packageName]?.second ?: 0L }
+        }
+    }
+    // Search ignores tab and sort: it looks through both profiles and ranks by match.
+    val results = remember(visible, sorted, query, searchNames) {
+        if (query.isBlank()) sorted else searchApps(visible, query, searchNames)
+    }
+    val recent = remember(inProfile, settings.showRecentInstalls) {
         if (!settings.showRecentInstalls) emptyList()
         else {
             val cutoff = System.currentTimeMillis() - DAY_MS
-            visible.filter { it.firstInstallTime >= cutoff && it.packageName != Graph.app.packageName }
+            inProfile.filter { it.firstInstallTime >= cutoff && it.packageName != Graph.app.packageName }
                 .sortedByDescending { it.firstInstallTime }
         }
     }
     // Number of list items that come before the alphabetical block (section labels + recent apps).
     val leadingItems = if (!searching && recent.isNotEmpty()) recent.size + 2 else 0
-    val letters = remember(visible, leadingItems) { letterIndex(visible, leadingItems) }
+    // Letters only mean something in an alphabetical list.
+    val letters = remember(sorted, sort, leadingItems) {
+        if (sort == DrawerSort.ALPHA) letterIndex(sorted, leadingItems) else emptyList()
+    }
 
     // The keyboard only ever opens on purpose: by the "open right away" setting, by swiping up on
     // the home screen, or by tapping the search bar. In every other case make sure it is closed.
@@ -124,7 +173,8 @@ fun DrawerScreen(
             keyboard?.hide()
         }
     }
-    LaunchedEffect(query) { listState.scrollToItem(0) }
+    // stats is a key too: when it arrives the list reorders, and a keyed list would follow the old top row.
+    LaunchedEffect(query, workTab, sort, stats) { listState.scrollToItem(0) }
     // Optional: open the app as soon as the search narrows down to exactly one.
     LaunchedEffect(results, query) {
         if (settings.autoLaunch && isActive && query.trim().length >= 2 && results.size == 1) onLaunch(results[0])
@@ -171,9 +221,25 @@ fun DrawerScreen(
             }
         }
 
+        // Tabs and sort. Chips and the sort text carry their own padding, so both edges land on 30dp.
+        if (!searching) {
+            Row(Modifier.fillMaxWidth().padding(start = 14.dp, end = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (hasWork) {
+                    TabChip("Personal", !workTab) { showWork = false }
+                    TabChip("Work", workTab) { showWork = true }
+                }
+                Spacer(Modifier.weight(1f))
+                T(
+                    "Sort: ${sort.label}",
+                    Modifier.press { sortDialog = true }.padding(horizontal = 12.dp, vertical = 8.dp),
+                    size = 13.sp, color = c.dim, maxLines = 1,
+                )
+            }
+        }
+
         var scrubbing by remember { mutableStateOf<Char?>(null) }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            val showIndex = !searching && letters.size > 5 && maxHeight > (letters.size * 15).dp
+            val showIndex = !searching && sort == DrawerSort.ALPHA && letters.size > 5 && maxHeight > (letters.size * 15).dp
 
             LazyColumn(Modifier.fillMaxSize(), state = listState) {
                 if (!searching && recent.isNotEmpty()) {
@@ -260,6 +326,12 @@ fun DrawerScreen(
             }
         }
     }
+
+    if (sortDialog) {
+        ChoiceDialog("Sort apps", DrawerSort.entries.map { it to it.label }, sort, { sortDialog = false }) { v ->
+            Graph.settings.update { it.copy(drawerSort = v) }
+        }
+    }
 }
 
 @Composable
@@ -293,7 +365,7 @@ private fun AppRow(
     ) {
         val name = if (hasColourGlyphs(app.label)) Modifier.weight(1f).monochrome() else Modifier.weight(1f)
         T(app.label, name, size = 20.sp, color = if (spent) c.faint else c.fg, maxLines = 1)
-        if (app.isWorkProfile) T("work", size = 12.sp, color = c.faint, maxLines = 1)
+        if (app.isWorkProfile) WorkBadge()
         if (limit != null && settings.showUsageInDrawer) {
             T("${formatDuration(used)} / ${formatMinutes(limit.minutes)}", size = 13.sp, color = if (spent) c.faint else c.dim, maxLines = 1)
         }

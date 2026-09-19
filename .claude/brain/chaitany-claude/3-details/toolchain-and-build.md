@@ -47,5 +47,8 @@ press clears them.
 
 ## Portability wart (open)
 The committed `org.gradle.java.home` path breaks a fresh clone on another machine until removed.
+**Building on another machine without editing tracked files:** override the pin on the command
+line, `./gradlew -Dorg.gradle.java.home=<a JDK 17–21 home> …`, and point at the SDK with
+`ANDROID_HOME` or a git-ignored `local.properties` (`sdk.dir=…`). Platform 36 must be installed.
 A portable fix would be Gradle daemon-JVM criteria + the foojay resolver (downloads a JDK); not
 done, and untested whether the 8.14 client even starts under JDK 25.

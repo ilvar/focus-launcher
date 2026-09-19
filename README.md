@@ -31,14 +31,23 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
   calendar API, so they only appear if the organisation managing the profile allows this app.
   When it does not, settings say so instead of showing nothing; sharing the work calendar with a
   personal Google account is the sanctioned way to get it onto the home screen.
-- Up to 5 "fast apps", as plain text.
+- Up to 5 "fast apps", as plain text. One that lives in a Work profile carries a small
+  briefcase outline after its name, drawn in the text colour: the launcher's one pictogram.
 - Two corner shortcuts (Phone / Camera by default). Long-press one to change it.
 - Everything you touch lights up softly and fades back (no ripples, no colour).
-- Gestures: swipe left = app drawer, swipe up = search, swipe down = notifications,
-  long-press empty space = settings, double tap = lock (optional).
+- Gestures: swipe left = app drawer, swipe right = the phone's web search (the Google search box
+  where there is one, like the page left of a stock home screen), swipe up = app search,
+  swipe down = notifications, long-press empty space = settings, double tap = lock (on by default;
+  needs the timer service). The swipes other than the drawer's, and the double tap, can be
+  switched off in Settings → Gestures.
 
 **App drawer** (page 2)
 - Search bar, "installed in the last 24 hours", then every app alphabetically with an A–Z scrubber.
+- "Sort" under the search bar reorders the list: A–Z, most used, or most recently used (last 7
+  days, from Android's own usage totals). The scrubber only shows for A–Z.
+- With an Android Work profile the list splits into **Personal** and **Work** tabs. Search always
+  looks through both. Usage inside a Work profile is invisible to apps, so the Work tab stays
+  alphabetical.
 - Long-press an app: Uninstall · App info · Move to fast apps · App timer · Rename · Hide app.
 
 **App timers**
@@ -105,7 +114,7 @@ Requirements: JDK 17–21 and the Android SDK with platform 36.
 ./gradlew :app:assembleDebug      # debuggable build
 ./gradlew :app:assembleRelease    # R8-optimised build (~1.3 MB), signed with the debug key
 ./gradlew :app:testDebugUnitTest  # usage state machine + emoji stripping
-adb install -r app/build/outputs/apk/release/app-release.apk
+adb install --user 0 -r app/build/outputs/apk/release/app-release.apk   # --user 0: personal profile only, not a work profile
 adb shell cmd package compile -m speed-profile -f com.focus.launcher   # optional: precompile right away
 ```
 

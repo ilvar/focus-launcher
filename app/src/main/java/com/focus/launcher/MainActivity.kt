@@ -5,12 +5,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +24,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,9 +38,11 @@ import com.focus.launcher.ui.drawer.AppMenu
 import com.focus.launcher.ui.drawer.DrawerScreen
 import com.focus.launcher.ui.home.HomeScreen
 import com.focus.launcher.ui.launchApp
+import com.focus.launcher.ui.openWebSearch
 import com.focus.launcher.ui.theme.FocusTheme
 import com.focus.launcher.ui.theme.applyFocusWindow
 import com.focus.launcher.util.Perms
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -74,6 +83,12 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
     val pendingReview by Graph.state.pendingReview.collectAsStateWithLifecycle()
 
     val pager = rememberPagerState { 2 }
+    // The drawer counts as open from the moment a swipe is let go towards it: not halfway through
+    // the drag, where the finger can still turn back (the keyboard used to pop up and drop again),
+    // and not only once the page has settled (the keyboard would come late). So the keyboard
+    // rises while the page glides in, and falls while it glides out.
+    val pagerDragged by pager.interactionSource.collectIsDraggedAsState()
+    val drawerActive by remember { derivedStateOf { if (pagerDragged) pager.settledPage == 1 else pager.targetPage == 1 } }
     var query by remember { mutableStateOf("") }
     var menuApp by remember { mutableStateOf<AppEntry?>(null) }
     var wantsSearchFocus by remember { mutableStateOf(false) }
@@ -130,7 +145,26 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
 
     HorizontalPager(
         state = pager,
-        modifier = Modifier.fillMaxSize(),
+        // There is no page to the left of home, so the pager ignores that swipe. Watch it on the
+        // way down (Initial pass, nothing consumed) and open the web search instead, the way the
+        // page left of a stock home screen does.
+        modifier = Modifier.fillMaxSize().pointerInput(settings.swipeRightSearch) {
+            if (!settings.swipeRightSearch) return@pointerInput
+            val threshold = 72.dp.toPx()
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                if (pager.currentPage != 0 || pager.isScrollInProgress) return@awaitEachGesture
+                while (true) {
+                    val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
+                    if (!change.pressed) break
+                    val moved = change.position - down.position
+                    if (moved.x > threshold && moved.x > abs(moved.y) * 2) {
+                        openWebSearch(context)
+                        break
+                    }
+                }
+            }
+        },
         beyondViewportPageCount = 1,
         key = { it },
     ) { page ->
@@ -175,7 +209,7 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
                     today = today,
                     query = query,
                     onQueryChange = { query = it },
-                    isActive = pager.currentPage == 1,
+                    isActive = drawerActive,
                     wantsSearchFocus = wantsSearchFocus,
                     onSearchFocusHandled = { wantsSearchFocus = false },
                     onLaunch = launch,

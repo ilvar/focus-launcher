@@ -69,6 +69,7 @@ import com.focus.launcher.service.FocusAccessibilityService
 import com.focus.launcher.ui.components.AppPickerDialog
 import com.focus.launcher.ui.components.T
 import com.focus.launcher.ui.components.VSpace
+import com.focus.launcher.ui.components.WorkBadge
 import com.focus.launcher.ui.components.hasColourGlyphs
 import com.focus.launcher.ui.components.monochrome
 import com.focus.launcher.ui.components.press
@@ -303,17 +304,23 @@ fun HomeScreen(
                 )
             } else {
                 for (app in favorites) {
-                    T(
-                        app.label,
+                    Row(
                         Modifier
-                            .then(if (hasColourGlyphs(app.label)) Modifier.monochrome() else Modifier)
                             .press(onLongClick = { onAppMenu(app) }) { onLaunch(app) }
                             .padding(vertical = favoritePadding, horizontal = 12.dp),
-                        size = favoriteSize,
-                        color = if (app.key in spent) c.faint else c.fg,
-                        weight = FontWeight.Normal,
-                        maxLines = 1,
-                    )
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        T(
+                            app.label,
+                            Modifier.weight(1f, fill = false).then(if (hasColourGlyphs(app.label)) Modifier.monochrome() else Modifier),
+                            size = favoriteSize,
+                            color = if (app.key in spent) c.faint else c.fg,
+                            weight = FontWeight.Normal,
+                            maxLines = 1,
+                        )
+                        // Same marker as in the drawer, sized with the name next to it.
+                        if (app.isWorkProfile) WorkBadge(Modifier.padding(start = 10.dp), side = (favoriteSize.value * 0.62f).dp)
+                    }
                 }
             }
 

@@ -31,6 +31,17 @@
 | Three-tier brain, mandatory, updated after every task | This directory |
 | **The brain is public** (2026-09-19: "no need to make it private") | Committed with the project. Consequence: server, device and phone specifics live only in git-ignored `private/` |
 
+## Asked for by a contributor (2026-09-19, on a clone; not yet seen by the owner)
+| Request | What was done |
+| --- | --- |
+| Double tap locks the screen | Existed already; the default is now on. Needs the accessibility service; without it a toast, and Settings → Gestures points to Setup |
+| "Swiping left should open the Google search widget" | Read as the page *left* of home on a stock launcher: the finger moves right on the home page. Opens the phone's search app by intent; toggle in Settings → Gestures. Finger-left stays the drawer. No embedded widget: it would break "no icons, black and white" |
+| Sort the drawer | A–Z (default) / Most used / Recent (7 days), chosen from "Sort: …" under the search bar |
+| Separate work apps | Personal / Work tabs in the drawer, shown only when a work profile has launchable apps; search covers both |
+| Work apps carry a work **icon**, not the word | Asked twice ("not the words work"). `WorkBadge`: a drawn, monochrome briefcase outline, drawer rows and pinned apps. The one exception to "no icons"; still no colour, no assets |
+| Keyboard opens by itself in the drawer, as a toggle, smooth and not buggy | The toggle existed (Settings → App drawer → "Open the keyboard right away", default off). Reworked when the drawer counts as open; dragging the list hides the keyboard |
+| "Do not push or commit anything" | Changes were left in the working tree |
+
 ## How apps are classified (asked twice, so keep the answer short and first)
 Android's "social" label also covers mail, browsers and messengers, so it is not trusted alone.
 Order: curated social list → Play's game label → curated/labelled video (limit off by default) →
@@ -48,3 +59,11 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
 7. No GitHub Release with the APK attached.
 8. The accessibility service is not enabled on his phone, so mid-session locking is untested.
 9. One observation about the main site's configuration, unrelated to Focus: `private/server.md`.
+10. **The work marker is now a drawn briefcase glyph**, at the contributor's repeated request: the
+    first exception to the owner's "no icons". Owner's call whether it stays.
+11. **"Swipe left = Google search" was interpreted** as finger-right (the page left of home).
+    Confirm; the other reading would take the drawer's gesture.
+12. Whether the owner wants the contributor's changes and the new defaults (double tap to lock on,
+    swipe right on) at all: he has not seen them.
+13. Drawer tabs: pausing / resuming the work profile from the drawer is not implemented, and the
+    tabs cannot be swiped between (the horizontal swipe belongs to the pager).

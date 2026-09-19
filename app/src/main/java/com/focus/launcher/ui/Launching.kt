@@ -2,7 +2,9 @@ package com.focus.launcher.ui
 
 import android.app.Activity
 import android.app.ActivityOptions
+import android.app.SearchManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
@@ -11,6 +13,7 @@ import com.focus.launcher.BlockActivity
 import com.focus.launcher.Graph
 import com.focus.launcher.data.AppEntry
 import com.focus.launcher.data.LaunchAnimation
+import com.focus.launcher.util.Perms
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -92,6 +95,18 @@ fun launchApp(context: Context, scope: CoroutineScope, entry: AppEntry) {
             start(context, entry)
         }
     }
+}
+
+/** The phone's web search box (the Google app where there is one), as the page left of home. */
+fun openWebSearch(context: Context) {
+    val ok = Perms.start(
+        context,
+        Intent(SearchManager.INTENT_ACTION_GLOBAL_SEARCH).setPackage("com.google.android.googlequicksearchbox"),
+        Intent(SearchManager.INTENT_ACTION_GLOBAL_SEARCH),
+        Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, ""),
+        options = launchOptions(context),
+    )
+    if (!ok) Toast.makeText(context, "No search app found", Toast.LENGTH_SHORT).show()
 }
 
 /** Opens [entry] right now, no questions asked. Used once the gate (or the wall) has said yes. */

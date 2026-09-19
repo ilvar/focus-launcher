@@ -91,3 +91,69 @@ matching its own text; the documented regex now uses bracket forms so it cannot 
 **Open:** unchanged (see `2-overview/user-and-decisions.md`). The app and the site were not
 touched. Note for later: a pattern audit only finds what it knows to look for; the rule that
 keeps this brain clean is the writing rule in `.claude/CLAUDE.md`, not the grep.
+
+## 2026-09-19 · Gestures and drawer: five requests from a contributor
+
+**Asked** (by a contributor working on a clone of the repo, not by the owner): double tap locks
+the screen; "swiping left should open the Google search widget"; sort the drawer by usage; keep
+work apps apart; a "work logo" on pinned work apps. Also: "do not push or commit anything", and
+"update the brain too".
+
+**Done** (left uncommitted in the working tree):
+1. Double tap to lock existed (`Settings.doubleTapLock`, accessibility service,
+   `GLOBAL_ACTION_LOCK_SCREEN`); its default is now `true`. An existing install keeps its stored
+   value, so there it is switched on in Settings → Gestures.
+2. Swipe right on the home page (the page *left* of home, as on a stock launcher) opens the
+   phone's web search: `Settings.swipeRightSearch` (default on, toggle in Gestures), a
+   non-consuming `PointerEventPass.Initial` watcher on the pager, `openWebSearch()` with three
+   intent fallbacks. Finger-left stays the drawer. No embedded AppWidget: it would bring colour
+   and icons onto the home screen.
+3. Drawer sort A–Z / Most used / Recent (`DrawerSort`, `Settings.drawerSort`, "Sort: …" under the
+   search bar), ordered by `UsageRepository.sortStats()` = the system's 7-day aggregates. The A–Z
+   scrubber shows only for A–Z; work-profile entries count as zero.
+4. Drawer Personal / Work tabs, only when a work profile has launchable apps; search covers both.
+   `TabChip` moved from `ReviewScreen.kt` to `ui/components/Basics.kt` and is shared.
+5. Pinned work apps on the home screen carry the small dim word "work", as drawer rows do. The
+   request said "logo"; the settled no-icons rule was kept.
+Brain and README updated; `3-details/toolchain-and-build.md` gained how to build on a machine
+without the pinned JDK without editing tracked files.
+
+**Verified:** on the finished tree: `:app:testDebugUnitTest` 19 tests, 0 failures; `:app:lintDebug` 0 errors (9 "newer version available" warnings, expected); `:app:assembleRelease` builds (1.37 MB). Built on a machine without the pinned JDK, using the command-line override in `3-details/toolchain-and-build.md`; no tracked build file was changed.
+**Installed** on the contributor's own phone afterwards. It had the website (`dist`) build, so
+`adb install -r` failed with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, as `signing-keys.md` predicts;
+they were asked, agreed to lose Focus's data, and the `release` build went on after an uninstall.
+Opened by intent (Setup page); the process started and logged no crash. No special access was
+granted over adb.
+The first install used plain `adb install`, which also put Focus into the phone's work profile;
+reinstalled with `--user 0` and confirmed per user (lesson recorded).
+**Not verified:** nothing was exercised on a device yet: the swipe-right gesture next to the pager's own
+drag, which search app each intent reaches, the lock, the tabs with a real work profile, the two
+usage orders.
+
+**Open:** the owner has not seen any of this, including the two new defaults. "Swipe left" read
+as finger-right is an interpretation to confirm. The contributor may still want a glyph rather
+than the word "work". Pausing / resuming the work profile from the drawer is not implemented;
+the tabs cannot be swiped between. See `2-overview/user-and-decisions.md` → "Open decisions"
+10–13.
+
+## 2026-09-19 · Work icon, keyboard in the drawer (same contributor, on their phone)
+
+**Asked:** work apps should have a work icon, "not the words work"; a setting for the keyboard to
+come up automatically in the app drawer, "not buggy and smooth". Also: install to the personal
+profile only, and give the install command.
+
+**Done:** `WorkBadge` (drawn briefcase outline, `Basics.kt`) replaces the word on drawer rows and
+pinned apps. The keyboard toggle already existed (`autoKeyboard`, Settings → App drawer); the bug
+was the signal behind it: `currentPage == 1` flips mid-drag. `MainActivity` now passes
+`drawerActive` (dragged → `settledPage`, else `targetPage`), and dragging the list hides the
+keyboard. Details in `3-details/ui-system.md`. Install commands now use `--user 0` everywhere.
+
+**Verified:** 19 unit tests pass, lint 0 errors, release build; installed with
+`adb install --user 0 -r` and confirmed present for user 0 only.
+Afterwards the contributor could not find the keyboard toggle (it sat only under App drawer →
+Search). The same toggle now also appears on the Gestures page ("Keyboard opens with the
+drawer"), and the main settings page names the keyboard in both rows' subtitles. Same lesson as
+before: a setting alone is not discoverable. Rebuilt (lint 0 errors), reinstalled for user 0.
+**Not verified:** how the keyboard timing and the badge look and feel on the device; that is the
+contributor's to judge. **Open:** unchanged, plus decision 10 (the icon exception).
+

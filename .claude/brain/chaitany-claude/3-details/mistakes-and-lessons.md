@@ -66,6 +66,9 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   keyboard: `focusProperties { canFocus = … }` + `stateAlwaysHidden`.
 - Newest AndroidX may need a newer compileSdk/AGP than installed: read the AAR metadata first.
 - Non-home activities started from adb do not join the home task (different activity types).
+- **`adb install` without `--user` installs for every user, a work profile included.** Focus then
+  shows up inside the work profile too, which the phone's owner noticed at once. → Always
+  `adb install --user 0 …`; check with `pm list packages --user <id> com.focus.launcher`.
 - Work-profile calendars/usage are blocked by policy for personal-side apps; respect it.
 
 ## Web
