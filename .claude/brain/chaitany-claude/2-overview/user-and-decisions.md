@@ -36,7 +36,8 @@
 | **The brain holds everything done so far** (2026-09-19: "update the brain [with] what you have done up till this point") | Not only the last task: every feature and area of work has a home in some tier, checked against the code. How: `3-details/brain-upkeep.md` |
 | **Ship the collaborator's work** (2026-09-19: "there are new commit check them and push the new app in my phone as well as on the server download") | PR #1 was reviewed, built, released as **1.1**, installed on his phone and published on the site. "Check them" = a review first (`3-details/ci-and-releases.md`). The points in it that touch his earlier decisions stay open below (10–14): shipping was asked for, those were not answered |
 | **A release page with the APK** | GitHub releases, tag per version, the same APK as the website with its checksum; 1.0 and 1.1 are there |
-| **CI that builds an APK on GitHub** | Tests, lint and an APK on every push and pull request. Official, signed APKs stay local: the key is not on GitHub (his call to change, open decision 16) |
+| **CI that builds an APK on GitHub** | Tests, lint and an APK on every push and pull request; that APK is signed with a throwaway key |
+| **The site gets the latest APK when CI has built it** (2026-09-20), **automatically, with his approval** (chosen from three options) | `publish.yml`: signs with the real key, uploads, creates the release, after he approves the run. Keys live in a protected GitHub environment; the server upload key can only deliver site files. He switches it on himself with `site/setup-ci-publishing.sh` |
 
 ## Asked for by a contributor (2026-09-19, on a clone); shipped in 1.1 at the owner's request
 | Request | What was done |
@@ -84,6 +85,6 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
     phone. On the owner's phone Focus is therefore also present in the profiles besides his own.
     Removing it there is a per-user uninstall: reported, waiting for his yes. Installs now use
     `--user 0`.
-16. **Signing releases in CI**: not done. It would put the release key into GitHub secrets,
-    usable by everyone with write access. Offered with the safer variant (protected environment,
-    owner as required reviewer); his call.
+16. **CI publishing waits for one command from him**: `site/setup-ci-publishing.sh` (it handles
+    his signing key and a new server key, so an agent must not run it). Until then new versions
+    are still published by hand. After it: the first Publish run needs his Approve click.

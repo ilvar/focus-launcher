@@ -42,7 +42,7 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 | Signing key / its password | outside the repo / both named in `keystore.properties` (ignored) |
 | Deploy target | `site/deploy.env` (ignored) |
 | Server, device and phone specifics | `private/` (ignored) |
-| CI · release check | `.github/workflows/build.yml` · `.github/workflows/verify-release.yml` |
+| CI · publish · release check | `.github/workflows/` `build.yml` · `publish.yml` · `verify-release.yml` |
 | Live site · repo · releases | https://how2me.me/focusapp/ · https://github.com/patelchaitany/focus-launcher · `/releases` |
 
 ## Commands
@@ -63,7 +63,9 @@ site, and on the GitHub release page next to 1.0. It contains a collaborator's m
 (drawer sort and Personal / Work tabs, swipe right = web search, a drawn work badge, today's
 screen time in words instead of the 24-hour bar on home). The owner asked for it to be shipped;
 the points in it that touch his earlier decisions still wait for his word (open decisions 10–14).
-CI builds every push and pull request; official APKs are still built and signed locally.
+CI builds every push and pull request. **CI publishing** (site + release page, after the owner's
+approval) is built but off until he runs `site/setup-ci-publishing.sh`; agents never run it.
+Versions are `<base>.<commit count>` from 2026-09-20 on.
 The accessibility service has **not been enabled** on the phone, so mid-session locking and double
 tap to lock are untested there. Google Search Console not done. **No LICENSE** (owner to decide).
 The brain is committed and public, and was fact-checked against the code, the repo and the live

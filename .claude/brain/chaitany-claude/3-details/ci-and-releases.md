@@ -23,15 +23,66 @@ Asked for by the owner on 2026-09-19: "have release page where we have the apk a
   key. The `release` build type uses the debug signing config, and on a runner that is a
   throwaway key made for that run. So a CI APK is for trying a change: it cannot be installed over
   the official APK, nor the official one over it, and two CI APKs cannot update each other.
-- **Why the release key is not on GitHub.** A repository secret can be used by any workflow run
-  from a branch of the repo, so everyone with write access could sign anything as Focus. The repo
-  has a collaborator who can merge. Official APKs are therefore built and signed on the owner's
-  machine. Moving signing into CI is possible (keystore + passwords as secrets, a protected
-  `release` environment with the owner as required reviewer), and it is the owner's decision.
+- **This workflow never sees the release key.** A plain repository secret can be used by any
+  workflow run from a branch of the repo, so everyone with write access could sign anything as
+  Focus, and the repo has a collaborator who can merge. The real key is only available to the
+  Publish workflow below, through a protected environment.
 - Action versions were looked up, not remembered (2026-09-19: `actions/checkout@v7`,
   `actions/setup-java@v6`, `actions/upload-artifact@v7`, `gradle/actions/setup-gradle@v6`):
   `gh api repos/<owner>/<repo>/tags --jq '.[].name'`. With this token the `git/ref/tags/<tag>`
   endpoint answers 404 for other people's repositories; the `/tags` list works.
+
+## Publishing from CI: `.github/workflows/publish.yml` (owner's decision, 2026-09-20)
+Asked: "make sure to have an apk updated with the latest apk when ci finish creating apk on the
+site". Offered three ways (automatic with his approval / fully automatic / keep manual); he chose
+**automatic, with his approval**.
+- **Trigger:** a push to `main` that touches `app/**`, `gradle/**`, `*.gradle.kts`,
+  `gradle.properties`, `site/**` or the workflow itself; or by hand. Brain-only pushes do not.
+- **The gate:** the job runs in the GitHub environment `release`: required reviewer = the owner,
+  deployments from `main` only. GitHub hands the environment's secrets to a run only after he
+  approves it ("Review deployments" → Approve). A collaborator can merge, and can even edit the
+  workflow, but cannot make GitHub release those secrets.
+- **Switch:** repository variable `FOCUS_PUBLISHING`. Until it is `on` the job is skipped, so no
+  empty "deployments" appear. `site/setup-ci-publishing.sh` sets it last.
+- **Steps:** version → (tests, lint, `assembleDist` with a `keystore.properties` written from the
+  secrets and deleted by a trap) → the APK must carry the release certificate, the expected
+  version and **no INTERNET permission** → `site/build.sh` around that APK → upload → download
+  again and compare SHA-256, page must answer 200 → IndexNow → `gh release create` with the APK
+  and `.sha256`, generated notes → summary.
+- **One version = one binary.** If `v<version>` already exists (a re-run, or a release made by
+  hand), its APK is downloaded and put on the site again; nothing new is signed.
+  `site/deploy.sh` has the mirror-image guard: it refuses to upload an APK that differs from an
+  existing release of the same version.
+- Releases created with the workflow's own token do not start other workflows, so
+  `verify-release.yml` does not fire for them: the same certificate check is inside the job.
+- **The upload key is not a login.** A fresh ed25519 key whose `authorized_keys` line on the
+  server reads `restrict,command="…/focus-deploy/receive.sh"`: whatever the client asks for,
+  `site/server/receive.sh` runs. It reads one tar archive (≤ 40 MB) from stdin and accepts only
+  plain files, flat names, a short list of extensions, an `index.html`, and an APK that starts
+  with `PK` and is ≥ 300 KB; files are moved into place one by one, the page last; older APKs
+  stay. Tested on the server's OS with 15 archives (valid, `../`, absolute path, sub-directory,
+  symlink, hard link, bad extension, dot file, duplicate name, no index, tiny or fake APK, not a
+  tar, empty, oversized): 1 installed, 14 refused with nothing written.
+- The server's address and the host key are secrets too (`FOCUS_DEPLOY_TARGET`,
+  `FOCUS_DEPLOY_KNOWN_HOSTS`), the host part is masked in the log, and ssh runs with
+  `StrictHostKeyChecking=yes` against the key the owner's machine already trusts.
+- **`site/setup-ci-publishing.sh` is run by the owner, never by an agent.** It handles the release
+  key, its passwords and a new server key: entering credentials anywhere is not an agent's job,
+  even when asked. The agent writes and tests the script (the `authorized_keys` edit was tested in
+  a sandbox home: other lines untouched, a second run replaces our line, `--off` removes it; mode
+  600; dated backup). `--off` deletes the secrets, the variable, the server key and the receiver.
+- Not yet proven: that GitHub's runners can reach the server's SSH port (a cloud firewall rule
+  could block them). The first approved run shows it at the "Upload to the server" step.
+
+## Version numbers (since 2026-09-20)
+`val baseVersion = "1.1"` in `app/build.gradle.kts` is the human part. The build number is
+`git rev-list --count HEAD`, read with `providers.exec` (configuration-cache safe):
+`versionName = "<base>.<count>"`, `versionCode = max(count, 2)` (1.1 shipped with code 2). A build
+from a newer commit always installs over an older one. Consequences: CI checks out with
+`fetch-depth: 0` (a shallow clone would count 1); `site/build.sh` and the CI artifact name read
+the version **out of the APK** with `aapt2` instead of parsing the Gradle file; brain-only
+commits make gaps in the numbers, which is harmless; a site-only change publishes a new number
+with the same code. The publish job refuses a build number lower than one already released.
 
 ## The release page
 https://github.com/patelchaitany/focus-launcher/releases : one release per published version,
@@ -55,7 +106,7 @@ has to be on `main` before the first release is published.
 - Publishing two releases within seconds produced only one `release` run; the other was checked
   by hand. After cutting a release, look at the run list rather than assuming.
 
-## Cutting a release (what was done for 1.1)
+## Cutting a release by hand (what was done for 1.1; CI publishing replaces steps 5-6)
 ```bash
 # 1. bump versionCode / versionName in app/build.gradle.kts, then
 ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleRelease :app:assembleDist

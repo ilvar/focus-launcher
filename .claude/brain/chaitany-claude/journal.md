@@ -319,3 +319,41 @@ That run's predecessor, the build of the 1.1 release commit itself, had been can
 `cancel-in-progress: true` when the next push arrived; runs on `main` are no longer cancelled.
 
 **Open:** decisions 10–16 in `2-overview/user-and-decisions.md`.
+
+## 2026-09-20 · Publishing from CI, with the owner's approval
+
+**Asked:** "did you created an CI? And make sure to have an apk updated with the latest apk when
+ci finish creating apk on the site."
+
+**Answered first:** yes: `Build` and `Verify release` exist and are green; the site already served
+the newest code (1.1, no app change since). Then the catch: CI's APK is signed with a throwaway
+key, so copying it to the site would break updates for everyone; doing it properly means the real
+signing key and a server upload key on GitHub. That is the owner's decision, so he was asked once,
+with three options. He chose **automatic, with his approval**.
+
+**Built:**
+- `.github/workflows/publish.yml`: runs in the protected environment `release` (required
+  reviewer: the owner; `main` only); tests, lint, signs, checks certificate / version / no INTERNET
+  permission, builds the site, uploads, re-downloads and compares, pings IndexNow, creates the
+  release. Skips itself until the repository variable `FOCUS_PUBLISHING` is `on`.
+- `site/server/receive.sh`: the forced command of the upload key on the server. Tested there in a
+  throwaway directory with 15 archives: the valid one installed, 14 hostile or broken ones refused
+  with nothing written.
+- `site/setup-ci-publishing.sh` (+ `--off`): the owner's one-time switch. Creates the environment,
+  stores the signing secrets, makes and installs the restricted upload key, proves it cannot get a
+  shell, stores it, flips the variable. **Not run by me**: it handles his keys. Its
+  `authorized_keys` edit was tested in a sandbox home.
+- Versions are now `<baseVersion>.<commit count>` (a test build came out as 1.1.13, code 13), so
+  every published build installs over the previous one without anyone bumping a number.
+  `site/build.sh` and the CI artifact name read the version out of the APK.
+- One version = one binary: the publish job reuses an existing release's APK; `site/deploy.sh`
+  refuses to upload a different APK for a released version.
+- README, Tier 1–3, decisions updated (`3-details/ci-and-releases.md` has the design).
+
+**Verified:** 19 tests, lint 0 errors, release build with the new version scheme; `site/build.sh`
+with an explicit APK; all three workflow files parse; both shell scripts pass `bash -n`; the
+receiver and the key-list edit as described above. Went in as a pull request so `Build` ran on it.
+**Not verified, cannot be until the owner runs the setup:** the publish job end to end, including
+whether GitHub's runners can reach the server's SSH port.
+
+**Open:** decision 16 (run the setup script; approve the first run).
