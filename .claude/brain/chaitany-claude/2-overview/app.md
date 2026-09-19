@@ -1,0 +1,57 @@
+# Tier 2 · The app
+
+Kotlin 2.3.21, Compose BOM 2026.06.01 (foundation + ui + animation only, **no Material**), AGP
+8.13.2, Gradle 8.14.3, compileSdk/targetSdk 36, minSdk 26. One process; activities and the
+accessibility service share state through `Graph` (a hand-rolled service locator).
+
+## Shape
+```
+FocusApp, Graph              Application + singletons (settings, apps, usage, limits, state)
+MainActivity                 HorizontalPager: page 0 HomeScreen, page 1 DrawerScreen
+SettingsActivity             "Focus Settings", also the LAUNCHER entry; routes via --es route <name>
+ReviewActivity               Today / Week review
+BlockActivity                the "Time's up" wall AND the "open anyway?" consent screen
+data/   Settings(+Store)     one immutable data class, JSON in SharedPreferences, StateFlow
+        AppRepository        LauncherApps scan, label cache, categories, launch/uninstall
+        UsageRepository      usage events → per-app per-hour time; DayAccumulator; day JSON cache
+        ForegroundTracker    pure state machine (unit tested)
+        LimitManager         which apps are limited; continue/bypass passes; consent; weekly tally
+        WeekSummary          aggregation for the review
+        CalendarRepository   calendars, one-calendar agenda (cached), emoji stripping
+        AppState             pending weekly review, reflection notes
+service/ FocusAccessibilityService   mid-session enforcement, global actions (notifications, lock)
+         WeeklyReview (+Receiver)    inexact weekly alarm, notification
+ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.kt (the launch gate)
+```
+
+## Features and where they live
+| Feature | Where |
+| --- | --- |
+| Ring clock (battery or day), tap/long-press action | `ui/home/HomeWidgets.kt` `HomeClock`, `ClockTapDialog.kt` |
+| 24-hour screen time bar | `HomeWidgets.kt` `DayBar`, `ScreenTimeWidget` |
+| Home layout that always fits | `ui/home/HomeScreen.kt` (`Fit` options, measured constants) |
+| Drawer: search ranking, recent installs, A–Z scrubber | `ui/drawer/DrawerScreen.kt` |
+| Long-press menu, timer dialog | `ui/drawer/AppMenu.kt` |
+| Launch gate (wall / consent before an app opens) | `ui/Launching.kt` `launchApp`, `start`, `launchOptions` |
+| Wall + consent UI | `ui/block/BlockScreen.kt`, `BlockActivity.kt` |
+| Settings pages (12 routes) | `ui/settings/*` ; routes: main setup home fastapps drawer hidden timers timerapps weekly appearance gestures about |
+| Theme, light-up press feedback, edge-to-edge, refresh rate | `ui/theme/Theme.kt` |
+
+## Things that are easy to get wrong
+- **Timers work in two layers.** The launcher's gate needs only usage access. Mid-session locking
+  needs the accessibility service. Keep both working independently.
+- **Settings is one JSON blob**; `fromJson` must tolerate missing keys (older installs).
+- **`DayUsage.CACHE_VERSION`** must be bumped whenever the usage computation changes.
+- **Per-resume work is multiplied ~100×/day.** Anything added to the resume path or a timer must
+  be incremental or event-driven.
+- **`TRIM_MEMORY_UI_HIDDEN` fires on every app launch**; never clear caches there.
+- Compose lint is strict here: no `Locale.getDefault()` or `StateFlow.value` in composables
+  (use `currentLocale()` and `collectAsStateWithLifecycle`).
+
+## Quality bar
+19 unit tests pass; `lintDebug` = 0 errors (remaining warnings are "newer version available",
+deliberate: newer AndroidX needs compileSdk 37 + AGP 9.1). Release APK ≈ 1.3 MB.
+
+## Tier 3 pointers
+`usage-tracking.md` · `app-classification.md` · `timers-wall-consent.md` · `ui-system.md` ·
+`calendar.md` · `performance.md` · `toolchain-and-build.md` · `mistakes-and-lessons.md`
