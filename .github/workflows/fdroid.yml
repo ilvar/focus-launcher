@@ -106,8 +106,6 @@ jobs:
           git clone --quiet --depth=1 https://gitlab.com/fdroid/fdroiddata.git "$RUNNER_TEMP/fdroiddata"
           git clone --quiet --depth=1 https://gitlab.com/fdroid/fdroidserver.git "$RUNNER_TEMP/fdroidserver"
           cp "$RUNNER_TEMP/recipe/$APP_ID.yml" "$RUNNER_TEMP/fdroiddata/metadata/$APP_ID.yml"
-          # The container works as its own user; let it write where it has to.
-          chmod -R a+rwX "$RUNNER_TEMP/fdroiddata" "$RUNNER_TEMP/fdroidserver"
 
       - name: readmeta, rewritemeta, checkupdates, lint${{ inputs.build && ', build' || '' }}
         env:
@@ -125,11 +123,20 @@ jobs:
           echo "== fdroid lint";          fdroid lint "$APP_ID"
           if [ "$BUILD" = "true" ]; then echo "== fdroid build"; fdroid build --verbose "$APP_ID"; fi
           EOS
+          image=registry.gitlab.com/fdroid/fdroidserver:buildserver
+          docker pull --quiet "$image"
+          # F-Droid's tools replace files and set their timestamps, which only a file's owner may do.
+          # So for the time of the run the two folders belong to the container's user.
+          owner=$(docker run --rm -u vagrant --entrypoint /bin/sh "$image" -c 'echo "$(id -u):$(id -g)"')
+          sudo chown -R "$owner" "$RUNNER_TEMP/fdroiddata" "$RUNNER_TEMP/fdroidserver"
+          status=0
           docker run --rm -u vagrant --entrypoint /bin/bash \
             -e APP_ID -e BUILD \
             -v "$RUNNER_TEMP/fdroiddata:/build:z" \
             -v "$RUNNER_TEMP/fdroidserver:/home/vagrant/fdroidserver:Z" \
-            registry.gitlab.com/fdroid/fdroidserver:buildserver /build/run-checks.sh
+            "$image" /build/run-checks.sh || status=$?
+          sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/fdroiddata" "$RUNNER_TEMP/fdroidserver"
+          exit $status
 
       - name: What F-Droid's tools made of the recipe
         if: always()
