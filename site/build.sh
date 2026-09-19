@@ -57,7 +57,7 @@ app = {
     'featureList': [
         'Text-only, black and white home screen without icons',
         'Daily time limits that lock social media apps and games',
-        'Screen time shown as a 24-hour bar on the home screen',
+        'Today\'s screen time in plain words on the home screen, hour by hour in the review',
         'Weekly screen time review',
         'App search, rename and hide',
         'No internet permission, no account, no ads',
