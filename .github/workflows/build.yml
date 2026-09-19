@@ -49,9 +49,12 @@ jobs:
 
       - name: Name the APK and write the summary
         id: apk
+        env:
+          # For a pull request GITHUB_SHA is the temporary merge commit; name the APK after the real one.
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           version=$(grep -E '^\s*versionName\s*=' app/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
-          name="focus-launcher-${version}-ci-${GITHUB_SHA::7}.apk"
+          name="focus-launcher-${version}-ci-${HEAD_SHA::7}.apk"
           mkdir -p out
           cp app/build/outputs/apk/release/app-release.apk "out/${name}"
           (cd out && sha256sum "${name}" > "${name}.sha256")
@@ -59,7 +62,7 @@ jobs:
           {
             echo "### ${name}"
             echo ""
-            echo "- version ${version}, commit \`${GITHUB_SHA::7}\`, $(stat -c %s "out/${name}") bytes"
+            echo "- version ${version}, commit \`${HEAD_SHA::7}\`, $(stat -c %s "out/${name}") bytes"
             echo "- sha256 \`$(cut -d' ' -f1 "out/${name}.sha256")\`"
             echo "- Signed with a throwaway CI key: for trying out only. It cannot update, or be updated by, the official APK from the website or the release page."
           } >> "$GITHUB_STEP_SUMMARY"

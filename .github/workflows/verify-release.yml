@@ -39,18 +39,26 @@ jobs:
 
       - name: Signed with the release key, and matching their checksums
         run: |
-          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+          if [ -z "$apksigner" ]; then echo "::error::apksigner not found under ANDROID_HOME=$ANDROID_HOME"; exit 1; fi
+          echo "using $apksigner"
           status=0
           shopt -s nullglob
           apks=(assets/*.apk)
           if [ ${#apks[@]} -eq 0 ]; then echo "::error::no APK attached to this release"; exit 1; fi
           for apk in "${apks[@]}"; do
             name=$(basename "$apk")
-            cert=$("$apksigner" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')
-            if [ "$cert" = "$RELEASE_CERT_SHA256" ]; then
+            if ! out=$("$apksigner" verify --print-certs "$apk" 2>&1); then
+              echo "$out"; echo "::error::$name does not verify"; status=1; continue
+            fi
+            # The wording before "certificate" differs between apksigner versions
+            # ("Signer #1", "Signer (minSdkVersion=24, maxSdkVersion=...)"), so match on the rest.
+            echo "$out" | grep -i "certificate" || true
+            certs=$(printf '%s\n' "$out" | sed -n 's/.*certificate SHA-256 digest: *//p' | sort -u)
+            if [ "$certs" = "$RELEASE_CERT_SHA256" ]; then
               echo "ok   $name is signed with the release key"
             else
-              echo "::error::$name is signed with a different key ($cert)"; status=1
+              echo "::error::$name is not signed with the release key alone (found: ${certs:-nothing})"; status=1
             fi
             if [ -f "$apk.sha256" ]; then
               if (cd assets && sha256sum --check --status "$name.sha256"); then
@@ -59,6 +67,6 @@ jobs:
                 echo "::error::$name does not match $name.sha256"; status=1
               fi
             fi
-            echo "- \`$name\`: sha256 \`$(sha256sum "$apk" | cut -d' ' -f1)\`, signer \`$cert\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- \`$name\`: sha256 \`$(sha256sum "$apk" | cut -d' ' -f1)\`, signer \`${certs:-unknown}\`" >> "$GITHUB_STEP_SUMMARY"
           done
           exit $status

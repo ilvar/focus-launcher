@@ -267,3 +267,50 @@ and drawer; corrected to the branch's code (screen time line, swipe right, lock 
 sort, badge, keyboard).
 **Verified:** no conflict markers left; tests, lint and the release build re-run after the merge.
 
+
+## 2026-09-19 · Version 1.1: a collaborator's PR shipped, release page, CI
+
+**Asked (owner):** "there are new commit check them and push the new app in my phone as well as
+on the server download"; "have release page where we have the apk available"; "ci setup where we
+are building an APK on the github".
+
+**Checked:** `origin/main` was 4 commits ahead: PR #1 from a collaborator (the five entries above),
+merged by its author. Read the whole diff, 22 files. No new permission, no network code, nothing
+touching Gradle files, the wrapper, the site scripts, nginx rules, `.gitignore` or CI; the
+sensitive-content audit on the incoming diff found nothing. Safe to build. It does change things
+the owner had settled (a drawn work badge against "no icons"; the 24-hour bar gone from home;
+two new defaults; how "swipe left" was read): reported to him, open decisions 10–14.
+
+**Done:**
+- `versionCode` 2 / `versionName` 1.1. 19 tests pass, lint 0 errors, `release` and `dist` built;
+  the `dist` APK is 1.1, carries the release certificate and asks for no INTERNET permission.
+- **Phone:** `adb install --user 0 -r` of the release build: 1.0 → 1.1, data kept, still the
+  default home. The owner was in another app, so nothing was started for him: a passive loop
+  waited for his next return home, let Focus run 20 s, compiled it (`speed-profile`), found 0
+  crash lines. Found on the way: Focus was present in every profile of the phone, from the early
+  plain `adb install`s (open decision 15; nothing removed).
+- **Site:** home mockup, copy, JSON-LD feature list and README now show what 1.1 shows; link to
+  the release page under the download button. Previewed locally (desktop and phone width), then
+  `site/deploy.sh`.
+- **CI:** `.github/workflows/build.yml` (tests, lint, APK artifact; no secrets; skips brain, notes
+  and site changes) and `verify-release.yml` (attached APKs must carry the release certificate).
+  Went in as PR #2 so CI could prove itself before `main`: green on the first run, APK attached.
+- **Release page:** tags `v1.0` (first public commit) and `v1.1` (the merge of PR #2), each with
+  the APK and its `.sha256`. The 1.0 APK had been copied aside before rebuilding.
+- New `3-details/ci-and-releases.md`; Tier 1 and 2, lessons and decisions updated.
+
+**Verified:** served page says 1.1 and links `focus-launcher-1.1.apk`; SHA-256 of the served APK =
+the release asset = the local `dist` build (`8221fbbc…`); 1.0 still served and identical to its
+release asset (`c97b5fca…`); APK MIME type, CSP and the other headers unchanged; the main site
+and `/robots.txt` still 200; IndexNow accepted.
+`verify-release` **failed on its first real run**: the runner's newer `apksigner` words the
+certificate line differently, so my exact-prefix match found nothing and reported "different
+key". The APK was fine (its checksum step passed). The check now matches on "certificate SHA-256
+digest", prints apksigner's lines, and was tested locally: both official APKs pass, a debug-signed
+build is rejected. Also: CI APKs are now named after the pull request's head commit, not the
+temporary merge commit.
+**Not verified:** how 1.1 looks and feels on the phone (no screenshot was possible: Focus was not
+in front until the owner went home, and then he was using it); the new gestures; double tap to
+lock (needs the accessibility service, still not enabled).
+
+**Open:** decisions 10–16 in `2-overview/user-and-decisions.md`.
