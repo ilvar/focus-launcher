@@ -121,7 +121,18 @@ jobs:
           echo "== fdroid rewritemeta";   fdroid rewritemeta "$APP_ID"
           echo "== fdroid checkupdates";  fdroid checkupdates --allow-dirty "$APP_ID"
           echo "== fdroid lint";          fdroid lint "$APP_ID"
-          if [ "$BUILD" = "true" ]; then echo "== fdroid build"; fdroid build --verbose "$APP_ID"; fi
+          if [ "$BUILD" = "true" ]; then
+            echo "== fdroid build (java: $(java -version 2>&1 | head -1))"
+            # fdroid build exits 0 even when the build or the comparison with the published APK
+            # fails; its verdict is in the log. Keep what it built either way, for a diff.
+            fdroid build --verbose "$APP_ID" 2>&1 | tee /build/fdroid-build.log
+            mkdir -p /build/kept
+            cp build/"$APP_ID"/app/build/outputs/apk/release/*.apk /build/kept/ 2>/dev/null || true
+            if grep -qE "Could not build app|NOT verified" /build/fdroid-build.log; then
+              echo "::error::F-Droid's build did not succeed, or is not identical to the published APK (see the log above)"; exit 1
+            fi
+            grep -qE "Successfully built|verified" /build/fdroid-build.log || { echo "::error::no success message from fdroid build"; exit 1; }
+          fi
           EOS
           image=registry.gitlab.com/fdroid/fdroidserver:buildserver
           docker pull --quiet "$image"
@@ -146,7 +157,9 @@ jobs:
             echo "::notice::rewritemeta or checkupdates changed the recipe (diff above). The changed version is the one that is kept."
           fi
           mkdir -p out && cp "fdroiddata/metadata/$APP_ID.yml" out/ && cp "$GITHUB_WORKSPACE/fdroid/MERGE_REQUEST.md" out/
-          ls -l fdroiddata/unsigned fdroiddata/tmp 2>/dev/null || true
+          cp fdroiddata/kept/*.apk out/ 2>/dev/null || true
+          cp fdroiddata/fdroid-build.log out/ 2>/dev/null || true
+          ls -l out
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
