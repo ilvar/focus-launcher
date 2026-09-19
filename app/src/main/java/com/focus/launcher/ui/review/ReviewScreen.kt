@@ -46,6 +46,7 @@ import com.focus.launcher.ui.components.FocusButton
 import com.focus.launcher.ui.components.Hairline
 import com.focus.launcher.ui.components.Label
 import com.focus.launcher.ui.components.T
+import com.focus.launcher.ui.components.TabChip
 import com.focus.launcher.ui.components.TextInputDialog
 import com.focus.launcher.ui.components.VSpace
 import com.focus.launcher.ui.home.DayBar
@@ -99,19 +100,6 @@ fun ReviewScreen(settings: Settings, initialWeek: LocalDate?, onBack: () -> Unit
         Crossfade(targetState = tab, animationSpec = tween(220), label = "review tab") { shown ->
             if (shown == 0) TodayTab(settings) else WeekTab(settings, initialWeek)
         }
-    }
-}
-
-@Composable
-private fun TabChip(text: String, selected: Boolean, onClick: () -> Unit) {
-    val c = LocalFocusColors.current
-    Box(
-        Modifier
-            .then(if (selected) Modifier.background(c.fg) else Modifier)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-    ) {
-        T(text, size = 15.sp, color = if (selected) c.bg else c.dim, weight = if (selected) FontWeight.Medium else FontWeight.Normal, maxLines = 1)
     }
 }
 

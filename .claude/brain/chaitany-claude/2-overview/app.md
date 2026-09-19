@@ -7,13 +7,14 @@ accessibility service share state through `Graph` (a hand-rolled service locator
 ## Shape
 ```
 FocusApp, Graph              Application + singletons (settings, apps, usage, limits, state)
-MainActivity                 HorizontalPager: page 0 HomeScreen, page 1 DrawerScreen
+MainActivity                 HorizontalPager: page 0 HomeScreen, page 1 DrawerScreen; swipe-right watcher
 SettingsActivity             "Focus Settings", also the LAUNCHER entry; routes via --es route <name>
 ReviewActivity               Today / Week review
 BlockActivity                the "Time's up" wall AND the "open anyway?" consent screen
 data/   Settings(+Store)     one immutable data class, JSON in SharedPreferences, StateFlow
         AppRepository        LauncherApps scan, label cache, categories, launch/uninstall
-        UsageRepository      usage events → per-app per-hour time; DayAccumulator; day JSON cache
+        UsageRepository      usage events → per-app per-hour time; DayAccumulator; day JSON cache;
+                             sortStats() = system 7-day aggregates, only for ordering the drawer
         ForegroundTracker    pure state machine (unit tested)
         LimitManager         which apps are limited; continue/bypass passes; consent; weekly tally
         WeekSummary          aggregation for the review
@@ -28,9 +29,15 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 | Feature | Where |
 | --- | --- |
 | Ring clock (battery or day), tap/long-press action | `ui/home/HomeWidgets.kt` `HomeClock`, `ClockTapDialog.kt` |
-| 24-hour screen time bar | `HomeWidgets.kt` `DayBar`, `ScreenTimeWidget` |
+| Screen time on home: title + total + "N% of today" (of 24 h) below the clock, outside the ring, no setting; tap → review (the 24-hour bar was removed from home; `DayBar` lives on in the review) | `HomeWidgets.kt` `ScreenTimeLine`; height counted in `HomeScreen` `heightOf` |
 | Home layout that always fits | `ui/home/HomeScreen.kt` (`Fit` options, measured constants) |
 | Drawer: search ranking, recent installs, A–Z scrubber | `ui/drawer/DrawerScreen.kt` |
+| Drawer sort (A–Z / Most used / Recent), "Sort: …" under the search bar | `DrawerScreen.kt`, `Settings.drawerSort` (`DrawerSort`), `UsageRepository.sortStats()` |
+| Drawer Personal / Work tabs (only with a work profile) | `DrawerScreen.kt`, `TabChip` in `ui/components/Basics.kt` |
+| Work marker: drawn briefcase outline (`WorkBadge`) on drawer rows and pinned work apps | `ui/components/Basics.kt`, `DrawerScreen.kt`, `ui/home/HomeScreen.kt` |
+| Keyboard opens with the drawer (`autoKeyboard`, toggled from Settings → App drawer *and* → Gestures); when the drawer counts as open | `MainActivity.kt` `drawerActive`, `DrawerScreen.kt` |
+| Swipe right on home = the phone's web search | `MainActivity.kt` `Launcher` (pointerInput on the pager), `ui/Launching.kt` `openWebSearch`, `Settings.swipeRightSearch` |
+| Double tap = lock (default on; needs the accessibility service) | `HomeScreen.kt`, `Settings.doubleTapLock`, `FocusAccessibilityService` |
 | Long-press menu, timer dialog | `ui/drawer/AppMenu.kt` |
 | Fast apps (≤5), corner shortcuts, home gestures, notices | `ui/home/HomeScreen.kt` |
 | Weekly review: alarm, home notice, notification, the week's summary | `service/WeeklyReview.kt`, `data/WeekSummary.kt`, `ui/review/ReviewScreen.kt` |
@@ -44,6 +51,14 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 - **Timers work in two layers.** The launcher's gate needs only usage access. Mid-session locking
   needs the accessibility service. Keep both working independently.
 - **Settings is one JSON blob**; `fromJson` must tolerate missing keys (older installs).
+- **Changing a default does not reach existing installs**: the saved JSON already holds the key.
+  `doubleTapLock` became `true` on 2026-09-19; an older install keeps `false` until it is switched
+  on in Settings → Gestures. Keys absent from old JSON (`swipeRightSearch`, `drawerSort`) do get
+  the new default.
+- **Drawer order uses the system's usage aggregates, not the `ForegroundTracker`**: an ordering
+  does not need exact minutes. Never show those numbers as screen time.
+- **No hosted AppWidgets** (the search "widget" is an intent): a widget would bring colour and
+  icons onto the home screen.
 - **`DayUsage.CACHE_VERSION`** must be bumped whenever the usage computation changes.
 - **Per-resume work is multiplied ~100×/day.** Anything added to the resume path or a timer must
   be incremental or event-driven.

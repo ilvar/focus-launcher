@@ -10,7 +10,9 @@ icons. Everything is built from a handful of primitives.
 background, optional hidden status bar, and asks for the panel's fastest refresh mode.
 `ui/components/Basics.kt`: `T()` is the only text primitive (theme colour, font, scale);
 `Label`, `Hairline`, `FocusSwitch` (drawn), `FocusButton` (filled = inverted, or outlined),
-`SettingRow`, `ToggleRow`, `Modifier.press`, `Modifier.monochrome()` + `hasColourGlyphs()`.
+`SettingRow`, `ToggleRow`, `TabChip(text, selected, onClick)` (text tab; shared by the review's
+Today / Week and the drawer's Personal / Work; moved here from `ReviewScreen.kt`),
+`Modifier.press`, `Modifier.monochrome()` + `hasColourGlyphs()`.
 `Dialogs.kt`: `FocusDialog` (bordered panel; every popup is one), `MenuRow`, `ChoiceDialog`,
 `MultiChoiceDialog`, `ConfirmDialog`, `TextInputDialog(numeric)`, `UnderlinedField`,
 `AppPickerDialog(leading=…)`.
@@ -53,10 +55,52 @@ Battery via sticky `ACTION_BATTERY_CHANGED`, registered only while STARTED.
 `detectTapGestures` (long-press = settings; double-tap = lock, if enabled). Callbacks go through
 `rememberUpdatedState` because the detectors outlive recompositions. Children with `clickable`
 consume their own taps, so long-press on a fast app opens its menu, on empty space the settings.
+**Double tap to lock** (`Settings.doubleTapLock`, default `true` since 2026-09-19) needs the
+accessibility service for `GLOBAL_ACTION_LOCK_SCREEN`; without it a toast, and the Gestures page
+links to Setup.
+
+## Swipe right on home = web search (`MainActivity` `Launcher`)
+There is no page left of home, so the pager ignores that swipe. A `pointerInput` on the
+`HorizontalPager` (keyed on `settings.swipeRightSearch`, default `true`) watches each gesture in
+**`PointerEventPass.Initial` and consumes nothing**, so the pager and every child behave as
+before. It only arms when `pager.currentPage == 0` and no scroll is in progress at touch-down,
+and fires once per gesture when dx > 72dp and dx > 2·|dy|. `openWebSearch()` in `ui/Launching.kt`
+tries, in order: `SearchManager.INTENT_ACTION_GLOBAL_SEARCH` targeted at the Google app package,
+the same action untargeted, `ACTION_WEB_SEARCH`; toast "No search app found" if none resolves.
+Launched with `launchOptions()` like any app. Deliberately not a hosted AppWidget: a widget would
+put colour and icons on the home screen. Finger-left is still the drawer.
 
 ## Drawer details
 The search field is composed even while the home page shows (pager keeps both pages), so it takes
 `focusProperties { canFocus = isActive }` and the window is `stateAlwaysHidden`: otherwise it
-grabs initial focus and pops the keyboard. Search ranks: prefix, word prefix, contains, initials,
+grabs initial focus and pops the keyboard.
+**When the drawer counts as open** (`drawerActive` in `MainActivity`, passed as `isActive`):
+`if (pager is being dragged) settledPage == 1 else targetPage == 1`. It used to be
+`currentPage == 1`, which flips halfway through the drag: with "Open the keyboard right away" on,
+the keyboard popped up under a moving finger and dropped again if the finger turned back. Now it
+rises when the swipe is let go towards the drawer (while the page glides in), falls when let go
+towards home, and a swipe that returns to where it started changes nothing. Dragging the app list
+clears focus and hides the keyboard (`listState.interactionSource`, not `isScrollInProgress`,
+which the programmatic scroll-to-top on every keystroke would also trip). Search ranks: prefix, word prefix, contains, initials,
 then a loose in-order match for ≥3 letters; labels are normalized once per list. The A–Z scrubber
 consumes its own pointer events so the pager does not scroll.
+- **Row under the search bar** (hidden while searching): Personal / Work `TabChip`s on the left,
+  only when a visible app has `isWorkProfile`; "Sort: …" on the right, opening a `ChoiceDialog`.
+  The tab choice is `remember`ed, not saved: the drawer opens on Personal. "Recent installs"
+  follows the tab. **Search ignores tab and sort**: both profiles, ranked by match.
+- **Sort** (`DrawerSort { ALPHA, MOST_USED, RECENT }`, `Settings.drawerSort`, default A–Z).
+  Most used / Recent come from `UsageRepository.sortStats()` =
+  `UsageStatsManager.queryAndAggregateUsageStats` over 7 days → package → (foreground ms,
+  `lastTimeUsed`); empty without usage access, so the list stays A–Z. Deliberately the system's
+  aggregates, not the `ForegroundTracker`: an order does not need exact minutes. Loaded on IO only
+  while the drawer is the active page and the sort is not A–Z. `sortedByDescending` is stable, so
+  ties keep A–Z order. **Work-profile entries count as zero** (usage inside a work profile is
+  invisible), so the Work tab stays alphabetical. The list scrolls to the top when query, tab,
+  sort or the stats change (a keyed list would otherwise follow the old top row).
+- The A–Z scrubber and its letter index exist only for the A–Z sort.
+- **Work marker = `WorkBadge`** (`Basics.kt`), the one pictogram in the app: a briefcase outline
+  drawn on a `Canvas` in the theme's dim colour (two stroked round-rects and a line; no asset, no
+  colour; `contentDescription` "Work profile"). After the label on drawer rows (14dp) and on
+  pinned work apps on the home screen (0.62 × the fast-app text size; label
+  `weight(1f, fill = false)`). It replaced the word "work" because the contributor asked for an
+  icon twice. Pickers (`AppPickerDialog`) still say "work" as text.

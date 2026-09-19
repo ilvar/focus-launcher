@@ -15,6 +15,9 @@ enum class LaunchAnimation(val label: String) { FAST("Fast"), SYSTEM("System def
 
 enum class HomeAlign(val label: String) { LEFT("Left"), CENTER("Center"), RIGHT("Right") }
 
+/** Order of the app list in the drawer. */
+enum class DrawerSort(val label: String) { ALPHA("A–Z"), MOST_USED("Most used"), RECENT("Recent") }
+
 enum class TimeFormat(val label: String) { SYSTEM("Follow system"), H24("24-hour"), H12("12-hour") }
 
 const val MAX_FAVORITES = 5
@@ -50,7 +53,6 @@ data class Settings(
     val clockTap: String = TAP_ALARMS,
     val timeFormat: TimeFormat = TimeFormat.SYSTEM,
     val showDate: Boolean = true,
-    val showScreenTime: Boolean = true,
     val showCalendar: Boolean = false,
     /** [CalendarInfo.key] of the single calendar shown on the home screen, or [CALENDAR_AUTO] / [CALENDAR_ALL]. */
     val calendarKey: String = CALENDAR_AUTO,
@@ -67,6 +69,7 @@ data class Settings(
     val autoLaunch: Boolean = false,
     val showRecentInstalls: Boolean = true,
     val showUsageInDrawer: Boolean = true,
+    val drawerSort: DrawerSort = DrawerSort.ALPHA,
     val hidden: Set<String> = emptySet(),
     val renames: Map<String, String> = emptyMap(),
 
@@ -98,7 +101,9 @@ data class Settings(
     // Gestures
     val swipeDownNotifications: Boolean = true,
     val swipeUpSearch: Boolean = true,
-    val doubleTapLock: Boolean = false,
+    /** Swipe towards the page left of home (finger moves right): the phone's web search. */
+    val swipeRightSearch: Boolean = true,
+    val doubleTapLock: Boolean = true,
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("dark", dark)
@@ -112,7 +117,6 @@ data class Settings(
         put("clockTap", clockTap)
         put("timeFormat", timeFormat.name)
         put("showDate", showDate)
-        put("showScreenTime", showScreenTime)
         put("showCalendar", showCalendar)
         put("calendarKey", calendarKey)
         put("showWeekStrip", showWeekStrip)
@@ -126,6 +130,7 @@ data class Settings(
         put("autoLaunch", autoLaunch)
         put("showRecentInstalls", showRecentInstalls)
         put("showUsageInDrawer", showUsageInDrawer)
+        put("drawerSort", drawerSort.name)
         put("hidden", JSONArray(hidden.toList()))
         put("renames", JSONObject(renames))
 
@@ -147,6 +152,7 @@ data class Settings(
 
         put("swipeDownNotifications", swipeDownNotifications)
         put("swipeUpSearch", swipeUpSearch)
+        put("swipeRightSearch", swipeRightSearch)
         put("doubleTapLock", doubleTapLock)
     }
 
@@ -166,7 +172,6 @@ data class Settings(
                 clockTap = o.optString("clockTap", d.clockTap).ifEmpty { d.clockTap },
                 timeFormat = enumOr(o.optString("timeFormat"), d.timeFormat),
                 showDate = o.optBoolean("showDate", d.showDate),
-                showScreenTime = o.optBoolean("showScreenTime", d.showScreenTime),
                 showCalendar = o.optBoolean("showCalendar", d.showCalendar),
                 calendarKey = o.optString("calendarKey").ifEmpty {
                     // Written for a few hours by an earlier build as a bare personal-calendar id.
@@ -187,6 +192,7 @@ data class Settings(
                 autoLaunch = o.optBoolean("autoLaunch", d.autoLaunch),
                 showRecentInstalls = o.optBoolean("showRecentInstalls", d.showRecentInstalls),
                 showUsageInDrawer = o.optBoolean("showUsageInDrawer", d.showUsageInDrawer),
+                drawerSort = enumOr(o.optString("drawerSort"), d.drawerSort),
                 hidden = o.optJSONArray("hidden").strings().toSet(),
                 renames = o.optJSONObject("renames").stringMap(),
 
@@ -208,6 +214,7 @@ data class Settings(
 
                 swipeDownNotifications = o.optBoolean("swipeDownNotifications", d.swipeDownNotifications),
                 swipeUpSearch = o.optBoolean("swipeUpSearch", d.swipeUpSearch),
+                swipeRightSearch = o.optBoolean("swipeRightSearch", d.swipeRightSearch),
                 doubleTapLock = o.optBoolean("doubleTapLock", d.doubleTapLock),
             )
         }

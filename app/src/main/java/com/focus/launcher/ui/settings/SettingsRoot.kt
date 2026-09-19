@@ -143,8 +143,8 @@ private fun MainPage(settings: Settings, appCount: Int, status: SetupStatus, onB
         )
         Section("Launcher")
         SettingRow("Home screen", subtitle = "Clock, sections, fast apps, corner shortcuts", onClick = { go(Routes.HOME) })
-        SettingRow("App drawer", subtitle = "Search, recently installed, hidden apps", value = "$appCount apps", onClick = { go(Routes.DRAWER) })
-        SettingRow("Gestures", subtitle = "Swipe down, swipe up, double tap", onClick = { go(Routes.GESTURES) })
+        SettingRow("App drawer", subtitle = "Keyboard, search, recently installed, hidden apps", value = "$appCount apps", onClick = { go(Routes.DRAWER) })
+        SettingRow("Gestures", subtitle = "Swipes, double tap, keyboard in the drawer", onClick = { go(Routes.GESTURES) })
         SettingRow("Appearance", subtitle = "Black or white, typeface, text size", onClick = { go(Routes.APPEARANCE) })
         Section("Focus")
         SettingRow(

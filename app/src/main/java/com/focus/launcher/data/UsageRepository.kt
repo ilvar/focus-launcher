@@ -218,6 +218,22 @@ class UsageRepository(private val context: Context, private val apps: () -> AppR
         return last
     }
 
+    /**
+     * Per package over the last [days] days: foreground time and the moment of last use, taken
+     * from the system's own aggregates. Only orders the drawer ("most used", "recent").
+     */
+    // ponytail: system aggregates, not the ForegroundTracker; exact minutes do not matter for an order.
+    fun sortStats(days: Int = 7): Map<String, Pair<Long, Long>> {
+        if (!hasAccess()) return emptyMap()
+        val now = System.currentTimeMillis()
+        return try {
+            usm.queryAndAggregateUsageStats(now - days * 24 * DayUsage.HOUR_MS, now)
+                .mapValues { (_, s) -> s.totalTimeInForeground to s.lastTimeUsed }
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
+
     // ---- event crunching ---------------------------------------------------------------------
 
     /** Home screens and the system UI: they take part in the event stream but are not "screen time". */

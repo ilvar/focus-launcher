@@ -2,9 +2,10 @@
 
 **Focus** is a text-only, strictly black-and-white Android launcher (Kotlin + Jetpack Compose, no
 Material, package `com.focus.launcher`, 35 Kotlin files, ~6,800 lines). Home = battery ring clock,
-24-hour screen time bar, one-calendar agenda, up to 5 fast apps, 2 corner shortcuts. Swipe left =
-searchable app list. Social apps and games get daily timers that lock the app; a weekly review
-shows where the time went. No INTERNET permission. Built for, and used daily by, its owner.
+today's screen time in words under it, one-calendar agenda, up to 5 fast apps, 2 corner shortcuts.
+Swipe left = searchable app list (sortable; Personal / Work tabs), swipe right = the phone's web
+search, double tap = lock. Social apps and games get daily timers that lock the app; a weekly
+review shows where the time went. No INTERNET permission. Built for, and used daily by, its owner.
 
 **Owner:** Chaitany (GitHub `patelchaitany`). His phone runs Android 16 with Focus as its default
 launcher. He wants things done end to end and verified, and honest reports of what was not.
@@ -26,7 +27,8 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 6. **Server changes are surgical:** back up, `sudo nginx -t`, reload, roll back on failure. The
    server is shared with the owner's other projects.
 7. **Never auto-limit communication tools** (mail, browsers, messengers). Never guess towards a limit.
-8. **Everything stays monochrome and icon-free,** including emoji in third-party text.
+8. **Everything stays monochrome and icon-free,** including emoji in third-party text. (One drawn
+   exception, asked for by a contributor: the work-profile briefcase, `WorkBadge`.)
 9. **Do not work around a managed work profile's restrictions** (calendar, usage). Explain the limit.
 10. **Never promise search rankings.** Say what was done and what it depends on.
 
@@ -46,7 +48,7 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 ```bash
 ./gradlew :app:testDebugUnitTest :app:lintDebug      # must stay: all tests pass, lint 0 errors
 ./gradlew :app:assembleRelease                        # optimized, DEBUG-key signed: for the owner's phone
-adb install -r app/build/outputs/apk/release/app-release.apk
+adb install --user 0 -r app/build/outputs/apk/release/app-release.apk   # --user 0: not into a work profile
 adb shell cmd package compile -m speed-profile -f com.focus.launcher
 ./gradlew :app:assembleDist && site/deploy.sh         # public APK (release key) + site, verified
 ```
@@ -61,6 +63,8 @@ Google Search Console not done (needs the owner). Repo public, **no LICENSE** (o
 The brain is committed and public, and was fact-checked against the code, the repo and the live
 site on 2026-09-19 (`3-details/brain-upkeep.md`). Publishing happens on request: `git status`
 shows whether there is unpushed work.
+A contributor's gesture and drawer changes (later session, same day) are **not verified on a
+device**: see the last journal entry.
 
 ## Tier 2 index: read the area(s) you will touch
 - `2-overview/user-and-decisions.md` — what the owner asked for and decided; open decisions
