@@ -20,8 +20,8 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
   percentage and "charging" / "low" under the date. It can show the part of the day that has passed
   instead. Tapping the circle runs an action of your choice: open any app, alarms, calendar,
   screen time, battery, or nothing. Long-press the circle to change it.
-- Screen-time bar: 24 cells, one per hour. The white part of each cell is the share of that hour
-  spent on the phone, so the total amount of white is today's screen time out of 24 h.
+- Today's screen time in plain words under the clock: a small title, the total ("2h 41m") in
+  large type, and its share of the day's 24 hours ("11% of today"). Tapping it opens the review, where the hour-by-hour picture of the day lives.
 - Optional calendar section: the next events from **one** calendar of your choice. Until you pick,
   Focus shows the main calendar that actually has events coming up (the first "primary" calendar
   on a phone is often an empty local account). The picker can be searched and shows how many

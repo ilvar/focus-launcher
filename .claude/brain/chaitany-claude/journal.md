@@ -157,3 +157,60 @@ before: a setting alone is not discoverable. Rebuilt (lint 0 errors), reinstalle
 **Not verified:** how the keyboard timing and the badge look and feel on the device; that is the
 contributor's to judge. **Open:** unchanged, plus decision 10 (the icon exception).
 
+## 2026-09-19 · Screen time as one line under the clock (same contributor)
+
+**Asked:** "I don't like the screen time UI at all": show only the hours and minutes below the
+charging line.
+
+**Done:** `Settings.screenTimeStyle` (`BAR` default, `CLOCK`, `OFF`) replaces the boolean
+`showScreenTime`, which survives as a computed property so the home layout maths is untouched;
+`fromJson` maps an old `showScreenTime=false` to `OFF`. `HomeClock` takes `screenTime: Long?` and
+draws it as the last line inside the ring (12sp, 11sp when compact, dim), or appends it to the
+plain clock's line. Shown only with usage access. Settings → Home screen → "Screen time" is now a
+three-way choice. The bar was kept as the default because it is the owner's design.
+
+**Verified:** 19 unit tests, lint 0 errors, release build, installed for user 0.
+**Not verified:** that the fourth line sits well inside the smallest (132dp) ring on a device;
+by arithmetic the chord there is about 89dp wide and the text about 45dp.
+
+## 2026-09-19 · Bar removed from home; "Focus Settings" would not open (same contributor)
+
+**Asked:** make "under the clock" the default with no setting for it; "I couldn't open Focus
+Settings".
+
+**Done:** the three-way `screenTimeStyle` from the previous entry is gone again, together with
+`showScreenTime`, `ScreenTimeWidget` and the bar's share of the home layout maths (`Fit.topApps`,
+the two-section cases). `HomeClock` always shows today's total when usage access is granted.
+`DayBar` and `HourScale` stay: the review uses them.
+Settings bug: reproduced with a launcher-style `am start` (intent delivered to `MainActivity`,
+nothing opened). Cause and fix in `mistakes-and-lessons.md`: `SettingsActivity` now has its own
+task affinity. Not caused by this session's changes; it affects the published 1.0 too.
+
+**Verified:** 19 unit tests, lint 0 errors, release build, installed for user 0. The same
+`am start` now opens `SettingsActivity` in its own task.
+**Not verified:** long-press on the home screen → settings after the affinity change (it worked
+before it; the phone was in use, so no further input was injected); the look of the home screen
+without the bar.
+**Open:** decision 14 (the bar). README changed accordingly; the website still describes and
+draws the bar and was not touched.
+
+## 2026-09-19 · Screen time moved out of the ring (same contributor)
+
+**Asked:** "keep it outside the clock, make it more explicit, we can remove [the] line" (the
+12sp line inside the ring from the previous entry).
+**Done:** `HomeClock` lost its `screenTime` parameter. New `ScreenTimeLine` (`HomeWidgets.kt`):
+"Screen time today" label + total at 24sp, below the clock, centred under a ring and following
+the home alignment under the plain clock; lights up on press, opens the review (or usage access
+when that is missing). Its height is part of `heightOf`, so the always-fits layout still holds.
+**Verified:** 19 unit tests, lint 0 errors, release build, installed for user 0.
+**Not verified:** the look on the device. Lesson worth keeping: two rounds went into guessing a
+layout from one sentence; a text sketch of the home screen offered first would have been cheaper.
+Follow-up, same hour: a third line, "N% of today" = total / 24 h (integer percent; of the whole
+day, sleep included, so the yardstick does not move with the time of day). Asked whether anything
+was redundant: an import scan over every changed file found nothing unused; the one deliberate
+duplicate is the keyboard toggle listed under both App drawer and Gestures (one stored value).
+Verified as before (tests, lint, release build, installed for user 0).
+Then: title changed to "Screen Time" at 15sp, plain `T` instead of the small-caps `Label`
+("just say Screen Time, not of today; make it 15sp"). The "N% of today" line was left as it was;
+whether "of today" was meant to go from that line too is unconfirmed.
+

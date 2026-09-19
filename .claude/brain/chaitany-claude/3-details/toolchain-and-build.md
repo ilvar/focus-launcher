@@ -40,7 +40,8 @@ Permissions: PACKAGE_USAGE_STATS, QUERY_ALL_PACKAGES (a launcher must see every 
 the service resolve any activity), REQUEST_DELETE_PACKAGES, POST_NOTIFICATIONS, READ_CALENDAR,
 EXPAND_STATUS_BAR. **No INTERNET**: a public promise (site, README), never add it.
 `MainActivity`: HOME + DEFAULT, `singleTask`, `clearTaskOnLaunch`, `excludeFromRecents`,
-`stateAlwaysHidden|adjustResize`, portrait. `BlockActivity`: `singleInstance`, own task affinity,
+`stateAlwaysHidden|adjustResize`, portrait. `SettingsActivity`: own task affinity (`…settings`), or a launcher cannot open it (see
+`mistakes-and-lessons.md`). `BlockActivity`: `singleInstance`, own task affinity,
 excluded from recents. Non-home activities started from adb land in a *separate* task from the
 home task (activity types differ); from inside the app they stack on the home task and a Home
 press clears them.

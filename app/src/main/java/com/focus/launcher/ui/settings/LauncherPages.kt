@@ -89,10 +89,6 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
 
         Section("Sections")
         ToggleRow(
-            "Screen time bar", settings.showScreenTime,
-            subtitle = "One bar for the 24 hours of today; the white part is time spent on the phone.",
-        ) { v -> update { it.copy(showScreenTime = v) } }
-        ToggleRow(
             "Calendar", settings.showCalendar,
             subtitle = "Your next events, from one calendar. Emoji in titles are left out.",
         ) { v ->

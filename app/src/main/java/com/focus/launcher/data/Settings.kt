@@ -53,7 +53,6 @@ data class Settings(
     val clockTap: String = TAP_ALARMS,
     val timeFormat: TimeFormat = TimeFormat.SYSTEM,
     val showDate: Boolean = true,
-    val showScreenTime: Boolean = true,
     val showCalendar: Boolean = false,
     /** [CalendarInfo.key] of the single calendar shown on the home screen, or [CALENDAR_AUTO] / [CALENDAR_ALL]. */
     val calendarKey: String = CALENDAR_AUTO,
@@ -118,7 +117,6 @@ data class Settings(
         put("clockTap", clockTap)
         put("timeFormat", timeFormat.name)
         put("showDate", showDate)
-        put("showScreenTime", showScreenTime)
         put("showCalendar", showCalendar)
         put("calendarKey", calendarKey)
         put("showWeekStrip", showWeekStrip)
@@ -174,7 +172,6 @@ data class Settings(
                 clockTap = o.optString("clockTap", d.clockTap).ifEmpty { d.clockTap },
                 timeFormat = enumOr(o.optString("timeFormat"), d.timeFormat),
                 showDate = o.optBoolean("showDate", d.showDate),
-                showScreenTime = o.optBoolean("showScreenTime", d.showScreenTime),
                 showCalendar = o.optBoolean("showCalendar", d.showCalendar),
                 calendarKey = o.optString("calendarKey").ifEmpty {
                     // Written for a few hours by an earlier build as a bare personal-calendar id.

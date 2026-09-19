@@ -59,6 +59,7 @@ import com.focus.launcher.ui.components.HSpace
 import com.focus.launcher.ui.components.Label
 import com.focus.launcher.ui.components.T
 import com.focus.launcher.ui.components.VSpace
+import com.focus.launcher.ui.components.press
 import com.focus.launcher.ui.theme.LocalFocusColors
 import com.focus.launcher.util.formatDuration
 import kotlinx.coroutines.awaitCancellation
@@ -273,44 +274,23 @@ fun HourScale(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Today's screen time, said plainly under the clock: a small title, the total in type large
+ * enough to read at a glance, and what share of the day's 24 hours that is. A tap opens the review, where the hour-by-hour picture lives.
+ */
 @Composable
-fun ScreenTimeWidget(
-    today: DayUsage?,
-    hasAccess: Boolean,
-    currentHour: Int,
-    labelOf: (String) -> String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    showTopApps: Boolean = true,
-) {
+fun ScreenTimeLine(today: DayUsage?, hasAccess: Boolean, align: Alignment.Horizontal, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val c = LocalFocusColors.current
-    Column(modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 6.dp)) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            Label("Screen time", Modifier.weight(1f).padding(bottom = 3.dp))
-            if (hasAccess) {
-                T(formatDuration(today?.total ?: 0L), size = 20.sp, maxLines = 1)
-                T("  of 24h", Modifier.padding(bottom = 2.dp), size = 12.sp, color = c.dim, maxLines = 1)
-            }
-        }
-        VSpace(10.dp)
-        if (!hasAccess) {
-            DayBar(LongArray(24))
-            VSpace(8.dp)
-            T("Allow usage access to see your day  →", size = 14.sp, color = c.dim)
-            return@Column
-        }
-        DayBar(today?.perHour ?: LongArray(24), currentHour = currentHour)
-        VSpace(2.dp)
-        HourScale()
-        // As many of the top three apps as fit on one line; never a name cut off mid-word.
-        val top = today?.topApps(3).orEmpty().map { (pkg, ms) -> "${labelOf(pkg)} ${formatDuration(ms)}" }
-        if (top.isNotEmpty() && showTopApps) {
-            VSpace(8.dp)
-            val separator = "   ·   "
-            val fitting = top.indices.reversed()
-                .map { top.take(it + 1).joinToString(separator) }
-                .firstOrNull { it.length <= 44 } ?: top.first()
-            T(fitting, size = 13.sp, color = c.dim, maxLines = 1)
+    Column(modifier.press(onClick = onClick).padding(horizontal = 12.dp, vertical = 6.dp), horizontalAlignment = align) {
+        T("Screen Time", size = 15.sp, color = c.dim, maxLines = 1)
+        VSpace(3.dp)
+        if (hasAccess) {
+            val total = today?.total ?: 0L
+            T(formatDuration(total), size = 24.sp, maxLines = 1)
+            // Of all 24 hours, sleep included: the same yardstick every day, at any time of day.
+            T("${total * 100 / (24 * DayUsage.HOUR_MS)}% of today", size = 13.sp, color = c.dim, maxLines = 1)
+        } else {
+            T("Allow usage access  →", size = 14.sp, color = c.dim, maxLines = 1)
         }
     }
 }

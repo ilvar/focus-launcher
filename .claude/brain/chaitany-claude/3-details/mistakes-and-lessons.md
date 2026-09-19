@@ -66,6 +66,13 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   keyboard: `focusProperties { canFocus = … }` + `stateAlwaysHidden`.
 - Newest AndroidX may need a newer compileSdk/AGP than installed: read the AAR metadata first.
 - Non-home activities started from adb do not join the home task (different activity types).
+- **"Focus Settings" could not be opened from the drawer** (nor from any other launcher while
+  Focus was the home app). `SettingsActivity` shared the home task's affinity, so a launcher-style
+  start (`NEW_TASK | RESET_TASK_IF_NEEDED`) only brought the home task forward and delivered the
+  intent to `MainActivity`: "Activity not started, intent has been delivered to currently running
+  top-most instance". → `android:taskAffinity="com.focus.launcher.settings"` on `SettingsActivity`.
+  Reproduce / verify: `am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
+  -n com.focus.launcher/.SettingsActivity -f 0x10200000` while the home screen is in front.
 - **`adb install` without `--user` installs for every user, a work profile included.** Focus then
   shows up inside the work profile too, which the phone's owner noticed at once. → Always
   `adb install --user 0 …`; check with `pm list packages --user <id> com.focus.launcher`.

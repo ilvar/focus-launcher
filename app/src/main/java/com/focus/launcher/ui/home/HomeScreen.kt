@@ -79,8 +79,8 @@ import com.focus.launcher.util.Perms
 import java.time.LocalDate
 
 /**
- * Page one of the launcher. Top to bottom: the clock, the optional screen-time and calendar
- * sections, up to five fast apps, and the two corner shortcuts. Text only.
+ * Page one of the launcher. Top to bottom: the clock, today's screen time in plain words under it,
+ * the optional calendar section, up to five fast apps, and the two corner shortcuts. Text only.
  *
  * Gestures on empty space: long-press opens settings, swipe down pulls the notification shade,
  * swipe up jumps to search, double-tap locks the phone. Swiping left (handled by the pager that
@@ -188,46 +188,39 @@ fun HomeScreen(
                 )
             },
     ) {
-        val sections = (if (settings.showScreenTime) 1 else 0) + (if (settings.showCalendar) 1 else 0)
 
         // A home screen must never scroll or push its corner shortcuts off the edge. Estimate the
         // height each arrangement needs (constants measured on a real screen) and take the
         // roomiest one that fits, whatever the phone, text size, fast apps and enabled sections.
-        // Detail is given up before the clock is: first fewer events and no app names under the
-        // bar, and only then a smaller ring.
+        // Detail is given up before the clock is: first fewer events, and only then a smaller ring.
         val bars = WindowInsets.systemBars.asPaddingValues()
         val available = (maxHeight - bars.calculateTopPadding() - bars.calculateBottomPadding()).value
         val textScale = LocalDensity.current.fontScale * settings.textScale
         val notices = (if (setupIncomplete) 1 else 0) + (if (pendingReview != null) 1 else 0)
         val rowCount = favorites.size.coerceAtLeast(2) // the empty-state hint is two lines tall
         val eventCount = events.size
-        val preferredRing = when (sections) {
-            2 -> maxHeight * 0.22f
-            1 -> maxHeight * 0.25f
-            else -> maxHeight * 0.29f
-        }.coerceIn(140.dp, 236.dp)
+        val preferredRing = (maxHeight * if (settings.showCalendar) 0.25f else 0.29f).coerceIn(140.dp, 236.dp)
 
-        class Fit(val ring: Dp, val textSp: Float, val padDp: Float, val maxEvents: Int, val topApps: Boolean)
+        class Fit(val ring: Dp, val textSp: Float, val padDp: Float, val maxEvents: Int)
 
         fun heightOf(fit: Fit): Float {
             val clock = if (settings.clockStyle == ClockStyle.RING) fit.ring.value else 100f * textScale
             val noticeLines = if (notices > 0) 14f + notices * (19f * textScale + 12f) else 0f
-            val screenTime = if (settings.showScreenTime) 45f + (if (fit.topApps) 50f else 25f) * textScale else 0f
             val shownEvents = fit.maxEvents.coerceAtMost(eventCount).coerceAtLeast(1)
             val strip = if (settings.showWeekStrip) 46f + 14f * textScale else 0f
             val calendar = if (settings.showCalendar) 22f + 14f * textScale + strip + shownEvents * (18f * textScale + 6f) else 0f
-            val gap = if (sections == 2) 16f else 0f
             val shortcuts = if (settings.showShortcuts) 28f + 20f * textScale else 20f
             val rows = rowCount * (fit.textSp * 1.2f * textScale + fit.padDp * 2)
-            return clock + noticeLines + screenTime + calendar + gap + rows + shortcuts + 6f + 36f // 36 = air
+            val screenTime = 25f + 64f * textScale // gap, title, total, share of the day
+            return clock + screenTime + noticeLines + calendar + rows + shortcuts + 6f + 36f // 36 = air
         }
 
         val options = listOf(
-            Fit(preferredRing, 26f, 10f, maxEvents = 3, topApps = true),
-            Fit(preferredRing, 24f, 8f, maxEvents = 3, topApps = true),
-            Fit(preferredRing, 24f, 7f, maxEvents = 2, topApps = false),
-            Fit(preferredRing * 0.88f, 22f, 6f, maxEvents = 2, topApps = false),
-            Fit(132.dp, 22f, 4f, maxEvents = 1, topApps = false),
+            Fit(preferredRing, 26f, 10f, maxEvents = 3),
+            Fit(preferredRing, 24f, 8f, maxEvents = 3),
+            Fit(preferredRing, 24f, 7f, maxEvents = 2),
+            Fit(preferredRing * 0.88f, 22f, 6f, maxEvents = 2),
+            Fit(132.dp, 22f, 4f, maxEvents = 1),
         )
         val fit = options.firstOrNull { heightOf(it) <= available } ?: options.last()
         val ring = fit.ring.coerceAtLeast(132.dp)
@@ -238,7 +231,7 @@ fun HomeScreen(
             Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 18.dp),
             horizontalAlignment = settings.homeAlign.horizontal(),
         ) {
-            Spacer(Modifier.weight(if (sections == 2) 0.5f else 0.9f))
+            Spacer(Modifier.weight(0.9f))
 
             HomeClock(
                 settings = settings,
@@ -247,6 +240,16 @@ fun HomeScreen(
                 onTap = { performClockTap(context, settings.clockTap, apps, onLaunch) { onOpenReview(null) } },
                 onLongPress = { choosingClockTap = true },
                 modifier = if (settings.clockStyle == ClockStyle.RING) Modifier.align(Alignment.CenterHorizontally) else Modifier,
+            )
+
+            VSpace(10.dp)
+            val ringed = settings.clockStyle == ClockStyle.RING
+            ScreenTimeLine(
+                today = today,
+                hasAccess = usageAccess,
+                align = if (ringed) Alignment.CenterHorizontally else settings.homeAlign.horizontal(),
+                onClick = { if (usageAccess) onOpenReview(null) else Perms.openUsageAccess(context) },
+                modifier = if (ringed) Modifier.align(Alignment.CenterHorizontally) else Modifier,
             )
 
             // One-line notices. They disappear as soon as they have been dealt with.
@@ -262,17 +265,6 @@ fun HomeScreen(
 
             Spacer(Modifier.weight(0.8f))
 
-            if (settings.showScreenTime) {
-                ScreenTimeWidget(
-                    today = today,
-                    hasAccess = usageAccess,
-                    currentHour = now.hour,
-                    labelOf = { Graph.apps.labelForPackage(it) },
-                    onClick = { if (usageAccess) onOpenReview(null) else Perms.openUsageAccess(context) },
-                    showTopApps = fit.topApps,
-                )
-            }
-            if (sections == 2) VSpace(16.dp)
             if (settings.showCalendar) {
                 val use24h = when (settings.timeFormat) {
                     TimeFormat.SYSTEM -> DateFormat.is24HourFormat(context)
@@ -293,7 +285,7 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(Modifier.weight(if (sections == 0) 0.6f else 0.9f))
+            Spacer(Modifier.weight(if (settings.showCalendar) 0.9f else 0.6f))
 
             // Fast apps
             if (favorites.isEmpty()) {

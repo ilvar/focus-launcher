@@ -39,6 +39,7 @@
 | Sort the drawer | A–Z (default) / Most used / Recent (7 days), chosen from "Sort: …" under the search bar |
 | Separate work apps | Personal / Work tabs in the drawer, shown only when a work profile has launchable apps; search covers both |
 | Work apps carry a work **icon**, not the word | Asked twice ("not the words work"). `WorkBadge`: a drawn, monochrome briefcase outline, drawer rows and pinned apps. The one exception to "no icons"; still no colour, no assets |
+| Does not like the screen time bar; wants only "2h 41m" under the battery line, "the default, no setting for it" | The home bar, its `showScreenTime` setting and `ScreenTimeWidget` are gone. A line inside the ring was tried and rejected the same hour ("keep it outside the clock, make it more explicit"): now `ScreenTimeLine` sits below the clock: the title "Screen Time" at 15sp (his wording and size; not the small-caps `Label`), the total at 24sp, "N% of today" at 13sp. This removes a feature of the owner's design from the home screen: his call whether to take it (open decision 14) |
 | Keyboard opens by itself in the drawer, as a toggle, smooth and not buggy | The toggle existed (Settings → App drawer → "Open the keyboard right away", default off). Reworked when the drawer counts as open; dragging the list hides the keyboard |
 | "Do not push or commit anything" | Changes were left in the working tree |
 
@@ -67,3 +68,5 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
     swipe right on) at all: he has not seen them.
 13. Drawer tabs: pausing / resuming the work profile from the drawer is not implemented, and the
     tabs cannot be swiped between (the horizontal swipe belongs to the pager).
+14. **The 24-hour bar is no longer on the home screen** (contributor's request, no setting). The
+    site and its mockups still show it. Keep, revert, or bring back as an option: owner's call.
