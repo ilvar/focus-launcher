@@ -26,7 +26,8 @@ rsvg-convert -w 1200 -h 630 src/og.svg -o public/og.png
 rsvg-convert -w 180 -h 180 src/favicon.svg -o public/icon-180.png
 
 SHA256=$(shasum -a 256 "public/$APK_FILE" | cut -d' ' -f1)
-BYTES=$(stat -f %z "public/$APK_FILE" 2>/dev/null || stat -c %s "public/$APK_FILE")
+# Not `stat`: on Linux `stat -f` means "file system", succeeds, and prints something else entirely.
+BYTES=$(wc -c < "public/$APK_FILE" | tr -d ' ')
 SIZE=$(python3 -c "print(f'{$BYTES/1048576:.1f} MB')")
 echo "$SHA256  $APK_FILE" > "public/$APK_FILE.sha256"
 
