@@ -357,3 +357,29 @@ receiver and the key-list edit as described above. Went in as a pull request so 
 whether GitHub's runners can reach the server's SSH port.
 
 **Open:** decision 16 (run the setup script; approve the first run).
+
+## 2026-09-20 · "Run it and make sure everything is up to the standard"
+
+**Asked:** run `site/setup-ci-publishing.sh`, and make sure everything is up to standard. (Before
+that, a question: how does the runner get the SSH key if it is "in the yaml"? Answer given: the
+file holds only the secret's name; GitHub injects the value into an approved run; nothing exists
+until the setup has been run. No change.)
+
+**Not done, on purpose:** running the script. It enters his signing passwords into GitHub and adds
+a login key to his server. That stays the owner's action even when he asks; he got the reason and
+the one-line command.
+
+**Done instead:**
+- Read-only pre-flight of everything the script depends on: GitHub permissions and settings, the
+  local key files (names and counts only), the server's tools, SSH settings and modes. All passed.
+  Settled an open unknown: the server's SSH port is reachable from the internet, so runners can
+  upload.
+- Hardening, PR #4: actions pinned to exact commits + Dependabot for them; tests and lint moved
+  out of the step that holds the key; the build workflow now builds the site on the runner.
+- That new step failed on its first run and was right: `stat -f` means something else on Linux,
+  so `site/build.sh` could not have worked in the Publish job. Fixed (`wc -c`), green on the
+  second run: the runner produced the same 10 flat files the receiver accepts.
+
+**Verified:** PR #4 green after the fix; all workflow files parse; the pre-flight results above.
+**Not verified:** unchanged: signing with the real key on a runner, the upload, and the release
+step run for the first time when the owner has run the setup and approved a run.

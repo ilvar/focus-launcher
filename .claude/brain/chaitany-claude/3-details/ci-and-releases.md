@@ -71,8 +71,27 @@ site". Offered three ways (automatic with his approval / fully automatic / keep 
   even when asked. The agent writes and tests the script (the `authorized_keys` edit was tested in
   a sandbox home: other lines untouched, a second run replaces our line, `--off` removes it; mode
   600; dated backup). `--off` deletes the secrets, the variable, the server key and the receiver.
-- Not yet proven: that GitHub's runners can reach the server's SSH port (a cloud firewall rule
-  could block them). The first approved run shows it at the "Upload to the server" step.
+- **"Run it" does not change who runs it.** The owner asked the agent to run the setup script
+  (2026-09-20). It enters his signing passwords into GitHub and adds a login key to his server:
+  both stay his to do even when he asks. The agent said so, and did everything around it instead.
+- **Pre-flight, all read-only, all passed (2026-09-20):** `gh` logged in with `repo` + `workflow`
+  scopes, owner is the only admin (the collaborator has `write`, so he can neither change the
+  environment's rules nor approve); default workflow token read-only, workflows cannot approve
+  pull requests, secret scanning and push protection on; `keystore.properties` has its four keys
+  (counted, never read) and the keystore is mode 600; the server's host key is already trusted
+  locally; on the server GNU tar, `stat -c`, `install`, OpenSSH 8.2 (`restrict` needs ≥ 7.2),
+  password logins off, `StrictModes` on with correct directory modes, web directory writable.
+  The SSH port is reachable from the whole internet (dozens of unknown addresses knock on it
+  every day), so GitHub's runners can reach it too. `main` has no branch protection (offered).
+- **Hardening (PR #4):** every action pinned to an exact commit with the version in a comment
+  (`checkout` v7.0.1, `setup-java` v6.0.1, `upload-artifact` v7.0.1, `gradle/actions` v6.3.0),
+  `.github/dependabot.yml` (github-actions, monthly) proposes updates; in Publish, tests and lint
+  run in their own step **before the key is on the runner**, only `assembleDist` runs next to it;
+  no `${{ }}` inside `run:` blocks; `pull_request`, never `pull_request_target`.
+- **Build also builds the site** around the CI APK with `site/build.sh` (site changes trigger it
+  too). On its first run it caught a bug that would have broken the first real publish, see the
+  `stat -f` lesson. What remains untested until the owner's first approved run: signing with the
+  real key on the runner, the upload, and `gh release create` from the workflow.
 
 ## Version numbers (since 2026-09-20)
 `val baseVersion = "1.1"` in `app/build.gradle.kts` is the human part. The build number is

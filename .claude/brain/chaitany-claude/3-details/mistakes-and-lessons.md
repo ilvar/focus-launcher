@@ -99,6 +99,14 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
 - Work-profile calendars/usage are blocked by policy for personal-side apps; respect it.
 
 ## GitHub
+- **`stat -f %z FILE || stat -c %s FILE` is not a portable "file size".** On Linux `stat -f` means
+  "file system": it succeeds and prints file-system facts, so the fallback never runs.
+  `site/build.sh` fed that text into Python and died, but only on the runner. → `wc -c < FILE`.
+  More generally: a script that will run in CI must be run in CI before the day it matters; the
+  build workflow now builds the site on every run for exactly that reason.
+- **zsh and unquoted variables, third time:** `set -- $spec` in a loop did not split, every API
+  path was wrong and everything answered 404, which looked like a permissions problem. → In this
+  shell, write a function with real arguments instead of splitting a string.
 - **`release` workflows run from the default branch's copy of the workflow file.** A release
   published before `verify-release.yml` was on `main` would not have been checked. → Merge the
   workflow first, publish the release after.

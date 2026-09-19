@@ -86,5 +86,11 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
     Removing it there is a per-user uninstall: reported, waiting for his yes. Installs now use
     `--user 0`.
 16. **CI publishing waits for one command from him**: `site/setup-ci-publishing.sh` (it handles
-    his signing key and a new server key, so an agent must not run it). Until then new versions
-    are still published by hand. After it: the first Publish run needs his Approve click.
+    his signing key and a new server key, so an agent must not run it, **also not when he says
+    "run it"**: he did, 2026-09-20, and was given the reason and the Run button instead). Until
+    then new versions are still published by hand. After it: `gh workflow run publish.yml`, then
+    his Approve click; the agent can verify the result (environment, secret *names*, site,
+    release) without touching a secret.
+17. `main` has no branch protection: anyone with write access can push to it directly. With the
+    approval gate nothing gets published without him, so this is about history, not about safety.
+    Offered: require a pull request for `main`.
