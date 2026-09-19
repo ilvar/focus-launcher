@@ -58,13 +58,14 @@ over `release` or the reverse: different signatures. JDK: Gradle 8.14 cannot run
 `gradle.properties` pins a JDK 21 path.
 
 ## State of the world (2026-09-20)
-**Public: 1.1** (`versionCode` 2) on the site and the release page, next to 1.0. It contains a
-collaborator's merged PR #1 (drawer sort and tabs, swipe right = web search, a drawn work badge,
-screen time in words instead of the 24-hour bar); the points in it that touch the owner's earlier
-decisions still wait for his word (open decisions 10–14). **`main` and the owner's phone are
-ahead of that**: the split clock (his second sketch), versions `<base>.<commit count>`. Nothing
-reaches the site until he switches **CI publishing** on with `site/setup-ci-publishing.sh`
-(agents never run it) and approves a run, or asks for a manual deploy.
+**Public: 1.1.22** on the site and the release page (next to 1.1 and 1.0, whose links still work):
+the split clock from the owner's second sketch, on top of a collaborator's merged PR #1 (drawer
+sort and tabs, swipe right = web search, a drawn work badge, screen time in words instead of the
+24-hour bar). The points of PR #1 that touch the owner's earlier decisions still wait for his word
+(open decisions 10–14). The owner's phone runs the same code as a debug-key build.
+Versions are `<base>.<commit count>`. Publishing is still **by hand** (`assembleDist` +
+`site/deploy.sh` + `gh release create`, see `3-details/ci-and-releases.md`): CI publishing is built
+but off until the owner runs `site/setup-ci-publishing.sh` himself (agents never run it).
 CI builds every push and pull request. A collaborator's PR #5 (home cards) is open, conflicts
 with `main`, and needs a review before anything from it is built for the phone or the public.
 The accessibility service has **not been enabled** on the phone, so mid-session locking and double

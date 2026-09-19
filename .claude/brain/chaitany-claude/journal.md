@@ -427,3 +427,23 @@ At that moment a collaborator's pull request (#5, home cards) was open and touch
 screen files: it will have to take `main` in before it can merge, and needs a review first.
 
 **Open:** decisions 18 and 19.
+
+## 2026-09-20 · 1.1.22 published by hand: the website gets the split clock
+
+**Asked:** "update the website": the site had no new APK. (CI publishing is still off, so merging
+to `main` had changed nothing for visitors; he had been told, and asked for the update.)
+
+**Done,** the manual procedure, from a clean `main`: tests, lint and `assembleDist`; checked the
+APK (1.1.22, release certificate, no INTERNET permission); `site/deploy.sh` (its new guard found
+no existing release for this version and let it through); tag `v1.1.22` on that commit and a
+release with the very files from `site/public/`. The page now shows the split clock mockup and
+links the new APK.
+
+**Verified from outside:** page 200 and says 1.1.22; SHA-256 of the served APK = the release asset
+= the local build; 1.1 and 1.0 are still served unchanged; APK MIME type, CSP and the other headers
+as before; the domain's main site and `/robots.txt` still 200; IndexNow accepted;
+`verify-release` ran by itself on the release event and passed (first time it did so unaided).
+**Not verified:** installing 1.1.22 over a public 1.1 on a real phone (same key, higher
+`versionCode`, so it should; the owner's phone carries the debug-key build and cannot take it).
+
+**Open:** unchanged. PR #5 from the collaborator still waits for a review.
