@@ -41,6 +41,9 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
 - **Left placeholder lines to silence "unused" warnings** (`@Suppress … Modifier.width(0.dp)`)
   three times. → Remove the import instead; re-read generated code before moving on.
 - **zsh does not word-split unquoted variables** (`$PKGS` arrived as one argument). → `xargs`.
+  It bit twice. The second time it was inside an audit: `cat $FILES` failed, `grep -c` read
+  nothing and reported a reassuring **0**. → A count-only check must also print how much it read
+  (`wc -l`), and a file list goes through a file or `xargs -0`, never through an unquoted variable.
 - **SSH control socket path too long** (>104 bytes in the scratch dir): tunnel never started. →
   Background the ssh with `&`, keep `$!`, `kill` it.
 - **`git check-ignore --no-index` outside a repo** reports everything as not ignored. → `git init`
@@ -55,6 +58,19 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
 - **A pre-push audit that contains the strings it searches for publishes them.** The first audit
   command had part of the server address in its regex. → Owner-specific patterns live in
   `private/audit-patterns.txt`, generated from local config, and the audit prints counts only.
+- **The documented audit matched itself** (its own regex text is an added line containing the
+  generic patterns), so a clean push reported 1 hit. → Write such patterns in bracket form
+  (`storePassword[=]`): they still match the real thing, not their own source.
+- **Explaining a clean-up by listing what was being removed** repeats the sensitive text in the
+  conversation, and one such reply was stopped by a safety filter, costing a turn. → Count
+  matches, copy mechanically, rewrite whole files; never quote the sensitive text.
+- **raw.githubusercontent.com lags a push by a few minutes** (CDN cache): a file pushed seconds
+  ago looked absent. → Verify fresh pushes through the API (`gh api …/contents/<path>`); use the
+  raw host only for "is this path publicly reachable at all".
+- **The brain covered the hard parts and skipped the plain ones.** After the first write-up there
+  was no note for the weekly review, the long-press menu, the drawer or the Setup page, although
+  all were asked for by name. → Check coverage against the feature list, not against what was
+  difficult (`brain-upkeep.md`).
 
 ## Android platform
 - `makeCustomAnimation` is ignored for task-level opens since Android 13; scale-up / clip-reveal

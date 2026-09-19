@@ -1,11 +1,11 @@
 # Tier 1 · Basics (read all of it, every time)
 
 **Focus** is a text-only, strictly black-and-white Android launcher (Kotlin + Jetpack Compose, no
-Material, package `com.focus.launcher`, ~6,800 lines). Home = battery ring clock, 24-hour screen
-time bar, one-calendar agenda, up to 5 fast apps, 2 corner shortcuts. Swipe left = searchable app
-list (sortable; Personal / Work tabs), swipe right = the phone's web search, double tap = lock.
-Social apps and games get daily timers that lock the app; a weekly review shows where the time
-went. No INTERNET permission. Built for, and used daily by, its owner.
+Material, package `com.focus.launcher`, 35 Kotlin files, ~6,800 lines). Home = battery ring clock,
+today's screen time in words under it, one-calendar agenda, up to 5 fast apps, 2 corner shortcuts.
+Swipe left = searchable app list (sortable; Personal / Work tabs), swipe right = the phone's web
+search, double tap = lock. Social apps and games get daily timers that lock the app; a weekly
+review shows where the time went. No INTERNET permission. Built for, and used daily by, its owner.
 
 **Owner:** Chaitany (GitHub `patelchaitany`). His phone runs Android 16 with Focus as its default
 launcher. He wants things done end to end and verified, and honest reports of what was not.
@@ -60,6 +60,9 @@ over `release` or the reverse: different signatures. JDK: Gradle 8.14 cannot run
 App 1.0 on the phone (release build, speed-profile). The accessibility service has **not been
 enabled** yet, so mid-session locking is untested on a device. Site live, IndexNow submitted,
 Google Search Console not done (needs the owner). Repo public, **no LICENSE** (owner to decide).
+The brain is committed and public, and was fact-checked against the code, the repo and the live
+site on 2026-09-19 (`3-details/brain-upkeep.md`). Publishing happens on request: `git status`
+shows whether there is unpushed work.
 A contributor's gesture and drawer changes (later session, same day) are **not verified on a
 device**: see the last journal entry.
 

@@ -5,6 +5,9 @@
   the reading in one line, then do all of it and fold the follow-ups in.
 - Lead with the answer. An explanation that was asked for goes first, not after the change log.
 - Finish and verify rather than propose. Report honestly what was *not* verified.
+- Publishing is a separate step. Every commit and push so far was asked for in so many words
+  ("push this"). Work, including brain updates, changes files on disk; it is committed and
+  pushed when that is asked, after the audit.
 - The phone is in use while you work; surprising state is usually a setting that was changed, not
   a bug. Check before "fixing" (see `device-testing.md`).
 - Public identities: the domain `how2me.me` and GitHub `patelchaitany`. Everything else about his
@@ -30,6 +33,7 @@
 | Repo public on GitHub | Done: `patelchaitany/focus-launcher` |
 | Three-tier brain, mandatory, updated after every task | This directory |
 | **The brain is public** (2026-09-19: "no need to make it private") | Committed with the project. Consequence: server, device and phone specifics live only in git-ignored `private/` |
+| **The brain holds everything done so far** (2026-09-19: "update the brain [with] what you have done up till this point") | Not only the last task: every feature and area of work has a home in some tier, checked against the code. How: `3-details/brain-upkeep.md` |
 
 ## Asked for by a contributor (2026-09-19, on a clone; not yet seen by the owner)
 | Request | What was done |
