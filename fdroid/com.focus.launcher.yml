@@ -11,7 +11,8 @@ AutoName: Focus
 
 RepoType: git
 Repo: https://github.com/patelchaitany/focus-launcher.git
-Binaries: https://github.com/patelchaitany/focus-launcher/releases/download/v%v/focus-launcher-%v.apk
+Binaries: 
+  https://github.com/patelchaitany/focus-launcher/releases/download/v%v/focus-launcher-%v.apk
 
 Builds:
   - versionName: @VERSION_NAME@

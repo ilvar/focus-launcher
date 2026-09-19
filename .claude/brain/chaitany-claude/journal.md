@@ -496,3 +496,9 @@ reproducible and the published APK was not: it had been built in the working fol
 Two workflow bugs on the way: files mounted into the container have to belong to its user
 (`rewritemeta` sets timestamps), and the "green" first run that was not.
 
+**Closed the loop:** 1.1.29 was built with `site/clean-build.sh`, published to the site and the
+release page (served APK = release asset = local file; `verify-release` green; 1.1.25, 1.1.22, 1.1
+and 1.0 still served), and the F-Droid workflow for `v1.1.29` passed for real: built in F-Droid's
+container and "successfully verified" against the published APK. What is left is the merge
+request itself, which needs the owner's GitLab account, fork and token (open decision 20).
+

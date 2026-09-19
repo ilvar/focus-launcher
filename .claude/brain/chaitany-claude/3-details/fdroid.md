@@ -58,6 +58,11 @@ If a release ever fails the comparison, F-Droid does not publish that version: f
   certificate and the permissions, prints the APK's path) and `publish.yml` builds with
   `--no-build-cache`. 1.1.22 and 1.1.25 stay as they are (one version, one binary); the first
   reproducible release is the next one.
+- **1.1.29 is the first reproducible release, and F-Droid's tools confirm it:** in the buildserver
+  container (JDK 21, Gradle 8.14.3) `readmeta`, `rewritemeta`, `checkupdates` (picks `v1.1.29` from
+  the tags), `lint` (no warnings) and `build` pass, the published APK is fetched, its signature is
+  copied onto F-Droid's own build, and the log ends in "successfully verified". `rewritemeta` only
+  moved the `Binaries` URL onto its own line; the template is kept in that canonical form.
 - `fdroid build` exits 0 even when the build or the comparison fails: the workflow's first
   "green" run was not green. The verdict is read from its log ("Could not build app", "NOT
   verified"), and the APK it built is kept in the artifact so that a failure can be diffed.
