@@ -22,7 +22,9 @@ permissions:
 
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  # A newer push to a pull request replaces the older run. Runs on main are never cancelled:
+  # each commit there (a release commit above all) keeps its own result.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:

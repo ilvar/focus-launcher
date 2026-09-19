@@ -12,6 +12,10 @@ Asked for by the owner on 2026-09-19: "have release page where we have the apk a
   `focus-launcher-<version>-ci-<sha7>.apk`, gets a `.sha256`, and is attached to the run for 30
   days. On failure the test and lint reports are attached instead. The job summary shows version,
   size, checksum and the warning below.
+- Concurrency: a newer push to a pull request cancels the older run; runs on `main` are never
+  cancelled (the first version cancelled the run of the 1.1 release commit when the next push
+  arrived). For pull requests the APK is named after the head commit, not GitHub's temporary
+  merge commit.
 - **The pinned JDK path.** `gradle.properties` pins the owner's local JDK. CI passes
   `-Dorg.gradle.java.home="$JAVA_HOME"`, which takes precedence (checked locally: the daemon line
   of `./gradlew --version` shows the overriding JDK). No tracked file changes.
@@ -41,6 +45,15 @@ with a tag): it downloads the release's APKs and fails unless each is signed wit
 certificate (SHA-256 `526a00b8…4852a2`, public, pinned in the workflow's `env`) and matches its
 `.sha256` file. `release` events use the workflow file **from the default branch**, so the file
 has to be on `main` before the first release is published.
+- **apksigner's wording is not stable.** Locally (build-tools 36) the line reads `Signer #1
+  certificate SHA-256 digest: …`; on the runner (build-tools 37) it reads `V2 Signer: certificate
+  SHA-256 digest: …`. The first real run matched the old prefix, found nothing and called a good
+  APK wrongly signed. The check matches `certificate SHA-256 digest:` anywhere in the line, takes
+  the distinct digests and requires exactly the release one; it prints apksigner's lines so the
+  next surprise is readable in the log. Both releases were re-checked by hand
+  (`gh workflow run verify-release.yml -f tag=v1.1`): green.
+- Publishing two releases within seconds produced only one `release` run; the other was checked
+  by hand. After cutting a release, look at the run list rather than assuming.
 
 ## Cutting a release (what was done for 1.1)
 ```bash

@@ -313,4 +313,9 @@ temporary merge commit.
 in front until the owner went home, and then he was using it); the new gestures; double tap to
 lock (needs the accessibility service, still not enabled).
 
+After the fix both releases were re-checked by hand and are green (the runner's build-tools 37
+print `V2 Signer: certificate SHA-256 digest`), and the push-triggered build on `main` passed.
+That run's predecessor, the build of the 1.1 release commit itself, had been cancelled by my own
+`cancel-in-progress: true` when the next push arrived; runs on `main` are no longer cancelled.
+
 **Open:** decisions 10–16 in `2-overview/user-and-decisions.md`.
