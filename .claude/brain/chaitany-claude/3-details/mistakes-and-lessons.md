@@ -102,6 +102,14 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
 - Work-profile calendars/usage are blocked by policy for personal-side apps; respect it.
 
 ## GitHub
+- **Published an APK that nobody else could rebuild.** `assembleDist` in the everyday working
+  folder (incremental Kotlin state, Gradle build cache) kept one class that a clean build of the
+  same commit does not have. Two earlier comparisons had passed, so it looked deterministic. →
+  Releases come from `site/clean-build.sh` (fresh worktree, `--no-build-cache`) or from CI, never
+  from the working folder. "It matched twice" is not "it is reproducible": compare against a
+  clean build.
+- **A tool that exits 0 on failure makes a green run meaningless** (`fdroid build`). → When a
+  step's verdict matters, find where the tool states it and test for that.
 - **`stat -f %z FILE || stat -c %s FILE` is not a portable "file size".** On Linux `stat -f` means
   "file system": it succeeds and prints file-system facts, so the fallback never runs.
   `site/build.sh` fed that text into Python and died, but only on the runner. → `wc -c < FILE`.

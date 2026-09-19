@@ -484,3 +484,15 @@ commit API); workflow YAML parses. The end-to-end check in F-Droid's container r
 release that carries these changes is tagged; its result is recorded below.
 **Not done, and not an agent's to do:** creating the GitLab account, forking fdroiddata, storing
 the token, and so the merge request itself.
+
+**What the end-to-end check found (same day):** `fdroid readmeta`, `rewritemeta`, `checkupdates`
+(version 1.1.25 / code 25 read from the tag name) and `lint` passed in F-Droid's container, and
+its build of the tag succeeded (JDK 21, Gradle 8.14.3, no wrapper). The comparison with the
+published 1.1.25 **failed**: one class more in the published `classes.dex`. A clean worktree build
+of the tag on the owner's Mac was identical to F-Droid's, so the recipe and the build are
+reproducible and the published APK was not: it had been built in the working folder. Fixed by
+`site/clean-build.sh` and `--no-build-cache` in the Publish workflow; the workflow now fails when
+`fdroid build` reports a failure (it exits 0 regardless) and keeps F-Droid's APK for a diff.
+Two workflow bugs on the way: files mounted into the container have to belong to its user
+(`rewritemeta` sets timestamps), and the "green" first run that was not.
+

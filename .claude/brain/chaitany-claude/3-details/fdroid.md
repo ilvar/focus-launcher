@@ -48,6 +48,19 @@ other, and F-Droid says the choice cannot be changed later. So it was tested bef
 - Recipe: `Binaries: …/releases/download/v%v/focus-launcher-%v.apk` and
   `AllowedAPKSigningKeys: <release certificate SHA-256>`.
 If a release ever fails the comparison, F-Droid does not publish that version: fix and tag again.
+- **The first real comparison failed, and the build was not the culprit.** F-Droid's container
+  built 1.1.25 fine, but its `classes.dex` had one class fewer than the published APK (a small
+  settings enum that R8 had kept), so the baseline profiles differed too. A build of the same tag
+  from a **fresh worktree with `--no-build-cache`** on the owner's Mac was identical to F-Droid's,
+  file for file. The published APK had been built in the long-lived working folder, with its
+  incremental-compilation state and build cache. → **A published APK is always built by
+  `site/clean-build.sh`** (clean worktree of HEAD, no build cache, tests, lint, checks the
+  certificate and the permissions, prints the APK's path) and `publish.yml` builds with
+  `--no-build-cache`. 1.1.22 and 1.1.25 stay as they are (one version, one binary); the first
+  reproducible release is the next one.
+- `fdroid build` exits 0 even when the build or the comparison fails: the workflow's first
+  "green" run was not green. The verdict is read from its log ("Could not build app", "NOT
+  verified"), and the APK it built is kept in the artifact so that a failure can be diffed.
 
 ## The manual workflow: `.github/workflows/fdroid.yml` ("F-Droid", `workflow_dispatch` only)
 Inputs: `tag` (empty = newest `vX.Y.Z`), `build` (default on), `submit` (default off).

@@ -79,13 +79,15 @@ With CI publishing on: merge to `main`, the owner approves the waiting Publish r
 release page, checksums). Bump `baseVersion` when the change deserves a new 1.x. By hand, from
 the machine that has the key:
 1. Decide whether `baseVersion` in `app/build.gradle.kts` changes (the build number is automatic).
-2. `./gradlew :app:testDebugUnitTest :app:lintDebug` clean. Keep a copy of the previous `dist` APK.
+2. `site/clean-build.sh`: tests, lint and the signed APK **from a clean worktree, without the
+   build cache**. Never publish an APK built in the working folder: it is not reproducible
+   (`3-details/fdroid.md`), and F-Droid only ships our APK if its own build is identical.
 3. Owner's phone: `assembleRelease` → `adb install --user 0 -r` → `compile -m speed-profile -f`.
 4. If the app's look changed, update the site's copy and mockups; preview `site/public` locally.
 5. Audit, commit, push (a pull request lets CI prove itself first), merge.
 6. `git tag v<version>` → `gh release create` with the APK and `.sha256` from `site/public/`.
-7. Public: `./gradlew :app:assembleDist && site/deploy.sh` (the APK file name carries the version;
-   older APKs stay on the server so old links keep working). Exact commands: `ci-and-releases.md`.
+7. Public: `FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh` (the APK file name carries
+   the version; older APKs stay on the server so old links keep working).
 
 ## Open
 CI publishing is built but waits for the owner to run the setup script · the F-Droid merge

@@ -111,7 +111,9 @@ jobs:
             printf 'keyPassword=%s\n' "$KEY_PASSWORD"
           } > keystore.properties
           trap 'rm -f keystore.properties "$keystore"' EXIT
-          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :app:assembleDist
+          # No build cache for the APK that gets published: it has to be exactly what a clean checkout
+          # of this commit produces, or F-Droid will not accept it as identical to its own build.
+          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" --no-build-cache :app:assembleDist
           mkdir -p "$RUNNER_TEMP/apk"
           cp app/build/outputs/apk/dist/app-dist.apk "$RUNNER_TEMP/apk/focus-launcher.apk"
 
