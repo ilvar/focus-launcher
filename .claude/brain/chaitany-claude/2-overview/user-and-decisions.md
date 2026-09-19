@@ -37,6 +37,7 @@
 | **The brain holds everything done so far** (2026-09-19: "update the brain [with] what you have done up till this point") | Not only the last task: every feature and area of work has a home in some tier, checked against the code. How: `3-details/brain-upkeep.md` |
 | **Ship the collaborator's work** (2026-09-19: "there are new commit check them and push the new app in my phone as well as on the server download") | PR #1 was reviewed, built, released as **1.1**, installed on his phone and published on the site. "Check them" = a review first (`3-details/ci-and-releases.md`). The points in it that touch his earlier decisions stay open below (10–14): shipping was asked for, those were not answered |
 | **A release page with the APK** | GitHub releases, tag per version, the same APK as the website with its checksum; 1.0 and 1.1 are there |
+| **Submit to F-Droid, with a manually run CI for it** (2026-09-20) | Repo made F-Droid-ready (GPL-3.0, Fastlane listing, reproducible build so F-Droid ships the APK signed with his own key, recipe). `fdroid.yml` runs only by hand: it checks the recipe with F-Droid's tools and can open the merge request. The GitLab account, fork and token are his to create (open decision 20) |
 | **CI that builds an APK on GitHub** | Tests, lint and an APK on every push and pull request; that APK is signed with a throwaway key |
 | **The site gets the latest APK when CI has built it** (2026-09-20), **automatically, with his approval** (chosen from three options) | `publish.yml`: signs with the real key, uploads, creates the release, after he approves the run. Keys live in a protected GitHub environment; the server upload key can only deliver site files. He switches it on himself with `site/setup-ci-publishing.sh` |
 
@@ -59,14 +60,16 @@ anything else Android calls social is a *tool* if the system says it can browse,
 else *unsure* and left alone. Details: `3-details/app-classification.md`.
 
 ## Open decisions (raised, waiting for him)
-1. **License** for the public repo (none yet = all rights reserved). Site says "source is public".
+1. ~~License.~~ Decided 2026-09-20: **GPL-3.0** (recorded as GPL-3.0-or-later), chosen from three
+   options when F-Droid required one. The collaborator's merged code is part of the app: he was
+   asked in the pull request to confirm the license for his contributions; not answered yet.
 2. **His phone still runs the debug-key `release` build.** Moving to the public `dist` build needs
    one uninstall (settings reset). Offered, not done. Never uninstall without asking.
 3. **Google Search Console** verification (needs his Google account).
 4. A link to `/focusapp/` from the how2me.me homepage (his other site; offered, not edited).
 5. Commit author address: his global git identity is used; GitHub's noreply alternative offered.
-6. `gradle.properties` pins a local JDK path: a fresh clone elsewhere fails until it is removed
-   or overridden (`-Dorg.gradle.java.home=…`, which is what CI does).
+6. ~~`gradle.properties` pins a local JDK path.~~ Removed 2026-09-20 (F-Droid's server would have
+   failed on it). On the owner's Mac every `./gradlew` now takes `-Dorg.gradle.java.home=<JDK 21>`.
 7. ~~No GitHub Release with the APK attached.~~ Done 2026-09-19 (1.0 and 1.1).
 8. The accessibility service is not enabled on his phone, so mid-session locking is untested.
 9. One observation about the main site's configuration, unrelated to Focus: `private/server.md`.
@@ -104,3 +107,7 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
     is his to say.** Both halves hug the line (clock text right-aligned, section text
     left-aligned) and the row sits near the top. That is a reading of the sketch, easy to change:
     alignment, sizes, which section is on the right by default.
+20. **The F-Droid merge request needs him:** a GitLab.com account, a public fork of
+    fdroid/fdroiddata, a token (`api` scope) stored with `gh secret set FDROID_GITLAB_TOKEN --env
+    release`, and `gh variable set FDROID_GITLAB_FORK`. Then: run "F-Droid" with `submit` ticked,
+    approve it, and answer the reviewers on GitLab. Agents do not create accounts or enter tokens.

@@ -9,7 +9,7 @@ little as possible. No icons, no colour: black and white, the time, up to five a
 and an honest picture of where the day went. It locks social apps and games when their daily time
 is up, and once a week it shows you the week you actually had.
 
-**[Website](https://how2me.me/focusapp/)** · **[Download the APK](https://github.com/patelchaitany/focus-launcher/releases/latest)** (1.3 MB, Android 8.0+) · **[All releases](https://github.com/patelchaitany/focus-launcher/releases)** · no ads, no account, **no internet permission**
+**[Website](https://how2me.me/focusapp/)** · **[Download the APK](https://github.com/patelchaitany/focus-launcher/releases/latest)** (1.3 MB, Android 8.0+) · **[All releases](https://github.com/patelchaitany/focus-launcher/releases)** · free software (GPL-3.0-or-later) · no ads, no account, **no internet permission**
 
 [![Build](https://github.com/patelchaitany/focus-launcher/actions/workflows/build.yml/badge.svg)](https://github.com/patelchaitany/focus-launcher/actions/workflows/build.yml)
 
@@ -129,10 +129,9 @@ adb shell cmd package compile -m speed-profile -f com.focus.launcher   # optiona
 and scrolling stutter there in a way they do not in release. `profileinstaller` is included so the
 baseline profiles inside the Compose libraries are applied to sideloaded builds too.
 
-Two machine-specific files:
-- `local.properties` → `sdk.dir` (not for version control).
-- `gradle.properties` → `org.gradle.java.home` is pinned to Homebrew's JDK 21, because Gradle 8.14
-  cannot run on JDK 25. Remove or edit that line on another machine.
+One machine-specific file: `local.properties` → `sdk.dir` (not for version control). The JDK is
+not pinned anywhere in the repository. Gradle 8.14 runs on JDK 17–21; if your default `java` is
+newer, add `-Dorg.gradle.java.home=/path/to/jdk-21` to the commands above, or set `JAVA_HOME`.
 
 **Continuous integration.** Every push to `main` and every pull request runs the unit tests,
 lint and an optimized build on GitHub Actions (`.github/workflows/build.yml`), and the APK can be
@@ -140,8 +139,7 @@ downloaded from the run's page for 30 days. That APK is signed with a throwaway 
 runner: good for trying a change, but it is not the official download and cannot be installed
 over it (or the other way round). This workflow uses no secrets, so it is safe for pull requests
 from anyone; the real key is only ever used by the Publish workflow below. It passes the runner's
-JDK with `-Dorg.gradle.java.home`, which overrides the pinned path above without touching a
-tracked file.
+JDK with `-Dorg.gradle.java.home`.
 
 **Versions.** `baseVersion` in `app/build.gradle.kts` is chosen by a human; the build number is the
 number of commits (`1.1.13` = base 1.1, 13 commits), and it is also the `versionCode`. A build from
@@ -335,3 +333,23 @@ previous evening.
 The OS keeps raw events for only about a week, so each finished day is stored as
 `files/usage/YYYY-MM-DD.json`. That is what lets the review look further back. Bump
 `DayUsage.CACHE_VERSION` whenever the computation changes.
+
+## F-Droid
+
+Focus is being submitted to [F-Droid](https://f-droid.org). F-Droid builds every app itself, from
+source, following a recipe in its own repository; nothing is uploaded to it. The recipe
+(`fdroid/com.focus.launcher.yml`), what F-Droid reads from this repository
+(`fastlane/metadata/android/en-US/`) and the manual "F-Droid" workflow that checks the recipe with
+F-Droid's own tools are explained in [`fdroid/README.md`](fdroid/README.md). The build is
+reproducible, so F-Droid can ship the very APK that is on the website, signed with the project's
+key, after checking that its own build is identical.
+
+## License
+
+Copyright (C) 2026 Chaitany Patel and contributors.
+
+Focus is free software: you can redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version. It is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See [`LICENSE`](LICENSE) for the full text.

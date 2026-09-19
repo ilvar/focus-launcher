@@ -1,8 +1,9 @@
 # Tier 3 · Toolchain and build
 
 ## The development machine (macOS, Homebrew)
-- Default `java` is **JDK 25**, which Gradle 8.14 cannot run on. `gradle.properties` pins
-  `org.gradle.java.home` to Homebrew `openjdk@21`. Homebrew JDKs (17, 21, 25) are not registered
+- Default `java` is **JDK 25**, which Gradle 8.14 cannot build on. Nothing in the repo pins a JDK
+  (since 2026-09-20): pass `-Dorg.gradle.java.home=<Homebrew openjdk@21 home>` to every `./gradlew`
+  here (in zsh wrap it in a function, not a variable: `g() { ./gradlew -D… "$@"; }`). Homebrew JDKs (17, 21, 25) are not registered
   with `/usr/libexec/java_home`. No Android Studio, no system `gradle`: the wrapper was generated
   from the cached distribution in `~/.gradle/wrapper/dists/gradle-8.14.3-bin/…`.
 - Android SDK: `/opt/homebrew/share/android-commandlinetools` (platforms 31/34/35/**36**,

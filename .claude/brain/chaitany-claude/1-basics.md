@@ -47,6 +47,7 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 
 ## Commands
 ```bash
+# On the owner's Mac add -Dorg.gradle.java.home=<JDK 21 home> to every ./gradlew (default java is too new)
 ./gradlew :app:testDebugUnitTest :app:lintDebug      # must stay: all tests pass, lint 0 errors
 ./gradlew :app:assembleRelease                        # optimized, DEBUG-key signed: for the owner's phone
 adb install --user 0 -r app/build/outputs/apk/release/app-release.apk   # --user 0: not into a work profile
@@ -54,24 +55,23 @@ adb shell cmd package compile -m speed-profile -f com.focus.launcher
 ./gradlew :app:assembleDist && site/deploy.sh         # public APK (release key) + site, verified
 ```
 Three build types: `debug`, `release` (owner's phone), `dist` (public). `dist` cannot be installed
-over `release` or the reverse: different signatures. JDK: Gradle 8.14 cannot run on JDK 25;
-`gradle.properties` pins a JDK 21 path.
+over `release` or the reverse: different signatures. No JDK path is pinned in the repo any more.
 
 ## State of the world (2026-09-20)
-**Public: 1.1.22** on the site and the release page (next to 1.1 and 1.0, whose links still work):
-the split clock from the owner's second sketch, on top of a collaborator's merged PR #1 (drawer
-sort and tabs, swipe right = web search, a drawn work badge, screen time in words instead of the
-24-hour bar). The points of PR #1 that touch the owner's earlier decisions still wait for his word
-(open decisions 10–14). The owner's phone runs the same code as a debug-key build.
-Versions are `<base>.<commit count>`. Publishing is still **by hand** (`assembleDist` +
-`site/deploy.sh` + `gh release create`, see `3-details/ci-and-releases.md`): CI publishing is built
-but off until the owner runs `site/setup-ci-publishing.sh` himself (agents never run it).
-CI builds every push and pull request. A collaborator's PR #5 (home cards) is open, conflicts
-with `main`, and needs a review before anything from it is built for the phone or the public.
+**Public:** the newest `vX.Y.Z` release on the site and the release page (1.1 and 1.0 still
+served): the split clock from the owner's second sketch, on top of a collaborator's merged PR #1
+(drawer sort and tabs, swipe right = web search, a drawn work badge, screen time in words). The
+points of PR #1 that touch the owner's earlier decisions still wait for his word (open decisions
+10–14). The owner's phone runs the same code as a debug-key build. License: **GPL-3.0-or-later**.
+Versions are `<base>.<commit count>`. Publishing is still **by hand** (`3-details/ci-and-releases.md`):
+CI publishing is built but off until the owner runs `site/setup-ci-publishing.sh` himself.
+**F-Droid:** the repo is ready (listing, reproducible build, recipe, manual workflow); the merge
+request needs the owner's GitLab account and token (`3-details/fdroid.md`). Agents never run the
+setup script, create accounts or enter tokens.
+A collaborator's PR #5 (home cards) is open, conflicts with `main`, and needs a review first.
 The accessibility service has **not been enabled** on the phone, so mid-session locking and double
-tap to lock are untested there. Google Search Console not done. **No LICENSE** (owner to decide).
-The brain is committed and public (`3-details/brain-upkeep.md`). Publishing happens on request:
-`git status` shows whether there is unpushed work.
+tap to lock are untested there. Google Search Console not done.
+The brain is committed and public (`3-details/brain-upkeep.md`). Publishing happens on request.
 
 ## Tier 2 index: read the area(s) you will touch
 - `2-overview/user-and-decisions.md` — what the owner asked for and decided; open decisions

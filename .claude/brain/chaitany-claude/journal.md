@@ -447,3 +447,40 @@ as before; the domain's main site and `/robots.txt` still 200; IndexNow accepted
 `versionCode`, so it should; the owner's phone carries the debug-key build and cannot take it).
 
 **Open:** unchanged. PR #5 from the collaborator still waits for a review.
+
+## 2026-09-20 · F-Droid: license, listing, reproducible build, a manual workflow
+
+**Asked:** submit the app to F-Droid following its quick start guide, and "create another CI to
+push it on fdroid and make it run manually".
+
+**Found first:** F-Droid takes no uploads (it builds from source from a recipe in its own GitLab
+repository, proposed once as a merge request), and it requires a FOSS license, which the repo did
+not have. The owner was asked and chose **GPL-3.0**.
+
+**Done:**
+- `LICENSE` (GPLv3 text; stated as GPL-3.0-or-later in the README, on the site and in the recipe).
+- Listing in `fastlane/metadata/android/en-US/`: title, 73-character summary, description, icon
+  rendered from the app's vector icon, four screenshots **drawn** by `fastlane/screenshots.py`
+  with invented content, and a changelog for the first F-Droid version.
+- The JDK pin left `gradle.properties` (F-Droid's server would have failed on it; open decision 6
+  closed). On the owner's Mac every `./gradlew` now takes `-Dorg.gradle.java.home=<JDK 21>`.
+- Versions: F-Droid reads version name and code from the tag name (`UpdateCheckData` with empty
+  file fields), which fits the commit-count scheme because releases are tagged `v<base>.<count>`.
+- **Reproducible build, tested before relying on it:** the same commit built on GitHub's Linux
+  runner and on macOS gave 119 identical entries but one, AGP's version-control stamp; with
+  `vcsInfo` and the dependency-info block off, and `-Pfocus.unsigned`, the unsigned `release`
+  build is entry-for-entry identical to the published `dist` APK. The recipe therefore names the
+  published APK and the release certificate, so F-Droid ships the APK signed with the project's
+  own key and the website and F-Droid copies can update each other.
+- `fdroid/com.focus.launcher.yml` (recipe template), `fdroid/MERGE_REQUEST.md` (F-Droid's
+  checklist, filled in), `fdroid/README.md`, and `.github/workflows/fdroid.yml`: manual only;
+  `check` runs F-Droid's own tools in F-Droid's build container, `submit` opens the merge request
+  through GitLab's API, in the protected `release` environment, only with the owner's token.
+- New `3-details/fdroid.md`; decisions 1 and 6 closed, 20 opened.
+
+**Verified:** 25 tests, lint 0 errors without the pinned JDK; the three build variants compared
+entry by entry; every pinned action commit looked up (one of them double-checked against the
+commit API); workflow YAML parses. The end-to-end check in F-Droid's container runs after the
+release that carries these changes is tagged; its result is recorded below.
+**Not done, and not an agent's to do:** creating the GitLab account, forking fdroiddata, storing
+the token, and so the merge request itself.
