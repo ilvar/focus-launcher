@@ -1,7 +1,10 @@
 #!/bin/bash
 # Builds the site and uploads it to https://how2me.me/focusapp/
 #
-#   ./gradlew :app:assembleDist && site/deploy.sh
+#   FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh
+#
+# (A published APK is built from a clean checkout, see site/clean-build.sh. Without FOCUS_APK the
+#  APK in app/build/outputs/apk/dist is used, which is fine for a trial run and wrong for a release.)
 #
 # Only files in /var/www/focusapp are touched. nginx is not: its rules were installed once
 # (site/nginx-focusapp.conf -> /etc/nginx/snippets/focusapp.conf, included from the how2me site).

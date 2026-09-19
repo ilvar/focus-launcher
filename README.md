@@ -179,8 +179,12 @@ APK download. Source in `site/src`, generated output in `site/public` (git-ignor
 the APK).
 
 ```bash
-./gradlew :app:assembleDist && site/deploy.sh   # build signed APK, build site, upload, verify
+FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh   # clean signed build, build site, upload, verify
 ```
+
+`site/clean-build.sh` builds the APK from a fresh checkout of the current commit without Gradle's
+build cache. That is what makes it reproducible: a build made in a long-lived working folder came
+out with one class more than the same commit built anywhere else.
 
 `deploy.sh` re-downloads the APK afterwards and compares its SHA-256 with the local build, so a
 bad upload fails loudly. The page shows that same checksum.
@@ -193,7 +197,7 @@ with the project's release key (certificate SHA-256
 `526a00b874660af4266699d5795a457ddebe958a78484820fac4b61b2a4852a2`; check any APK yourself with
 `apksigner verify --print-certs`). Releases are normally made by the Publish workflow (see
 Building). By hand, from the machine that has the key: run the tests and lint,
-`./gradlew :app:assembleDist && site/deploy.sh`, tag `v<version>`, then
+`FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh`, tag `v<version>`, then
 `gh release create v<version> focus-launcher-<version>.apk focus-launcher-<version>.apk.sha256`
 with the files from `site/public/`. `deploy.sh` refuses to upload an APK that differs from an
 existing release of the same version.

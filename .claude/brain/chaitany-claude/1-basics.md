@@ -52,7 +52,7 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 ./gradlew :app:assembleRelease                        # optimized, DEBUG-key signed: for the owner's phone
 adb install --user 0 -r app/build/outputs/apk/release/app-release.apk   # --user 0: not into a work profile
 adb shell cmd package compile -m speed-profile -f com.focus.launcher
-./gradlew :app:assembleDist && site/deploy.sh         # public APK (release key) + site, verified
+FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh   # public APK from a CLEAN checkout + site
 ```
 Three build types: `debug`, `release` (owner's phone), `dist` (public). `dist` cannot be installed
 over `release` or the reverse: different signatures. No JDK path is pinned in the repo any more.
