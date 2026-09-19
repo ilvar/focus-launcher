@@ -44,6 +44,9 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   It bit twice. The second time it was inside an audit: `cat $FILES` failed, `grep -c` read
   nothing and reported a reassuring **0**. → A count-only check must also print how much it read
   (`wc -l`), and a file list goes through a file or `xargs -0`, never through an unquoted variable.
+- **A version-catalog alias becomes Kotlin code.** `json-for-tests` turns into
+  `libs.json.for.tests`, and `for` is a keyword: the build script does not compile. → No Kotlin
+  keywords (`for`, `in`, `is`, `as`, `fun`, `val`, `class`, `object`…) as a segment of an alias.
 - **SSH control socket path too long** (>104 bytes in the scratch dir): tunnel never started. →
   Background the ssh with `&`, keep `$!`, `kill` it.
 - **`git check-ignore --no-index` outside a repo** reports everything as not ignored. → `git init`

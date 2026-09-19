@@ -28,7 +28,7 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 ## Features and where they live
 | Feature | Where |
 | --- | --- |
-| Ring clock (battery or day), tap/long-press action | `ui/home/HomeWidgets.kt` `HomeClock`, `ClockTapDialog.kt` |
+| Clock: split (default), ring (battery or day) or plain; tap/long-press action | `ui/home/HomeWidgets.kt` `HomeClock`, `ClockTapDialog.kt` |
 | Screen time on home: title + total + "N% of today" (of 24 h) below the clock, outside the ring, no setting; tap → review (the 24-hour bar was removed from home; `DayBar` lives on in the review) | `HomeWidgets.kt` `ScreenTimeLine`; height counted in `HomeScreen` `heightOf` |
 | Home layout that always fits | `ui/home/HomeScreen.kt` (`Fit` options, measured constants) |
 | Drawer: search ranking, recent installs, A–Z scrubber | `ui/drawer/DrawerScreen.kt` |
@@ -52,6 +52,10 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
   needs the accessibility service. Keep both working independently.
 - **Settings is one JSON blob**; `fromJson` must tolerate missing keys (older installs).
 - **Changing a default does not reach existing installs**: the saved JSON already holds the key.
+  When an old stored value has to be reinterpreted, bump `Settings.SCHEMA` (stored as `"v"`) and
+  migrate in `fromJson`: schema 2 turned a stored `RING` from before into `SPLIT` once (it was the
+  old default, not a choice; a stored `PLAIN` was a choice and is kept). Tested in
+  `SettingsMigrationTest`.
   `doubleTapLock` became `true` on 2026-09-19; an older install keeps `false` until it is switched
   on in Settings → Gestures. Keys absent from old JSON (`swipeRightSearch`, `drawerSort`) do get
   the new default.
@@ -67,8 +71,10 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
   (use `currentLocale()` and `collectAsStateWithLifecycle`).
 
 ## Quality bar
-19 unit tests pass; `lintDebug` = 0 errors (remaining warnings are "newer version available",
-deliberate: newer AndroidX needs compileSdk 37 + AGP 9.1). 35 Kotlin files, 6,957 lines.
+25 unit tests pass (tracker 13, emoji 6, settings migration 6; `org.json` is a test-only
+dependency because the JVM has none); `lintDebug` = 0 errors (remaining warnings are "newer
+version available", deliberate: newer AndroidX needs compileSdk 37 + AGP 9.1). 35 Kotlin files,
+about 7,200 lines.
 Release APK = 1,366,083 bytes (≈ 1.37 MB). Version **1.1** (`versionCode` 2) since 2026-09-19;
 1.0 was 1,366,063 bytes. The same checks run on GitHub for every push and pull request.
 

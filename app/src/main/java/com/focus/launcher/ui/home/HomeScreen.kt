@@ -56,9 +56,11 @@ import com.focus.launcher.data.CalendarInfo
 import com.focus.launcher.data.CalendarRepository
 import com.focus.launcher.data.ClockStyle
 import com.focus.launcher.data.DayUsage
+import com.focus.launcher.data.FontChoice
 import com.focus.launcher.data.SHORTCUT_CAMERA
 import com.focus.launcher.data.SHORTCUT_PHONE
 import com.focus.launcher.data.Settings
+import com.focus.launcher.data.SplitSide
 import com.focus.launcher.data.TAP_ALARMS
 import com.focus.launcher.data.TAP_BATTERY
 import com.focus.launcher.data.TAP_CALENDAR
@@ -67,6 +69,7 @@ import com.focus.launcher.data.TAP_SCREEN_TIME
 import com.focus.launcher.data.TimeFormat
 import com.focus.launcher.service.FocusAccessibilityService
 import com.focus.launcher.ui.components.AppPickerDialog
+import com.focus.launcher.ui.components.ChoiceDialog
 import com.focus.launcher.ui.components.T
 import com.focus.launcher.ui.components.VSpace
 import com.focus.launcher.ui.components.WorkBadge
@@ -141,6 +144,13 @@ fun HomeScreen(
 
     var editingShortcut by remember { mutableStateOf<Boolean?>(null) } // true = left, false = right
     var choosingClockTap by remember { mutableStateOf(false) }
+    var choosingSplitSide by remember { mutableStateOf(false) }
+
+    // Split clock: the section in its right half is not shown a second time further down. The
+    // calendar can only sit there while the calendar section is on; otherwise it is screen time.
+    val split = settings.clockStyle == ClockStyle.SPLIT
+    val sideCalendar = split && settings.splitSide == SplitSide.CALENDAR && settings.showCalendar
+    val sideScreenTime = split && !sideCalendar
 
     val favorites = remember(settings.favorites, apps) { settings.favorites.mapNotNull { key -> apps.firstOrNull { it.key == key } } }
     // Fast apps whose allowance for today is gone are shown dimmed.
@@ -203,15 +213,33 @@ fun HomeScreen(
 
         class Fit(val ring: Dp, val textSp: Float, val padDp: Float, val maxEvents: Int)
 
+        // Split clock: the time is as large as its half allows. Digits are about 0.56 em wide in the
+        // sans and serif faces and 0.6 em in the monospace one; "AM" / "PM" takes its share first.
+        val use24h = when (settings.timeFormat) {
+            TimeFormat.SYSTEM -> DateFormat.is24HourFormat(context)
+            TimeFormat.H24 -> true
+            TimeFormat.H12 -> false
+        }
+        val halfWidth = (maxWidth.value - 36f) / 2f - 30f // column padding, then the half's own padding
+        val amPmWidth = if (use24h) 0f else 26f * textScale
+        val emsWide = if (settings.font == FontChoice.MONO) 3.1f else 2.75f
+        val splitTimeSp = ((halfWidth - amPmWidth) / emsWide / textScale).coerceIn(30f, 56f)
+
         fun heightOf(fit: Fit): Float {
-            val clock = if (settings.clockStyle == ClockStyle.RING) fit.ring.value else 100f * textScale
+            val splitClock = (splitTimeSp * 1.2f + 42f) * textScale + 16f
+            val splitSide = if (sideCalendar) eventCount.coerceIn(1, 2) * 44f * textScale + 16f else 86f * textScale + 16f
+            val clock = when (settings.clockStyle) {
+                ClockStyle.RING -> fit.ring.value
+                ClockStyle.SPLIT -> maxOf(splitClock, splitSide)
+                ClockStyle.PLAIN -> 100f * textScale
+            }
             val noticeLines = if (notices > 0) 14f + notices * (19f * textScale + 12f) else 0f
             val shownEvents = fit.maxEvents.coerceAtMost(eventCount).coerceAtLeast(1)
             val strip = if (settings.showWeekStrip) 46f + 14f * textScale else 0f
-            val calendar = if (settings.showCalendar) 22f + 14f * textScale + strip + shownEvents * (18f * textScale + 6f) else 0f
+            val calendar = if (settings.showCalendar && !sideCalendar) 22f + 14f * textScale + strip + shownEvents * (18f * textScale + 6f) else 0f
             val shortcuts = if (settings.showShortcuts) 28f + 20f * textScale else 20f
             val rows = rowCount * (fit.textSp * 1.2f * textScale + fit.padDp * 2)
-            val screenTime = 25f + 64f * textScale // gap, title, total, share of the day
+            val screenTime = if (sideScreenTime) 0f else 25f + 64f * textScale // gap, title, total, share of the day
             return clock + screenTime + noticeLines + calendar + rows + shortcuts + 6f + 36f // 36 = air
         }
 
@@ -231,26 +259,55 @@ fun HomeScreen(
             Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 18.dp),
             horizontalAlignment = settings.homeAlign.horizontal(),
         ) {
-            Spacer(Modifier.weight(0.9f))
+            // The split clock is a header: it sits near the top. The ring floats lower, as a centrepiece.
+            Spacer(Modifier.weight(if (split) 0.35f else 0.9f))
 
-            HomeClock(
-                settings = settings,
-                now = now,
-                ringSize = ring,
-                onTap = { performClockTap(context, settings.clockTap, apps, onLaunch) { onOpenReview(null) } },
-                onLongPress = { choosingClockTap = true },
-                modifier = if (settings.clockStyle == ClockStyle.RING) Modifier.align(Alignment.CenterHorizontally) else Modifier,
-            )
+            val clockTap: () -> Unit = { performClockTap(context, settings.clockTap, apps, onLaunch) { onOpenReview(null) } }
+            val openScreenTime: () -> Unit = { if (usageAccess) onOpenReview(null) else Perms.openUsageAccess(context) }
+            if (split) {
+                SplitClockRow(
+                    settings = settings,
+                    now = now,
+                    timeSize = splitTimeSp.sp,
+                    onTap = clockTap,
+                    onLongPress = { choosingClockTap = true },
+                ) {
+                    if (sideCalendar) {
+                        SplitCalendar(
+                            today = now.toLocalDate(),
+                            events = events,
+                            hasAccess = calendarAccess,
+                            use24h = use24h,
+                            onClick = { openCalendarApp(context) },
+                            onLongPress = { choosingSplitSide = true },
+                            onRequestAccess = { askCalendar.launch(Manifest.permission.READ_CALENDAR) },
+                        )
+                    } else {
+                        SplitScreenTime(today, usageAccess, onClick = openScreenTime, onLongPress = { choosingSplitSide = true })
+                    }
+                }
+            } else {
+                HomeClock(
+                    settings = settings,
+                    now = now,
+                    ringSize = ring,
+                    onTap = clockTap,
+                    onLongPress = { choosingClockTap = true },
+                    modifier = if (settings.clockStyle == ClockStyle.RING) Modifier.align(Alignment.CenterHorizontally) else Modifier,
+                )
+            }
 
-            VSpace(10.dp)
-            val ringed = settings.clockStyle == ClockStyle.RING
-            ScreenTimeLine(
-                today = today,
-                hasAccess = usageAccess,
-                align = if (ringed) Alignment.CenterHorizontally else settings.homeAlign.horizontal(),
-                onClick = { if (usageAccess) onOpenReview(null) else Perms.openUsageAccess(context) },
-                modifier = if (ringed) Modifier.align(Alignment.CenterHorizontally) else Modifier,
-            )
+            if (!sideScreenTime) {
+                VSpace(10.dp)
+                val ringed = settings.clockStyle == ClockStyle.RING
+                ScreenTimeLine(
+                    today = today,
+                    hasAccess = usageAccess,
+                    align = if (ringed) Alignment.CenterHorizontally else settings.homeAlign.horizontal(),
+                    onClick = openScreenTime,
+                    modifier = if (ringed) Modifier.align(Alignment.CenterHorizontally) else Modifier,
+                )
+            }
 
             // One-line notices. They disappear as soon as they have been dealt with.
             if (setupIncomplete || pendingReview != null) {
@@ -265,12 +322,7 @@ fun HomeScreen(
 
             Spacer(Modifier.weight(0.8f))
 
-            if (settings.showCalendar) {
-                val use24h = when (settings.timeFormat) {
-                    TimeFormat.SYSTEM -> DateFormat.is24HourFormat(context)
-                    TimeFormat.H24 -> true
-                    TimeFormat.H12 -> false
-                }
+            if (settings.showCalendar && !sideCalendar) {
                 CalendarWidget(
                     today = now.toLocalDate(),
                     mondayStart = settings.weekStartsMonday,
@@ -285,7 +337,7 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(Modifier.weight(if (settings.showCalendar) 0.9f else 0.6f))
+            Spacer(Modifier.weight(if (settings.showCalendar && !sideCalendar) 0.9f else 0.6f))
 
             // Fast apps
             if (favorites.isEmpty()) {
@@ -340,6 +392,18 @@ fun HomeScreen(
     }
 
     if (choosingClockTap) ClockTapDialog(settings, apps) { choosingClockTap = false }
+    if (choosingSplitSide) {
+        ChoiceDialog(
+            "Next to the clock",
+            SplitSide.entries.map { it to it.label },
+            if (sideCalendar) SplitSide.CALENDAR else SplitSide.SCREEN_TIME,
+            { choosingSplitSide = false },
+        ) { side ->
+            // Choosing the calendar is also the moment to switch its section on and to ask for access.
+            Graph.settings.update { it.copy(splitSide = side, showCalendar = it.showCalendar || side == SplitSide.CALENDAR) }
+            if (side == SplitSide.CALENDAR && !CalendarRepository.hasAccess(context)) askCalendar.launch(Manifest.permission.READ_CALENDAR)
+        }
+    }
 
     editingShortcut?.let { left ->
         val visible = remember(apps, settings.hidden) { apps.filter { it.key !in settings.hidden } }

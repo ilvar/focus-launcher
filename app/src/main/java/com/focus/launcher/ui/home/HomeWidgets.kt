@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
@@ -42,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -176,11 +178,7 @@ fun HomeClock(
     // The lowest line sits where the circle is already narrowing, so a small ring gets short text.
     val compact = settings.clockStyle == ClockStyle.RING && ringSize < 172.dp
     val separator = if (compact) " " else "  ·  "
-    val batteryText = when {
-        battery.charging -> "${battery.percent}%${separator}charging"
-        battery.percent <= 15 -> "${battery.percent}%${separator}low"
-        else -> "${battery.percent}%"
-    }
+    val batteryText = batteryLine(battery, separator)
     val tap = Modifier.combinedClickable(onLongClick = onLongPress, onClick = onTap)
 
     if (settings.clockStyle == ClockStyle.RING) {
@@ -241,6 +239,134 @@ fun HomeClock(
             if (line.isNotEmpty()) T(line, Modifier.padding(vertical = 4.dp), size = 17.sp, color = c.dim, maxLines = 1)
         }
     }
+}
+
+/**
+ * The split clock: the time on the left, one section on the right, and a single vertical line
+ * between them. There is no frame around it; the line is the whole design. Both halves hug it
+ * (the clock's text ends at the line, the section's text starts there), so it reads as a spine.
+ *
+ * Each half is its own touch target and lights up like everything else. Left: tap runs the
+ * clock's action, long-press chooses it. Right: whatever [side] does with its taps.
+ */
+@Composable
+fun SplitClockRow(
+    settings: Settings,
+    now: LocalDateTime,
+    timeSize: TextUnit,
+    onTap: () -> Unit,
+    onLongPress: () -> Unit,
+    modifier: Modifier = Modifier,
+    side: @Composable () -> Unit,
+) {
+    val c = LocalFocusColors.current
+    val context = LocalContext.current
+    val locale = currentLocale()
+    val use24h = when (settings.timeFormat) {
+        TimeFormat.SYSTEM -> DateFormat.is24HourFormat(context)
+        TimeFormat.H24 -> true
+        TimeFormat.H12 -> false
+    }
+    val time = now.format(DateTimeFormatter.ofPattern(if (use24h) "HH:mm" else "h:mm"))
+    val amPm = if (use24h) null else now.format(DateTimeFormatter.ofPattern("a", locale)).uppercase()
+    val showBattery = settings.ringMode == RingMode.BATTERY
+    val battery by rememberBattery()
+
+    Row(
+        modifier
+            .fillMaxWidth()
+            // The one boundary that is kept: drawn over the row's own height, whichever half is taller.
+            .drawBehind {
+                val x = size.width / 2
+                drawLine(c.faint, Offset(x, 0f), Offset(x, size.height), strokeWidth = 1.dp.toPx())
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(
+            Modifier
+                .weight(1f)
+                .press(onLongClick = onLongPress, onClick = onTap)
+                .padding(start = 12.dp, end = 18.dp, top = 8.dp, bottom = 8.dp),
+            horizontalAlignment = Alignment.End,
+        ) {
+            Row(verticalAlignment = Alignment.Bottom) {
+                T(time, size = timeSize, weight = FontWeight.Light, maxLines = 1)
+                if (amPm != null) {
+                    HSpace(5.dp)
+                    T(amPm, Modifier.padding(bottom = (timeSize.value * 0.17f).dp), size = 12.sp, color = c.dim, maxLines = 1)
+                }
+            }
+            if (settings.showDate) {
+                VSpace(2.dp)
+                T(now.format(DATE_SHORT), size = 14.sp, color = c.dim, maxLines = 1)
+            }
+            if (showBattery) {
+                VSpace(4.dp)
+                val urgent = battery.percent <= 15 && !battery.charging
+                T(batteryLine(battery, "  ·  "), size = 12.sp, color = if (urgent) c.fg else c.faint, maxLines = 1)
+            }
+        }
+        Box(Modifier.weight(1f)) { side() }
+    }
+}
+
+/** Right half of the split clock: today's screen time. */
+@Composable
+fun SplitScreenTime(today: DayUsage?, hasAccess: Boolean, onClick: () -> Unit, onLongPress: () -> Unit) {
+    val c = LocalFocusColors.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .press(onLongClick = onLongPress, onClick = onClick)
+            .padding(start = 18.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+    ) {
+        T("Screen Time", size = 13.sp, color = c.dim, maxLines = 1)
+        VSpace(2.dp)
+        if (hasAccess) {
+            val total = today?.total ?: 0L
+            T(formatDuration(total), size = 28.sp, weight = FontWeight.Light, maxLines = 1)
+            T("${total * 100 / (24 * DayUsage.HOUR_MS)}% of today", size = 13.sp, color = c.dim, maxLines = 1)
+        } else {
+            T("Allow usage access  →", size = 14.sp, color = c.dim, maxLines = 2, lineHeight = 20.sp)
+        }
+    }
+}
+
+/** Right half of the split clock: the next events of the one calendar, two lines each. */
+@Composable
+fun SplitCalendar(
+    today: LocalDate,
+    events: List<CalEvent>,
+    hasAccess: Boolean,
+    use24h: Boolean,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit,
+    onRequestAccess: () -> Unit,
+    maxEvents: Int = 2,
+) {
+    val c = LocalFocusColors.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .press(onLongClick = onLongPress, onClick = if (hasAccess) onClick else onRequestAccess)
+            .padding(start = 18.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+    ) {
+        when {
+            !hasAccess -> T("Show upcoming events  →", size = 14.sp, color = c.dim, maxLines = 2, lineHeight = 20.sp)
+            events.isEmpty() -> T("Nothing in the next 7 days", size = 14.sp, color = c.dim, maxLines = 2, lineHeight = 20.sp)
+            else -> events.take(maxEvents).forEachIndexed { i, event ->
+                if (i > 0) VSpace(8.dp)
+                T(eventWhen(event, today, use24h), size = 12.sp, color = c.dim, maxLines = 1)
+                T(event.title, size = 15.sp, maxLines = 1)
+            }
+        }
+    }
+}
+
+private fun batteryLine(battery: BatteryState, separator: String): String = when {
+    battery.charging -> "${battery.percent}%${separator}charging"
+    battery.percent <= 15 -> "${battery.percent}%${separator}low"
+    else -> "${battery.percent}%"
 }
 
 /**

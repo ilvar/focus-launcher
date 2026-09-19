@@ -161,8 +161,19 @@ code { font: 0.8rem/1.6 var(--mono); color: var(--fg); word-break: break-all; }
 .clock-text .date { font-size: 3.7cqw; color: var(--dim); }
 .clock-text .battery { font-size: 3cqw; color: var(--faint); margin-top: 0.8cqw; }
 
+/* the split clock: time | one section, a single line between them, no frame */
+.split { display: grid; grid-template-columns: 1fr 1fr; align-items: center; margin: 9cqw 0 7cqw; background: linear-gradient(var(--faint), var(--faint)) center / 1px 100% no-repeat; }
+.split-clock { display: grid; justify-items: end; padding: 2cqw 5cqw 2cqw 0; }
+.split-clock .time { font-size: 13cqw; font-weight: 300; letter-spacing: -0.03em; line-height: 1.05; }
+.split-clock .date { font-size: 3.7cqw; color: var(--dim); }
+.split-clock .battery { font-size: 3cqw; color: var(--faint); margin-top: 0.8cqw; }
+.split-side { display: grid; padding: 2cqw 0 2cqw 5cqw; }
+.split-side .when { font-size: 3.1cqw; color: var(--dim); }
+.split-side .when.gap { margin-top: 2cqw; }
+.split-side .what { font-size: 3.9cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 /* today's screen time, in words, under the clock */
-.screen-time { display: grid; justify-items: center; gap: 0.5cqw; margin: -2.5cqw 0 8cqw; }
+.screen-time { display: grid; justify-items: start; gap: 0.5cqw; margin: 0 0 8cqw; padding-left: 1cqw; }
 .screen-time .st-title { font-size: 3.8cqw; color: var(--dim); }
 .screen-time .st-total { font-size: 6.1cqw; line-height: 1.15; }
 .screen-time .st-share { font-size: 3.3cqw; color: var(--dim); }

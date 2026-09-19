@@ -9,6 +9,8 @@ activityCompose = "1.12.4"
 lifecycle = "2.10.0"
 coroutines = "1.10.2"
 junit = "4.13.2"
+# Unit tests only: the JVM has no org.json of its own, Android does.
+orgJson = "20260814"
 profileinstaller = "1.4.1"
 
 [libraries]
@@ -22,6 +24,7 @@ androidx-compose-foundation = { group = "androidx.compose.foundation", name = "f
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+org-json = { group = "org.json", name = "json", version.ref = "orgJson" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 
 [plugins]
