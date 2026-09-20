@@ -697,4 +697,81 @@ music / note sections; the drawer's tip framed the same way.
 screenshots (window focus checked before and after): the drawer with its framed tip; the home page
 showing "TIP 7 / 12 · Tap screen time → your day" framed, with the screen-time half of the split
 clock outlined. **Not seen:** the clock, corner and section outlines; the welcome screen.
+## 2026-09-20 · The revert merged (1.1.40) and the owner's phone updated
+
+**Asked (while the revert was in CI):** "update the app on my phone also."
+**Done:** PR #12 passed Build and was merged with a merge commit: `main` = 141d9f6, build number
+40. Publish started for it and waits for the owner's approval. His phone had 1.1.37 from the
+website (installed by the package installer from a download: so Play Protect let the variant
+without the services through, which is what PR #11 was for). `site/clean-build.sh` built 1.1.40
+from a clean checkout of `main` with the release key (tests and lint run inside it); installed
+with `adb install --user 0 -r`, so his data stayed; then the passive loop: process up ~20 s,
+`compile -m speed-profile -f`, `am kill` while Focus was not in front.
+**Verified:** `dumpsys package`: 1.1.40, code 40, same release signature, installed for the main
+user only; compile status `speed-profile`; 0 crash lines for the package. Read-only: Focus is the
+default home; usage access, the accessibility service and notification access are not switched
+on yet (his to do in Setup).
+**Not verified:** double tap to lock, the song's name and mid-session locking on his phone (they
+need those switches); the Publish run (waiting for him); a browser download of 1.1.40 under Play
+Protect (expected to be blocked where the rule is enforced).
+**Then:** he added "I mean the old version of the app". That is what went onto the phone: the tag
+`v1.1.34` is the parent of the merge of #11, and `main` differs from it outside the brain only by
+the changelog file, so 1.1.40 is the old app under a higher build number (a lower number cannot
+be installed over a higher one without an uninstall, which would wipe his settings again).
+Checked on the installed file itself with aapt2: accessibility service and notification listener
+declared, no `TimerWatchService`, no INTERNET. After the install the phone's adb authorization
+lapsed (`unauthorized`), so nothing more could be read from it; the last valid reading is the one
+above.
+**Published:** the owner approved the Publish run for 141d9f6; it finished green. The site serves
+`focus-launcher-1.1.40.apk`, the release page has `v1.1.40`, and the main site still answers 200.
+
+## 2026-09-20 · "push the new app on the phone": a fresh adb install that waits for the phone
+
+**Asked:** "push the new app on the phone."
+**Found (read-only, adb state `device`):** Focus was no longer installed for any user: the owner
+had removed 1.1.40 again. The APK from `site/clean-build.sh` has the same SHA-256 as the one the
+Publish workflow put on the site, so "one version = one binary" held for 1.1.40.
+**Done:** `adb install --user 0 -r build/clean/focus-launcher-1.1.40.apk`. It did not return: the
+phone was locked with its screen off, the Play Store is registered as package verifier, and no
+prompt window existed yet. A *fresh* install of an APK the verifier has not seen can wait for an
+answer on the phone's screen; the update over 1.1.37 an hour earlier had gone through in seconds.
+The owner was asked to unlock the phone and answer the prompt. Not worked around: switching the
+verifier off is a security setting and stays his.
+**Result:** the install returned "Success" once the phone was attended to (several minutes after
+it was started). Verified read-only: 1.1.40, code 40, release signature, installed for the main
+user only; Focus is the default home and has usage access; compiled `speed-profile` after ~20 s
+of running (left running because it was in front: the compiled code applies from its next
+start); 0 crash lines. The accessibility service and notification access were still off: his to
+switch on, so double tap to lock, mid-session locking and the song's name remain unseen there.
+
+## 2026-09-20 · The music section hides while nothing is playing
+
+**Asked:** "when there is nothing playing then the music control should hide automatically."
+**Done (branch `music-auto-hide`, local, not pushed):** `MusicState` / `rememberMusicState` hoist
+what the section knows up to `HomeScreen`, so the section, the line above it and its share of
+`heightOf` exist only while something plays, or for one minute after a stop that was seen
+happening (`ui/home/MusicLinger.kt`, pure). Without notification access the audio system's
+playback callback says whether media is sounding. `Settings.musicAutoHide` (default on, also for
+existing installs) with a row in Settings → Home screen; README; changelog `43.txt` for the
+version a merge of this branch becomes. Details: `3-details/home-drawer-menu-setup.md`.
+**Verified:** 33 unit tests (7 new for the rule, 1 for the setting's default on old installs),
+lint 0 errors; `site/clean-build.sh` → 1.1.41 (release key), checked to contain the new code;
+installed on the owner's phone with `--user 0 -r` over 1.1.40 (data kept), compiled
+`speed-profile`, 0 crash lines. He has given Focus notification access in the meantime.
+**Not verified:** the behaviour itself on the phone. Nothing was playing and the home screen
+did not come to the front during a passive wait of 2.5 minutes, so no guarded look was possible:
+his eyes are the test. Not pushed, so not published.
+
+## 2026-09-21 · The hiding music section goes straight to `main` (no pull request, his word)
+
+**Asked:** "push this changes no need to create new PR."
+**Done:** `main` was not protected and had not moved; the branch `music-auto-hide` was
+fast-forwarded into it and pushed, with this entry as its third commit, which makes the build
+number 43: the number the changelog `43.txt` was written for. No pull request means no CI before
+the merge, so what stood in for it was the local run (33 tests, lint 0 errors) and the clean
+build that the phone already runs as 1.1.41 (same code). The push starts Build and Publish;
+Publish waits for the owner's approval and makes it 1.1.43.
+**Decision recorded:** for his own small changes he may ask for a direct push; a pull request is
+not a rule of this repository. Contributors' work still gets a review first.
+**Open:** the results of Build and Publish, and his own look at the behaviour on the phone.
 

@@ -15,6 +15,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import android.media.AudioManager
+import android.media.AudioAttributes
+import android.media.AudioPlaybackConfiguration
+import android.os.Handler
+import android.os.Looper
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
@@ -23,13 +30,11 @@ import android.provider.Settings as AndroidSettings
 import android.view.KeyEvent
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.LifecycleStartEffect
 import com.focus.launcher.service.MediaListener
 import com.focus.launcher.ui.components.hasColourGlyphs
 import com.focus.launcher.ui.components.monochrome
 import com.focus.launcher.util.Perms
-import kotlinx.coroutines.launch
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -462,7 +467,7 @@ fun ScreenTimeLine(today: DayUsage?, hasAccess: Boolean, align: Alignment.Horizo
 }
 
 /** A data class on purpose: a player that reports the same thing again changes no state, so nothing redraws. */
-private data class NowPlaying(
+internal data class NowPlaying(
     val controller: MediaController,
     val title: String?,
     val artist: String?,
@@ -484,60 +489,121 @@ private data class NowPlaying(
  * (measured: 6 to 8 frames a second on an otherwise still home screen). The once-a-second reader
  * in [ProgressText] is the only thing that looks here.
  */
-private class Progress {
+internal class Progress {
     var position = 0L
     var at = 0L
     var speed = 1f
 }
 
 /**
- * The player that is active right now, while the home screen is visible and only then. Needs
- * notification access ([MediaListener]); without it this stays null and the card falls back to
- * media keys. Everything here is pushed by the system: nothing polls.
+ * What the music section knows, held where the home screen can read it too: with "hide when
+ * nothing is playing", the section, the line above it and its share of the height all depend on
+ * whether there is music.
+ */
+@Stable
+internal class MusicState {
+    /** Notification access ([MediaListener]): there is a player to talk to. Without it the audio system's word has to do. */
+    var hasAccess by mutableStateOf(false)
+    var now by mutableStateOf<NowPlaying?>(null)
+        private set
+    private var audioPlaying by mutableStateOf(false)
+
+    /** See [lingerUntil]; 0 = not lingering. */
+    var lingerUntil by mutableLongStateOf(0L)
+
+    /** Derived, so that a new song title does not recompose those who only ask whether there is music. */
+    val playing by derivedStateOf { if (hasAccess) now?.playing == true else audioPlaying }
+
+    /** Stopped a moment ago, in plain sight: still here, so that play is one tap away. */
+    val lingering get() = lingerUntil != 0L
+
+    /** [live] = seen happening, by callback; false = found this way when the home screen came into sight. */
+    fun report(now: NowPlaying?, live: Boolean) = track(live) { this.now = now }
+
+    fun reportAudio(playing: Boolean, live: Boolean) = track(live) { audioPlaying = playing }
+
+    private inline fun track(live: Boolean, change: () -> Unit) {
+        val before = playing
+        change()
+        lingerUntil = lingerUntil(before, playing, live, SystemClock.elapsedRealtime(), lingerUntil)
+    }
+}
+
+/** Music, not a key click or a notification sound. Apps without special rights are only told about players that are sounding. */
+private fun List<AudioPlaybackConfiguration>?.hasMedia(): Boolean =
+    this?.any { it.audioAttributes.usage == AudioAttributes.USAGE_MEDIA || it.audioAttributes.usage == AudioAttributes.USAGE_UNKNOWN } == true
+
+/**
+ * Follows the music while the home screen is visible and only then; everything is pushed by the
+ * system, nothing polls. With notification access that is the active player (the song, its state);
+ * without it, the audio system saying whether media is sounding. [enabled] = the section is
+ * switched on at all.
  */
 @Composable
-private fun rememberNowPlaying(hasAccess: Boolean): NowPlaying? {
+internal fun rememberMusicState(enabled: Boolean, resumeCount: Int): MusicState {
     val context = LocalContext.current
-    var now by remember { mutableStateOf<NowPlaying?>(null) }
-    LifecycleStartEffect(hasAccess) {
+    val state = remember { MusicState() }
+    val hasAccess = remember(resumeCount, enabled) { enabled && MediaListener.hasAccess(context) }
+    LifecycleStartEffect(enabled, hasAccess) {
+        state.hasAccess = hasAccess
         val sessions = context.getSystemService(MediaSessionManager::class.java)
+        val audio = context.getSystemService(AudioManager::class.java)
         val component = MediaListener.component(context)
         var watched: MediaController? = null
         val callback = object : MediaController.Callback() {
             // Players report their position every second or so. Take what the callback hands over
             // instead of fetching everything again (the metadata carries the album art).
             override fun onMetadataChanged(metadata: MediaMetadata?) {
-                now = now?.copy(title = metadata.title(), artist = metadata.artist(), duration = metadata.duration())
+                state.report(state.now?.copy(title = metadata.title(), artist = metadata.artist(), duration = metadata.duration()), live = true)
             }
 
-            override fun onPlaybackStateChanged(state: PlaybackState?) {
-                now = now?.withState(state)
+            override fun onPlaybackStateChanged(playback: PlaybackState?) {
+                state.report(state.now?.withState(playback), live = true)
             }
-            override fun onSessionDestroyed() { now = null }
+
+            override fun onSessionDestroyed() = state.report(null, live = true)
         }
-        fun watch(controllers: List<MediaController>?) {
+        fun watch(controllers: List<MediaController>?, live: Boolean) {
             watched?.unregisterCallback(callback)
             // The system lists the session that would receive a media key first.
             watched = controllers?.firstOrNull()?.also { it.registerCallback(callback) }
-            now = watched?.read()
+            state.report(watched?.read(), live)
         }
-        val listener = MediaSessionManager.OnActiveSessionsChangedListener { watch(it) }
+        val listener = MediaSessionManager.OnActiveSessionsChangedListener { watch(it, live = true) }
+        val audioCallback = object : AudioManager.AudioPlaybackCallback() {
+            override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>?) = state.reportAudio(configs.hasMedia(), live = true)
+        }
+        var listening = false
         if (hasAccess && sessions != null) {
             try {
                 sessions.addOnActiveSessionsChangedListener(listener, component)
-                watch(sessions.getActiveSessions(component))
+                watch(sessions.getActiveSessions(component), live = false)
             } catch (_: SecurityException) {
-                now = null
+                state.report(null, live = false)
             }
         } else {
-            now = null
+            state.report(null, live = false)
+            if (enabled && audio != null) {
+                audio.registerAudioPlaybackCallback(audioCallback, Handler(Looper.getMainLooper()))
+                listening = true
+            }
         }
+        state.reportAudio(listening && audio?.activePlaybackConfigurations.hasMedia(), live = false)
         onStopOrDispose {
             watched?.unregisterCallback(callback)
             sessions?.removeOnActiveSessionsChangedListener(listener)
+            if (listening) audio?.unregisterAudioPlaybackCallback(audioCallback)
         }
     }
-    return now
+    // The minute after the music stopped runs out on its own, whether or not anybody is looking.
+    val until = state.lingerUntil
+    LaunchedEffect(until) {
+        if (until != 0L) {
+            delay((until - SystemClock.elapsedRealtime()).coerceAtLeast(0L))
+            if (state.lingerUntil == until) state.lingerUntil = 0L
+        }
+    }
+    return state
 }
 
 private fun MediaMetadata?.title(): String? = this?.getString(MediaMetadata.METADATA_KEY_TITLE)?.takeIf { it.isNotBlank() }
@@ -598,27 +664,18 @@ private fun ProgressText(now: NowPlaying?, modifier: Modifier = Modifier) {
  * chose); a long-press is [onChoose], like every other thing on the home screen that can be set.
  */
 @Composable
-fun MusicSection(resumeCount: Int, onOpenDefault: () -> Unit, onChoose: () -> Unit, modifier: Modifier = Modifier) {
+internal fun MusicSection(state: MusicState, onOpenDefault: () -> Unit, onChoose: () -> Unit, modifier: Modifier = Modifier) {
     val c = LocalFocusColors.current
     val context = LocalContext.current
     val audio = context.getSystemService(AudioManager::class.java)
-    val scope = rememberCoroutineScope()
-    val hasAccess = remember(resumeCount) { MediaListener.hasAccess(context) }
-    val now = rememberNowPlaying(hasAccess)
+    val hasAccess = state.hasAccess
+    val now = state.now
+    val playing = state.playing
 
-    // Only consulted without a controller: the audio system's word on whether something plays.
-    var keyPlaying by remember { mutableStateOf(false) }
-    LaunchedEffect(resumeCount) { if (!hasAccess) keyPlaying = audio?.isMusicActive == true }
-    val playing = now?.playing ?: keyPlaying
-
+    // What the key did is heard from the system: the player's session, or the audio callback.
     fun key(code: Int) {
         audio?.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
         audio?.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
-        // The player needs a moment to act on the key before it can be asked whether it plays.
-        scope.launch {
-            delay(400)
-            keyPlaying = audio?.isMusicActive == true
-        }
     }
     val controls = now?.controller?.transportControls
 

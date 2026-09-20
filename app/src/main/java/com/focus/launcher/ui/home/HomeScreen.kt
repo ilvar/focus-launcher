@@ -151,6 +151,11 @@ fun HomeScreen(
         onDispose { if (registered) context.contentResolver.unregisterContentObserver(observer) }
     }
 
+    // The music section is there while there is music (and for a minute after it stopped), unless
+    // it was asked to stay. Its line and its share of the height come and go with it.
+    val music = rememberMusicState(enabled = settings.showMusic, resumeCount = resumeCount)
+    val musicVisible = settings.showMusic && (!settings.musicAutoHide || music.playing || music.lingering)
+
     var editingShortcut by remember { mutableStateOf<Boolean?>(null) } // true = left, false = right
     var choosingClockTap by remember { mutableStateOf(false) }
     val tip by Graph.state.tip.collectAsStateWithLifecycle()
@@ -263,15 +268,15 @@ fun HomeScreen(
             val strip = if (settings.showWeekStrip) 46f + 14f * textScale else 0f
             val calendar = if (settings.showCalendar && !sideCalendar) 22f + 14f * textScale + strip + shownEvents * (18f * textScale + 6f) else 0f
             // Title row as tall as its 48dp buttons, then the song.
-            val music = if (settings.showMusic) 12f + 48f + 24f * textScale else 0f
+            val musicHeight = if (musicVisible) 12f + 48f + 24f * textScale else 0f
             val noteLines = if (settings.note.isBlank()) 1 else fit.maxEvents
             val note = if (settings.showNote) 20f + 14f * textScale + 8f + noteLines * 20f * textScale else 0f
-            val sectionCount = listOf(settings.showCalendar && !sideCalendar, settings.showMusic, settings.showNote).count { it }
+            val sectionCount = listOf(settings.showCalendar && !sideCalendar, musicVisible, settings.showNote).count { it }
             val lines = if (sectionCount > 0) (sectionCount + 1) * 1f else 0f
             val shortcuts = if (settings.showShortcuts) 28f + 20f * textScale else 20f
             val rows = rowCount * (fit.textSp * 1.2f * textScale + fit.padDp * 2)
             val screenTime = if (sideScreenTime) 0f else 25f + 64f * textScale // gap, title, total, share of the day
-            return clock + screenTime + noticeLines + calendar + music + note + lines + rows + shortcuts + 6f + 36f // 36 = air
+            return clock + screenTime + noticeLines + calendar + musicHeight + note + lines + rows + shortcuts + 6f + 36f // 36 = air
         }
 
         val options = listOf(
@@ -367,7 +372,7 @@ fun HomeScreen(
             // The sections, one under the other as in the owner's sketch: calendar, music, note. No
             // boxes: a line above each and one below the last, the same line the split clock uses.
             val calendarSection = settings.showCalendar && !sideCalendar
-            val anySection = calendarSection || settings.showMusic || settings.showNote
+            val anySection = calendarSection || musicVisible || settings.showNote
             if (calendarSection) {
                 Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
                 CalendarWidget(
@@ -383,10 +388,10 @@ fun HomeScreen(
                     showWeekStrip = settings.showWeekStrip,
                 )
             }
-            if (settings.showMusic) {
+            if (musicVisible) {
                 Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
                 MusicSection(
-                    resumeCount,
+                    music,
                     // Nothing playing: the music app of the user's choice; the first tap asks which.
                     onOpenDefault = { apps.firstOrNull { it.key == settings.musicApp }?.let(onLaunch) ?: run { choosingMusicApp = true } },
                     onChoose = { Graph.state.did(Tip.SECTION_APPS); choosingMusicApp = true },

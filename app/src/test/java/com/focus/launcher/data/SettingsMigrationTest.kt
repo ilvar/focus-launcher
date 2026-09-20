@@ -36,8 +36,13 @@ class SettingsMigrationTest {
     }
 
     @Test fun `settings survive a round trip`() {
-        val s = Settings(clockStyle = ClockStyle.SPLIT, splitSide = SplitSide.SCREEN_TIME, showCalendar = true, doubleTapLock = false)
+        val s = Settings(clockStyle = ClockStyle.SPLIT, splitSide = SplitSide.SCREEN_TIME, showCalendar = true, doubleTapLock = false, musicAutoHide = false)
         assertEquals(s, Settings.fromJson(s.toJson()))
+    }
+
+    @Test fun `an install from before the music section could hide gets the hiding`() {
+        val old = Settings(showMusic = true).toJson().apply { remove("musicAutoHide") }
+        assertEquals(true, Settings.fromJson(old).musicAutoHide)
     }
 
     @Test fun `an unknown stored value falls back to the default`() {

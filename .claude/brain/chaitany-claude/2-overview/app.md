@@ -39,7 +39,8 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 | Swipe right on home = the phone's web search | `MainActivity.kt` `Launcher` (pointerInput on the pager), `ui/Launching.kt` `openWebSearch`, `Settings.swipeRightSearch` |
 | Double tap = lock (default on; needs the accessibility service) | `HomeScreen.kt`, `Settings.doubleTapLock`, `FocusAccessibilityService` |
 | Long-press menu, timer dialog | `ui/drawer/AppMenu.kt` |
-| Music and note sections on home (text, lines between sections, off by default) | `HomeWidgets.kt` `MusicSection`, `NoteSection`; `service/MediaListener.kt`; toggles in `LauncherPages.kt` `HomePage` |
+<<<<<<< HEAD
+| Music and note sections on home (text, lines between sections, off by default). **Music is only there while something plays** (+1 min after it stops; `Settings.musicAutoHide`, owner 2026-09-20) | `HomeWidgets.kt` `MusicState`, `rememberMusicState`, `MusicSection`, `NoteSection`; `ui/home/MusicLinger.kt` (pure rule, tested); `service/MediaListener.kt`; toggles in `LauncherPages.kt` `HomePage` |
 | Welcome screen (once) and learn-by-doing tips on the home screen | `ui/settings/WelcomePage.kt` (route `welcome`), `data/AppState.kt` `Tip` / `did()` / `tutorialSeen`; hooks in `HomeScreen.kt`, `MainActivity.kt`; drawer hint in `DrawerScreen.kt` |
 | Fast apps (≤5), corner shortcuts, home gestures, notices | `ui/home/HomeScreen.kt` |
 | Weekly review: alarm, home notice, notification, the week's summary | `service/WeeklyReview.kt`, `data/WeekSummary.kt`, `ui/review/ReviewScreen.kt` |
@@ -75,10 +76,10 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
   (use `currentLocale()` and `collectAsStateWithLifecycle`).
 
 ## Quality bar
-25 unit tests pass (tracker 13, emoji 6, settings migration 6; `org.json` is a test-only
+33 unit tests pass (tracker 13, emoji 6, settings 7, music linger 7; `org.json` is a test-only
 dependency because the JVM has none); `lintDebug` = 0 errors (remaining warnings are "newer
-version available", deliberate: newer AndroidX needs compileSdk 37 + AGP 9.1). 36 Kotlin files,
-about 7,750 lines.
+version available", deliberate: newer AndroidX needs compileSdk 37 + AGP 9.1). 37 Kotlin files,
+about 7,800 lines.
 Release APK = 1,366,083 bytes (≈ 1.37 MB). Version **1.1** (`versionCode` 2) since 2026-09-19;
 1.0 was 1,366,063 bytes. The same checks run on GitHub for every push and pull request.
 
