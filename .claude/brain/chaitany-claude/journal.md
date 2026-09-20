@@ -638,3 +638,21 @@ record, `dumpsys package` has no entry: nothing on the phone holds the old signa
 **Not verified:** the install from the site, and with it the first real download-and-install
 under Play Protect: both are his to report.
 
+## 2026-09-20 · PR #11 reverted on the owner's word ("it removes the option")
+
+**Asked:** "revert the merge the changes 11 as it removes the option."
+**Done:** branch `revert-pr-11`: `git revert -m 1` of the merge of #11 for everything outside the
+brain, which is now byte-identical to the tree before it (`git diff 21a7fbf^1 -- . ':(exclude).claude'`
+is empty): the accessibility service, the notification listener, double tap to lock, the song's
+name and the three-switch Setup page are back; `TimerWatchService`, its tests, the emulator
+workflow and the Play Protect guards in Build, Publish and `site/clean-build.sh` are gone; site,
+README and listing text say so again. Changelog `40.txt` for the release this becomes. The brain
+was not reverted but rewritten: Tier 1 rule 11 now says the services stay, the decision and its
+reason are in `user-and-decisions.md`, the Play Protect facts and the reverted variant are kept
+in `3-details/timers-wall-consent.md`, and the lesson (a fix that costs an option needs his yes
+before the merge) is in `mistakes-and-lessons.md`.
+**Verified:** 25 unit tests pass, lint 0 errors, release build assembles; its manifest declares
+both services again and no INTERNET permission (aapt2).
+**Open:** Play Protect blocks this download again where it enforces the rule (open decision 21).
+Mid-session locking through the accessibility service is still unseen on his phone.
+

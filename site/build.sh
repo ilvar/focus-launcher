@@ -60,7 +60,7 @@ app = {
     'installUrl': BASE + env['APK_FILE'],
     'isAccessibleForFree': True,
     'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD'},
-    'permissions': 'Usage access; display over other apps (optional); notifications (optional); calendar (optional). No internet permission, no accessibility service, no notification access.',
+    'permissions': 'Usage access; accessibility service (optional); notifications (optional); calendar (optional). No internet permission.',
     'featureList': [
         'Text-only, black and white home screen without icons',
         'Daily time limits that lock social media apps and games',

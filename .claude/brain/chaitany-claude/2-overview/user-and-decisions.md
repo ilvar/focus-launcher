@@ -38,7 +38,7 @@
 | **Ship the collaborator's work** (2026-09-19: "there are new commit check them and push the new app in my phone as well as on the server download") | PR #1 was reviewed, built, released as **1.1**, installed on his phone and published on the site. "Check them" = a review first (`3-details/ci-and-releases.md`). The points in it that touch his earlier decisions stay open below (10–14): shipping was asked for, those were not answered |
 | **A release page with the APK** | GitHub releases, tag per version, the same APK as the website with its checksum; 1.0 and 1.1 are there |
 | **Submit to F-Droid, with a manually run CI for it** (2026-09-20) | Repo made F-Droid-ready (GPL-3.0, Fastlane listing, reproducible build so F-Droid ships the APK signed with his own key, recipe). `fdroid.yml` runs only by hand: it checks the recipe with F-Droid's tools and can open the merge request. The GitLab account, fork and token are his to create (open decision 20) |
-| **Get past Google Play Protect: only necessary permissions, and the less critical one where there is a choice** (2026-09-20) | Play Protect blocks a downloaded APK that declares an accessibility service or a notification listener; Focus had both. Both removed: mid-session locking moved to a watcher that needs only usage access (+ optional "display over other apps"), the music section keeps its buttons and loses the song's name, double tap to lock is gone. `QUERY_ALL_PACKAGES` kept, with the reason. Guarded in CI |
+| **Get past Google Play Protect: only necessary permissions, and the less critical one where there is a choice** (2026-09-20), then the same day: **"revert the merge the changes 11 as it removes the option"** | Play Protect blocks a downloaded APK that declares an accessibility service or a notification listener; Focus has both. PR #11 removed both (published as 1.1.37): locking moved to a usage-log watcher, and double tap to lock and the song's name went away. He had it reverted: **the options matter more to him than the clean download.** The services are back; do not remove an option again without asking him first. What was learned is kept in `3-details/timers-wall-consent.md` |
 | **CI that builds an APK on GitHub** | Tests, lint and an APK on every push and pull request; that APK is signed with a throwaway key |
 | **The site gets the latest APK when CI has built it** (2026-09-20), **automatically, with his approval** (chosen from three options) | `publish.yml`: signs with the real key, uploads, creates the release, after he approves the run. Keys live in a protected GitHub environment; the server upload key can only deliver site files. He switches it on himself with `site/setup-ci-publishing.sh` |
 
@@ -73,8 +73,8 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
 6. ~~`gradle.properties` pins a local JDK path.~~ Removed 2026-09-20 (F-Droid's server would have
    failed on it). On the owner's Mac every `./gradlew` now takes `-Dorg.gradle.java.home=<JDK 21>`.
 7. ~~No GitHub Release with the APK attached.~~ Done 2026-09-19 (1.0 and 1.1).
-8. ~~The accessibility service is not enabled on his phone.~~ There is none any more (2026-09-20).
-   Mid-session locking now wants "display over other apps" from him, or notifications.
+8. The accessibility service has never been switched on on his phone, so mid-session locking and
+   double tap to lock are unseen there. (Between 1.1.37 and its revert on 2026-09-20 there was none.)
 9. One observation about the main site's configuration, unrelated to Focus: `private/server.md`.
 10. **The work marker is now a drawn briefcase glyph**, at the contributor's repeated request: the
     first exception to the owner's "no icons". Owner's call whether it stays.
@@ -116,9 +116,11 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
     fdroid/fdroiddata, a token (`api` scope) stored with `gh secret set FDROID_GITLAB_TOKEN --env
     release`, and `gh variable set FDROID_GITLAB_FORK`. Then: run "F-Droid" with `submit` ticked,
     approve it, and answer the reviewers on GitLab. Agents do not create accounts or enter tokens.
-21. **What the Play Protect fix cost, for him to weigh:** no song name in the music section, no
-    double tap to lock. Both need exactly the two things Play Protect blocks. A second, "full"
-    build for people who install over adb or from a store would bring them back at the price of
-    two variants to build, publish and explain; not built.
-22. If Play Protect still warns after this ("unknown developer", not the sensitive-data block),
-    that is reputation, not permissions: only time, or Google's appeal form filed by him, changes it.
+21. ~~What the Play Protect fix cost.~~ He weighed it on 2026-09-20: the options stay, PR #11 was
+    reverted. What is left open is the other half: **Play Protect blocks the download again**
+    wherever it enforces this (his own report started it). Ways out that keep the options, none
+    built, all his call: installs over adb (exempt, what his phone can use); F-Droid, once the
+    merge request is through (whether its installs are exempt is not verified); two variants,
+    "full" and one without the two services (two builds to publish and explain).
+22. "Unknown developer" warnings, as opposed to the sensitive-data block, are reputation, not
+    permissions: only time, or Google's appeal form filed by him, changes them.

@@ -22,7 +22,7 @@ import com.focus.launcher.data.DayUsage
 import com.focus.launcher.data.LimitSource
 import com.focus.launcher.data.MAX_FAVORITES
 import com.focus.launcher.data.Settings
-import com.focus.launcher.service.TimerWatchService
+import com.focus.launcher.service.FocusAccessibilityService
 import com.focus.launcher.ui.components.ChoiceDialog
 import com.focus.launcher.ui.components.FocusDialog
 import com.focus.launcher.ui.components.Hairline
@@ -149,7 +149,7 @@ fun TimerDialog(
 
     val own = settings.appLimits[packageName]
     val fallback = Graph.limits.categoryDefaultFor(packageName, settings)
-    val ready = Perms.hasUsageAccess()
+    val ready = Perms.hasUsageAccess() && Perms.isTimerServiceEnabled(context)
 
     fun apply(minutes: Int?) {
         Graph.settings.update { s ->
@@ -157,7 +157,7 @@ fun TimerDialog(
         }
         // A new limit should bite immediately, not after an old "continue" window runs out.
         Graph.limits.clearPasses(packageName)
-        TimerWatchService.recheck()
+        FocusAccessibilityService.recheck()
         onDismiss()
     }
 
@@ -200,7 +200,7 @@ fun TimerDialog(
         if (!ready) {
             Hairline()
             T(
-                "Timers cannot count anything until usage access is allowed.  Finish setup  →",
+                "Timers only lock apps once usage access and the Focus timer service are on.  Finish setup  →",
                 Modifier.clickable {
                     onDismiss()
                     onOpenSetup()

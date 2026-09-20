@@ -10,7 +10,13 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   first people to meet it were the ones the website exists for. A contributor then added a
   notification listener for a song title. → Before adding any service or special access, read
   Google's Play Protect developer guidance; test an install the way users do it (download, tap),
-  not only over adb; CI refuses the four declarations.
+  not only over adb. (The owner later chose to keep both services: next entry.)
+- **Took options away to reach a goal the owner had asked for, merged it, and he had it reverted
+  within hours.** He asked to get past Play Protect with fewer permissions; the fix (PR #11)
+  removed double tap to lock and the song's name and changed how locking is switched on. The cost
+  was written down as an open decision *after* the merge, and the merge was a release. → When a
+  fix costs a user-visible option, put the cost in front of him and wait for a yes **before**
+  merging; "he asked for the goal" is not a yes to the price.
 - **Put a limit on mail, browser and messenger apps.** Trusted `CATEGORY_SOCIAL`, which covers
   communication apps. → Classify by curated lists + intent probes; never guess towards a limit.
   (`app-classification.md`)

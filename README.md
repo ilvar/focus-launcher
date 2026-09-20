@@ -39,17 +39,18 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
   When it does not, settings say so instead of showing nothing; sharing the work calendar with a
   personal Google account is the sanctioned way to get it onto the home screen.
 - Two more optional sections under the calendar, in words only and told apart by a thin line, not a
-  box: **music** (Prev · Play/Pause · Next; they work with no permission at all, as media keys. The
-  song's name is not shown: Android only tells it to apps with notification access, which Focus
-  does not ask for) and a **note** of a few lines that you tap to edit.
+  box: **music** (Prev · Play/Pause · Next; they work with no permission at all, as media keys, and
+  with notification access the section also names the song and artist) and a **note** of a few
+  lines that you tap to edit.
 - Up to 5 "fast apps", as plain text. One that lives in a Work profile carries a small
   briefcase outline after its name, drawn in the text colour: the launcher's one pictogram.
 - Two corner shortcuts (Phone / Camera by default). Long-press one to change it.
 - Everything you touch lights up softly and fades back (no ripples, no colour).
 - Gestures: swipe left = app drawer, swipe right = the phone's web search (the Google search box
   where there is one, like the page left of a stock home screen), swipe up = app search,
-  swipe down = notifications, long-press empty space = settings. The swipes other than the
-  drawer's can be switched off in Settings → Gestures.
+  swipe down = notifications, long-press empty space = settings, double tap = lock (on by default;
+  needs the timer service). The swipes other than the drawer's, and the double tap, can be
+  switched off in Settings → Gestures.
 
 **App drawer** (page 2)
 - Search bar, "installed in the last 24 hours", then every app alphabetically with an A–Z scrubber.
@@ -69,9 +70,8 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
   Both escape hatches can be switched off (strict mode).
 - Ignoring a limit does not make the app free for the day: Focus still asks "open anyway?" before
   **every** visit, with "Not now" as the big button and a one-tap way to bring the limit back.
-  (Opened from Focus, the launcher asks; opened from a notification or recents, the timer watcher
-  does, if Focus may display over other apps. One yes covers the visit, until you are back on a
-  home screen or the screen turns off.)
+  (Opened from Focus, the launcher asks; opened from a notification or recents, the timer service
+  does. One yes covers the visit, until you are back on a home screen or the screen turns off.)
 - Every time you go past a limit it is counted, and shown back to you.
 
 **Weekly review**
@@ -108,22 +108,13 @@ decision is visible in "Limited apps" and can be overridden per app.
 | --- | --- |
 | Default launcher | Being the home screen. |
 | Usage access | All screen-time numbers: day bar, timers, weekly review. |
-| Display over other apps (optional) | Locking an app *while you are in it*: it lets the "Time's up" screen come up in front of the app that ran out of time. Focus draws nothing else over other apps. |
-| Notifications (optional) | The weekly review reminder, and "time's up" when Focus may not display over other apps. |
+| Accessibility service ("Focus app timers") | Locking an app *while you are in it*. It only listens for window changes to learn the name of the app in front; `canRetrieveWindowContent` is false, so it cannot read the screen. |
+| Notifications (optional) | The weekly review reminder. |
 | Calendar (optional) | The calendar section. |
+| Notification access (optional, "Focus music section") | The song and artist in the music section. Android ties "which player is active" to this access. The service behind it reads no notification and drops its binding the moment it is connected. |
 
-**No accessibility service and no notification access.** Earlier versions used an accessibility
-service to notice which app is in front, and 1.1.34 added a notification listener to show the
-song's name. Google Play Protect blocks the installation of any downloaded APK that declares either
-of them, so both are gone. While you are away from the home screen, a small foreground service
-(`TimerWatchService`) reads the usage log every few seconds instead, which needs nothing beyond the
-usage access Focus already has. Without "display over other apps" it tells you with a notification
-that time is up, and the app is locked the next time you open it from Focus.
-
-The manifest's install-time permissions, all of the ordinary kind: `QUERY_ALL_PACKAGES` (a launcher
-lists every app, and screen time names every app), `REQUEST_DELETE_PACKAGES` (the "Uninstall" menu
-entry; Android still asks you to confirm), `EXPAND_STATUS_BAR` (swipe down for notifications),
-`FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_SPECIAL_USE` (the timer watcher).
+Without the accessibility service, timers still work at launch time: a spent app opened from Focus
+shows the wall instead. With it, the wall also comes up mid-session.
 
 The app declares **no INTERNET permission**. Nothing leaves the phone.
 
@@ -256,10 +247,8 @@ matters more than anything else. Measured on a OnePlus (Android 16), release bui
   every animation is finite, and animated values are read in the draw phase (`graphicsLayer`,
   `Canvas`, the press indication) so they repaint without recomposing.
 - **In the background: nothing runs.** The once-a-minute refresh, the clock tick and the battery
-  listener are tied to the lifecycle and stop when the home screen is not visible. No periodic
-  jobs, one inexact alarm a week. One service, and only if something has a limit: the timer watcher,
-  which looks at the usage log every four seconds while the screen is on and you are in another
-  app, and does nothing with the screen off.
+  listener are tied to the lifecycle and stop when the home screen is not visible. No services
+  besides the accessibility service (event-driven), no periodic jobs, one inexact alarm a week.
 - **Screen time is a running total.** `UsageRepository.DayAccumulator` feeds each system event to
   a long-lived `ForegroundTracker` exactly once; a refresh only asks the OS for events since the
   previous one (leaving the last 1.5 s to settle, because the OS writes its log from another
@@ -319,7 +308,7 @@ app/src/main/java/com/focus/launcher/
     CalendarRepository.kt      Calendar list, one-calendar agenda, emoji stripping (unit tested)
     AppState.kt
   service/
-    TimerWatchService.kt       Mid-session enforcement from the usage log (no accessibility service)
+    FocusAccessibilityService.kt    Mid-session enforcement
     WeeklyReview.kt            Alarm, notification, "review is due" bookkeeping
   ui/
     theme/        Two palettes (black, white), press-fade indication, edge-to-edge helpers

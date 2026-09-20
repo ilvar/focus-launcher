@@ -3,10 +3,12 @@
     <string name="app_name">Focus</string>
     <string name="settings_label">Focus Settings</string>
 
+    <string name="accessibility_label">Focus app timers</string>
+    <string name="accessibility_summary">Enforces the daily app time limits you set in Focus.</string>
+    <string name="accessibility_description">Focus uses this service to notice which app is in front, so it can lock an app once its daily time limit is used up. It also lets home-screen gestures open notifications or lock the screen.\n\nThe service only receives the name of the app that is on screen. It cannot read what is on your screen, and nothing ever leaves your device.</string>
+
+    <string name="media_listener_label">Focus music section</string>
+
     <string name="channel_weekly">Weekly review</string>
     <string name="channel_weekly_desc">A reminder when your weekly screen-time review is ready.</string>
-    <string name="channel_watch">App timers running</string>
-    <string name="channel_watch_desc">Shown while Focus is checking app timers, from the moment you leave the home screen until you are back. You can hide it.</string>
-    <string name="channel_time_up">Time\'s up</string>
-    <string name="channel_time_up_desc">Tells you when an app\'s daily limit has run out, if Focus may not display over other apps.</string>
 </resources>

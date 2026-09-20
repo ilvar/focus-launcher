@@ -12,14 +12,8 @@
         tools:ignore="QueryAllPackagesPermission" />
     <!-- "Uninstall" in the long-press menu. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
-    <!-- "Your weekly review is ready", and "time's up" when Focus may not display over other apps. -->
+    <!-- "Your weekly review is ready". -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- The service that watches app timers while another app is open (see TimerWatchService). -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <!-- Optional, switched on by the user: lets the "time's up" screen come up in front of the app
-         that ran out of time. Without it Focus sends a notification instead. -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!-- Optional calendar section on the home screen. -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <!-- Swipe down on the home screen to open notifications. -->
@@ -83,17 +77,29 @@
             android:noHistory="false"
             android:taskAffinity="com.focus.launcher.block" />
 
-        <!-- Watches app timers while another app is open, by reading the usage log. It runs only
-             between leaving the home screen and coming back to it. Deliberately NOT an accessibility
-             service and NOT a notification listener: an APK that declares either is blocked by
-             Google Play Protect when it is installed from a download. -->
         <service
-            android:name=".service.TimerWatchService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Locks an app when the daily time limit the user set for it runs out, while that app is in use." />
+            android:name=".service.FocusAccessibilityService"
+            android:exported="true"
+            android:label="@string/accessibility_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service" />
+        </service>
+
+        <!-- Optional. Only the key to "which player is active and what is it playing" for the music
+             section; the service reads no notification and lets go of its binding at once. -->
+        <service
+            android:name=".service.MediaListener"
+            android:exported="true"
+            android:label="@string/media_listener_label"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
         </service>
 
         <receiver

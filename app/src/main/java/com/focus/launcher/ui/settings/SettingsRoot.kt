@@ -51,20 +51,19 @@ import com.focus.launcher.util.Perms
 data class SetupStatus(
     val defaultLauncher: Boolean,
     val usageAccess: Boolean,
-    /** May Focus display over other apps, so that the wall can come up in front of an open app? */
-    val overlay: Boolean,
+    val timerService: Boolean,
     val notifications: Boolean,
     val calendar: Boolean,
 ) {
-    /** The two that Focus cannot work without. Everything else is an extra. */
-    val done: Int get() = listOf(defaultLauncher, usageAccess).count { it }
-    val complete: Boolean get() = done == 2
+    /** The three that matter for the core experience. */
+    val done: Int get() = listOf(defaultLauncher, usageAccess, timerService).count { it }
+    val complete: Boolean get() = done == 3
 
     companion object {
         fun read(context: Context) = SetupStatus(
             defaultLauncher = Perms.isDefaultLauncher(context),
             usageAccess = Perms.hasUsageAccess(),
-            overlay = Perms.canDrawOverlays(context),
+            timerService = Perms.isTimerServiceEnabled(context),
             notifications = Perms.canPostNotifications(context),
             calendar = CalendarRepository.hasAccess(context),
         )
@@ -145,7 +144,7 @@ private fun MainPage(settings: Settings, appCount: Int, status: SetupStatus, onB
         Section("Launcher")
         SettingRow("Home screen", subtitle = "Clock, sections, fast apps, corner shortcuts", onClick = { go(Routes.HOME) })
         SettingRow("App drawer", subtitle = "Keyboard, search, recently installed, hidden apps", value = "$appCount apps", onClick = { go(Routes.DRAWER) })
-        SettingRow("Gestures", subtitle = "Swipes, keyboard in the drawer", onClick = { go(Routes.GESTURES) })
+        SettingRow("Gestures", subtitle = "Swipes, double tap, keyboard in the drawer", onClick = { go(Routes.GESTURES) })
         SettingRow("Appearance", subtitle = "Black or white, typeface, text size", onClick = { go(Routes.APPEARANCE) })
         Section("Focus")
         SettingRow(
@@ -182,8 +181,8 @@ private fun AboutPage(onBack: () -> Unit) {
             VSpace(8.dp)
             T(
                 "Focus has no internet permission, so nothing it knows can leave this phone. Screen time is read " +
-                    "from Android's own usage log and stored only in the app's private storage. Focus uses no " +
-                    "accessibility service and no notification access: it cannot read your screen or your notifications.",
+                    "from Android's own usage log and stored only in the app's private storage. The timer service " +
+                    "sees the name of the app in front and nothing else; it cannot read what is on your screen.",
                 size = 15.sp, color = c.dim, lineHeight = 22.sp,
             )
             VSpace(20.dp)

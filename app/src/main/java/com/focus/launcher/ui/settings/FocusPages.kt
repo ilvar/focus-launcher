@@ -17,7 +17,7 @@ import com.focus.launcher.data.LimitSource
 import com.focus.launcher.data.Settings
 import com.focus.launcher.data.TimeFormat
 import com.focus.launcher.data.WeekSummary
-import com.focus.launcher.service.TimerWatchService
+import com.focus.launcher.service.FocusAccessibilityService
 import com.focus.launcher.service.WeeklyReview
 import com.focus.launcher.ui.components.AppPickerDialog
 import com.focus.launcher.ui.components.ChoiceDialog
@@ -35,7 +35,7 @@ import java.time.format.TextStyle
 /** Timer settings change what the service should be doing right now, so poke it after each edit. */
 private fun updateTimers(transform: (Settings) -> Settings) {
     Graph.settings.update(transform)
-    TimerWatchService.recheck()
+    FocusAccessibilityService.recheck()
 }
 
 private fun dailyLabel(minutes: Int) = if (minutes > 0) "${formatMinutes(minutes)} a day" else "Off"
@@ -60,12 +60,11 @@ internal fun TimersPage(settings: Settings, apps: List<AppEntry>, status: SetupS
             subtitle = "Give distracting apps a daily allowance. When it is used up, Focus locks the app for the rest of the day.",
         ) { v -> updateTimers { it.copy(timersEnabled = v) } }
 
-        if (on && !(status.usageAccess && status.overlay)) {
+        if (on && !(status.usageAccess && status.timerService)) {
             Note(
                 when {
                     !status.usageAccess -> "Timers cannot count anything until usage access is allowed.  Open setup  →"
-                    status.notifications -> "While you are inside an app, Focus tells you with a notification when its time is up. To have the app locked then and there, let Focus display over other apps.  Open setup  →"
-                    else -> "Apps are locked when you open them from Focus, not while you are inside them. For that, let Focus display over other apps, or allow notifications.  Open setup  →"
+                    else -> "The Focus timer service is off: apps are only locked when opened from Focus, not while you are inside them.  Open setup  →"
                 },
             ) { go(Routes.SETUP) }
         }
