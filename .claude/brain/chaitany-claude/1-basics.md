@@ -69,8 +69,9 @@ Versions are `<base>.<commit count>`. **CI publishing is live**: a push to `main
 app or the site starts Publish, which waits for the owner's approval (first real run: 1.1.34).
 **F-Droid:** repo ready, recipe verified; the merge request needs the owner's GitLab account and
 token (`3-details/fdroid.md`). Agents never run the setup script, create accounts or enter tokens.
-Mid-session locking is `TimerWatchService` (usage log, 2026-09-20); not yet seen running on a
-phone; "display over other apps" is the owner's to switch on. Google Search Console: not done.
+Mid-session locking is `TimerWatchService` (usage log, 2026-09-20): passes the emulator test on
+Android 14 and 15, not yet seen on the owner's Android 16 phone; "display over other apps" is his
+to switch on. Whether Play Protect now lets the download through only he can confirm.
 The brain is committed and public (`3-details/brain-upkeep.md`). Publishing happens on request.
 
 ## Tier 2 index: read the area(s) you will touch

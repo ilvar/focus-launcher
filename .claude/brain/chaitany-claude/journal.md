@@ -614,8 +614,10 @@ installation blocked. Installs over adb are exempt, which is why it never showed
 
 **Verified:** 35 unit tests (10 new), lint 0 errors, release build; the built manifest contains
 none of the four and lists exactly the ten expected permissions; the guard tested on both APKs;
-site builds. **Not verified:** anything on a device. The phone was not attached during the work,
-so the new service has never run: its start from `onPause`, the polling, the notification and the
-overlay path are untested, and so is an actual download-and-install with Play Protect watching.
-That is said plainly to the owner, because merging now means publishing as soon as he approves.
-
+site builds. **On Android itself:** the owner's phone was not attached, so a CI job was written
+that runs the debug build on emulators (API 34 and 35) and walks through a visit to an app with a
+one-minute limit. Both passed every step: no watcher on home, watcher in the foreground after
+leaving, the "Time's up" notification when the minute was over with the overlay switch off, the
+wall in front of the app with it on, no watcher back on home, no crash lines.
+**Not verified:** the owner's own phone (Android 16), and an actual download-and-install with
+Play Protect watching: only he can do that, in a market where the block is active.
