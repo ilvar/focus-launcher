@@ -1,5 +1,8 @@
 package com.focus.launcher.ui.home
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.focus.launcher.data.Tip
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.focus.launcher.ui.components.FocusDialog
@@ -228,7 +231,7 @@ fun HomeScreen(
         val bars = WindowInsets.systemBars.asPaddingValues()
         val available = (maxHeight - bars.calculateTopPadding() - bars.calculateBottomPadding()).value
         val textScale = LocalDensity.current.fontScale * settings.textScale
-        val notices = (if (setupIncomplete) 1 else 0) + (if (pendingReview != null) 1 else 0) + (if (tip != null) 2 else 0) // a tip may take two lines
+        val notices = (if (setupIncomplete) 1 else 0) + (if (pendingReview != null) 1 else 0) + (if (tip != null) 3 else 0) // a framed tip is about three notice lines tall
         val rowCount = favorites.size.coerceAtLeast(2) // the empty-state hint is two lines tall
         val eventCount = events.size
         val preferredRing = (maxHeight * if (settings.showCalendar) 0.25f else 0.29f).coerceIn(140.dp, 236.dp)
@@ -302,6 +305,7 @@ fun HomeScreen(
                     timeSize = splitTimeSp.sp,
                     onTap = clockTap,
                     onLongPress = { Graph.state.did(Tip.CLOCK); choosingClockTap = true },
+                    highlight = tip == Tip.CLOCK,
                 ) {
                     if (sideCalendar) {
                         SplitCalendar(
@@ -314,7 +318,7 @@ fun HomeScreen(
                             onRequestAccess = { askCalendar.launch(Manifest.permission.READ_CALENDAR) },
                         )
                     } else {
-                        SplitScreenTime(today, usageAccess, onClick = openScreenTime, onLongPress = { choosingSplitSide = true })
+                        SplitScreenTime(today, usageAccess, onClick = openScreenTime, onLongPress = { choosingSplitSide = true }, highlight = tip == Tip.SCREEN_TIME)
                     }
                 }
             } else {
@@ -324,7 +328,7 @@ fun HomeScreen(
                     ringSize = ring,
                     onTap = clockTap,
                     onLongPress = { Graph.state.did(Tip.CLOCK); choosingClockTap = true },
-                    modifier = if (settings.clockStyle == ClockStyle.RING) Modifier.align(Alignment.CenterHorizontally) else Modifier,
+                    modifier = (if (settings.clockStyle == ClockStyle.RING) Modifier.align(Alignment.CenterHorizontally) else Modifier).tipTarget(tip == Tip.CLOCK, c.fg),
                 )
             }
 
@@ -336,7 +340,7 @@ fun HomeScreen(
                     hasAccess = usageAccess,
                     align = if (ringed) Alignment.CenterHorizontally else settings.homeAlign.horizontal(),
                     onClick = openScreenTime,
-                    modifier = if (ringed) Modifier.align(Alignment.CenterHorizontally) else Modifier,
+                    modifier = (if (ringed) Modifier.align(Alignment.CenterHorizontally) else Modifier).tipTarget(tip == Tip.SCREEN_TIME, c.fg),
                 )
             }
 
@@ -386,6 +390,7 @@ fun HomeScreen(
                     // Nothing playing: the music app of the user's choice; the first tap asks which.
                     onOpenDefault = { apps.firstOrNull { it.key == settings.musicApp }?.let(onLaunch) ?: run { choosingMusicApp = true } },
                     onChoose = { Graph.state.did(Tip.SECTION_APPS); choosingMusicApp = true },
+                    modifier = Modifier.tipTarget(tip == Tip.SECTION_APPS, c.fg),
                 )
             }
             if (settings.showNote) {
@@ -398,6 +403,7 @@ fun HomeScreen(
                     // One page of the app, if a link to it was given; the app itself otherwise.
                     onOpenApp = { noteApp?.let { app -> if (settings.noteLink.isBlank() || !openLink(context, settings.noteLink, app.packageName)) onLaunch(app) } },
                     onLongClick = { Graph.state.did(Tip.SECTION_APPS); noteMenu = true },
+                    modifier = Modifier.tipTarget(tip == Tip.SECTION_APPS, c.fg),
                 )
             }
             if (anySection) Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
@@ -443,6 +449,7 @@ fun HomeScreen(
                         T(
                             shortcutLabel(spec, apps),
                             Modifier
+                                .tipTarget(tip == Tip.CORNERS, c.fg)
                                 .press(onLongClick = { Graph.state.did(Tip.CORNERS); editingShortcut = left }) { launchShortcut(context, spec, apps, onLaunch) }
                                 .padding(vertical = 14.dp, horizontal = 12.dp),
                             size = 15.sp, color = c.dim, maxLines = 1,
@@ -544,15 +551,26 @@ fun HomeScreen(
 }
 
 /**
- * A tip: the gesture in full brightness, what it does next to it, quieter. Short enough for one
+ * A tip, framed so that it cannot be mistaken for part of the home screen: the gesture in full brightness, what it does next to it, quieter. Short enough for one
  * line; if a large text size makes it longer it wraps, it is never cut off. A tap skips it.
  */
 @Composable
 private fun TipLine(tip: Tip, onClick: () -> Unit) {
     val c = LocalFocusColors.current
-    Column(Modifier.fillMaxWidth().press(onClick = onClick).padding(horizontal = 12.dp, vertical = 6.dp)) {
-        T("Tip ${tip.ordinal + 1} / ${Tip.entries.size}", size = 11.sp, color = c.faint, letterSpacing = 1.2.sp, maxLines = 1)
-        VSpace(2.dp)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 6.dp, vertical = 4.dp)
+            .border(1.dp, c.fg, RoundedCornerShape(12.dp))
+            .press(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 9.dp),
+    ) {
+        T(
+            "TIP ${tip.ordinal + 1} / ${Tip.entries.size}",
+            Modifier.background(c.fg).padding(horizontal = 6.dp, vertical = 1.dp),
+            size = 10.sp, color = c.bg, weight = FontWeight.Medium, letterSpacing = 1.2.sp, maxLines = 1,
+        )
+        VSpace(5.dp)
         Row(verticalAlignment = Alignment.Top) {
             T(tip.gesture, size = 16.sp, weight = FontWeight.Medium, maxLines = 1)
             T("  →  ", size = 16.sp, color = c.dim, maxLines = 1)

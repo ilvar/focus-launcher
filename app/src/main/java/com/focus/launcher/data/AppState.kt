@@ -20,12 +20,13 @@ enum class Tip(val gesture: String, val result: String) {
     SWIPE_DOWN("Swipe down", "notifications"),
     CLOCK("Long-press the clock", "set its tap"),
     SCREEN_TIME("Tap screen time", "your day"),
-    CORNERS("Long-press a corner", "change it"),
-    DOUBLE_TAP("Double tap", "lock"),
+    CORNERS("Long-press a bottom corner", "change it"),
     SECTIONS("Tap here", "add calendar, music, note"),
     /** Only shown while one of the two sections is on; see `HomeScreen`. */
     SECTION_APPS("Long-press music or note", "pick its app"),
     SETTINGS("Long-press empty space", "settings"),
+    // Last on purpose: it turns the screen off, which would cut any tip after it short.
+    DOUBLE_TAP("Double tap empty space", "lock"),
 }
 
 /** Small bits of launcher state that are not preferences: review reminders and reflection notes. */

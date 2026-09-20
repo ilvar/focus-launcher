@@ -111,7 +111,13 @@ tutorial when using". So:
   a faint "TIP 3 / 9", then the gesture in full brightness and "→ result" quieter, **two or three
   words each side** ("Swipe right → web search"). The first wording was a dim sentence per tip
   and was sent back as too much text and hard to see; keep new tips this short. It wraps rather
-  than being cut if a large text size makes it longer.
+  than being cut if a large text size makes it longer. The tip is **framed** (1dp outline in the
+  text colour, 12dp corners; the counter inverted like a selected tab) so it cannot be taken for
+  part of the home screen, and **what it is about is outlined the same way while it shows**
+  (`Modifier.tipTarget`: the clock, screen time, both bottom corners, the music and note
+  sections). A still outline, not a pulse: nothing on the home screen moves by itself. Tips about
+  a gesture on empty space have nothing to outline. **Double tap is the last tip**: it turns the
+  screen off, which cut short whatever came after it.
   **A tip goes away when the thing it teaches has been done once** (`AppState.did(Tip.X)`, called
   from the gesture itself: drawer reached, app menu opened, swipe up / right / down, clock
   long-press, double tap, settings long-press) or when it is tapped (`nextTip()`; the "add a

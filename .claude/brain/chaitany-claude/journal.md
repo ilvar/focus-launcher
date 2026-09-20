@@ -686,3 +686,15 @@ both services again and no INTERNET permission (aapt2).
 **Open:** Play Protect blocks this download again where it enforces the rule (open decision 21).
 Mid-session locking through the accessibility service is still unseen on his phone.
 
+## 2026-09-21 · Tips: framed, targets outlined, double tap last (a contributor, on PR #13)
+
+**Asked:** double tap at the end; highlight the tutorial messages; highlight the area to press or
+long-press; "long-press a bottom corner", not "a corner".
+**Done:** `Tip` order and wording; `TipLine` framed with an inverted counter; `Modifier.tipTarget`
+on the clock (all three styles), screen time (line and split half), the corner shortcuts and the
+music / note sections; the drawer's tip framed the same way.
+**Verified:** 25 unit tests, lint 0 errors, release build, installed for user 0. Two guarded
+screenshots (window focus checked before and after): the drawer with its framed tip; the home page
+showing "TIP 7 / 12 · Tap screen time → your day" framed, with the screen-time half of the split
+clock outlined. **Not seen:** the clock, corner and section outlines; the welcome screen.
+
