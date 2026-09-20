@@ -1,1 +1,0 @@
-The music section now hides by itself while nothing is playing and comes back with the music. After you pause, it stays for a minute so that play is one tap away. Prefer it always there? Settings, Home screen, "Hide it while nothing is playing".
