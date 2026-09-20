@@ -801,3 +801,19 @@ clientWidth at 375 px); `og.png` and the listing image rendered and looked at.
 **Open:** pushed to `main` at his word of the day before (no pull request); the live page changes
 when he approves the Publish run, which also makes a new version number for the same app code.
 
+## 2026-09-21 · Website: less text, nothing longer than two lines; deployed by hand
+
+**Asked:** "update the website on the server", then, interrupting a wait for CI: "reduces the
+total text on website, keep everything 2 line at max."
+**Done:** the copy of the whole page rewritten in two passes (about 2,000 → 1,200 words, mockups
+included): first to two lines at desktop width, then, because 30 of 109 blocks still ran to 3–5
+lines at phone width, to two lines there as well. Headline in two lines on a desktop. The
+privacy table gained the missing row for notification access. Week mockup says "12% less than
+last week" again (the app does show the change; checked in `ReviewScreen.kt`).
+**How it was measured:** in the local preview, all `<details>` opened, for every `p, li, dd, dt,
+td, th, figcaption, h2, summary`, the facts and the footer outside `.phone`:
+`round((height − vertical padding) / line-height) > 2` lists the offenders. Result: none at
+1280 px; only the `h1` (eyebrow + three lines) at 375 px; no horizontal overflow.
+**Lesson kept:** he stopped a tool call that was only waiting for CI. Do not block a turn on a
+CI run he did not ask to wait for; start what he asked for and check CI afterwards.
+

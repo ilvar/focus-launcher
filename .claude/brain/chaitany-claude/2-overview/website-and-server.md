@@ -57,6 +57,18 @@ shows. 1.1 replaced the 24-hour bar on home with "Screen Time / total / N% of to
 `build.sh` were changed with it. Under the download button the page links to the GitHub release
 page ("Every version, with checksums").
 
+## Little text: every block two lines at most (owner, 2026-09-21)
+"Reduce the total text, keep everything two lines at max." The page went from about 2,000 words
+to about 1,200: same sections, same ten questions, every paragraph, bullet, table cell, step and
+answer cut until it fits in two lines **at 1280 px and at 375 px**. The headline (his wording,
+never changed) is two lines on a desktop, one sentence each (`h1 .soft { display: block }`,
+smaller type, a wider copy column), and three on a phone, which is the one exception. What could
+not be said in two lines was split into blocks of its own (the checksum and its label, the
+"greyed out switch" hint) or left to the FAQ. **When adding or changing copy, measure it**: open
+every `<details>`, and for each text element outside `.phone` compare its height with its
+line-height, at both widths (the journal entry of that day has the method). The privacy table
+now also names notification access (the song's name): it was missing although the app asks for it.
+
 ## Rules
 No real phone screenshots on the page, also when the owner hands them over as a reference: they
 show his apps, his usage and his calendar. Rebuild the screen, invent the content, and tell him;
