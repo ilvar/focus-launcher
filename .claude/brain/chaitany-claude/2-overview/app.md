@@ -51,7 +51,9 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 
 ## Things that are easy to get wrong
 - **Timers work in two layers.** The launcher's gate needs only usage access. Mid-session locking
-  needs the accessibility service. Keep both working independently.
+  needs the accessibility service. Keep both working independently. The service and the
+  notification listener stay by the owner's decision, although Play Protect blocks such a download
+  in some markets; the variant without them (PR #11) was reverted (`3-details/timers-wall-consent.md`).
 - **Settings is one JSON blob**; `fromJson` must tolerate missing keys (older installs).
 - **Changing a default does not reach existing installs**: the saved JSON already holds the key.
   When an old stored value has to be reinterpreted, bump `Settings.SCHEMA` (stored as `"v"`) and
@@ -75,8 +77,8 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 ## Quality bar
 25 unit tests pass (tracker 13, emoji 6, settings migration 6; `org.json` is a test-only
 dependency because the JVM has none); `lintDebug` = 0 errors (remaining warnings are "newer
-version available", deliberate: newer AndroidX needs compileSdk 37 + AGP 9.1). 35 Kotlin files,
-about 7,200 lines.
+version available", deliberate: newer AndroidX needs compileSdk 37 + AGP 9.1). 36 Kotlin files,
+about 7,750 lines.
 Release APK = 1,366,083 bytes (≈ 1.37 MB). Version **1.1** (`versionCode` 2) since 2026-09-19;
 1.0 was 1,366,063 bytes. The same checks run on GitHub for every push and pull request.
 

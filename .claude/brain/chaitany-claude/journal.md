@@ -612,4 +612,77 @@ Asked whether the tips miss anything: three hidden gestures had no tip (tap scre
 a corner, long-press music or note) and got one each; tips for absent things skip themselves.
 Re-running the guide: Settings → About → "Welcome screen and tips" → Start, or the `welcome` route
 by intent. 25 unit tests, lint 0 errors, release build, installed for user 0.
+## 2026-09-20 · Play Protect: the accessibility service and the notification listener are gone
+
+**Asked:** pull the new changes; the app is blocked by Google Play Protect; request only necessary
+permissions, and where a less critical one does the job, use that.
+
+**Found:** the pull brought PR #10 (music and note sections, by the collaborator) and the news
+that CI publishing is live: the owner had run the setup script and approved the first Publish run,
+which put 1.1.34 on the site and the release page. That APK declares an accessibility service
+(since 1.0) and, new with the music section, a notification listener. Google's Play Protect
+developer guidance names exactly these (plus two SMS permissions) as what gets a downloaded APK's
+installation blocked. Installs over adb are exempt, which is why it never showed here.
+
+**Done:**
+- Both declarations removed. Mid-session locking is now `TimerWatchService`: a foreground service
+  that runs only between leaving the home screen and coming back, reads the usage log every 4 s
+  while the screen is on, and keeps the old decision logic as a pure, tested function. The wall
+  comes up in front of an app if the user allows "display over other apps"; otherwise one
+  notification per visit, and the gate locks the next launch. Started with `startService` and a
+  guarded `startForeground`, so a refusal can never crash the launcher.
+- Music section: buttons as media keys, play state from the audio system, no song name.
+  Double tap to lock removed (nothing but accessibility or device admin can do it).
+- Setup: two required switches instead of three (the "finish setup" notice no longer nags about a
+  service that does not exist); overlay and notifications are optional rows. Texts in Settings,
+  README, website (permissions table, FAQ, install steps, JSON-LD) and the store listing rewritten.
+- `QUERY_ALL_PACKAGES` kept on purpose; every other permission checked and explained in the README.
+- Guard in `build.yml`, `publish.yml` and `site/clean-build.sh`: an APK that declares any of the
+  four is refused. It catches the published 1.1.34 and passes the new build.
+- Brain: the rule (Tier 1, rule 11), the mechanism (`timers-wall-consent.md`), decisions 8, 21, 22,
+  the lesson, the review checklist.
+
+**Verified:** 35 unit tests (10 new), lint 0 errors, release build; the built manifest contains
+none of the four and lists exactly the ten expected permissions; the guard tested on both APKs;
+site builds. **On Android itself:** the owner's phone was not attached, so a CI job was written
+that runs the debug build on emulators (API 34 and 35) and walks through a visit to an app with a
+one-minute limit. Both passed every step: no watcher on home, watcher in the foreground after
+leaving, the "Time's up" notification when the minute was over with the overlay switch off, the
+wall in front of the app with it on, no watcher back on home, no crash lines.
+**Not verified:** the owner's own phone (Android 16), and an actual download-and-install with
+Play Protect watching: only he can do that, in a market where the block is active.
+
+## 2026-09-20 · "Conflict" when installing the website's APK on his own phone
+
+**Asked:** installing from the site shows a conflict with an existing version.
+**Found (read-only):** the site serves 1.1.37 (he had approved the Publish run: the Play Protect
+fix is live). On the phone Focus was already uninstalled from his own profile, but still
+`installed=true`, never launched, in other Android users of the phone, signed with the debug key: leftovers
+of the early plain `adb install`s. Android refuses a differently signed APK while any user has the
+package. **Done:** explained, and handed him the command that removes the package for all users;
+nothing was uninstalled by me. Brain: the lesson, open decisions 2 and 15, and that test builds
+for his phone now need the release key.
+**Then:** the owner ran `adb uninstall com.focus.launcher` himself ("Success"). Verified read-only:
+`pm list packages --user <id>` finds it for no user, `pm list packages -u` finds no leftover
+record, `dumpsys package` has no entry: nothing on the phone holds the old signature any more.
+**Not verified:** the install from the site, and with it the first real download-and-install
+under Play Protect: both are his to report.
+
+## 2026-09-20 · PR #11 reverted on the owner's word ("it removes the option")
+
+**Asked:** "revert the merge the changes 11 as it removes the option."
+**Done:** branch `revert-pr-11`: `git revert -m 1` of the merge of #11 for everything outside the
+brain, which is now byte-identical to the tree before it (`git diff 21a7fbf^1 -- . ':(exclude).claude'`
+is empty): the accessibility service, the notification listener, double tap to lock, the song's
+name and the three-switch Setup page are back; `TimerWatchService`, its tests, the emulator
+workflow and the Play Protect guards in Build, Publish and `site/clean-build.sh` are gone; site,
+README and listing text say so again. Changelog `40.txt` for the release this becomes. The brain
+was not reverted but rewritten: Tier 1 rule 11 now says the services stay, the decision and its
+reason are in `user-and-decisions.md`, the Play Protect facts and the reverted variant are kept
+in `3-details/timers-wall-consent.md`, and the lesson (a fix that costs an option needs his yes
+before the merge) is in `mistakes-and-lessons.md`.
+**Verified:** 25 unit tests pass, lint 0 errors, release build assembles; its manifest declares
+both services again and no INTERNET permission (aapt2).
+**Open:** Play Protect blocks this download again where it enforces the rule (open decision 21).
+Mid-session locking through the accessibility service is still unseen on his phone.
 

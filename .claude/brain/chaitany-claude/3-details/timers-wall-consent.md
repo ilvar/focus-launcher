@@ -50,6 +50,28 @@ keeps the process from being frozen. `generation` drops stale async results. SCR
 timers; USER_PRESENT re-evaluates (no window event fires after unlock).
 Also provides `openNotifications()` and `lockScreen()` for home gestures.
 
+## Play Protect, and the variant without the service (built, published, reverted 2026-09-20)
+Google Play Protect **blocks the installation** of an APK that comes from a download (browser,
+messenger, file manager) if its manifest declares an accessibility service, a notification
+listener, `READ_SMS` or `RECEIVE_SMS` ("This app can request access to sensitive data", no
+"install anyway"; select markets; installs over adb are exempt; source:
+developers.google.com/android/play-protect/warning-dev-guidance). Focus has the first since 1.0
+and the second since 1.1.34 (the song's name). The owner met the block and asked to get past it.
+- **PR #11 (1.1.37)** removed both: a foreground service of type `specialUse`
+  (`TimerWatchService`) ran only between `MainActivity` pause and resume, read
+  `UsageRepository.lastResumedPackage` every 4 s while the screen was on, decided with a pure
+  function (`TimerWatch.decide`, 10 unit tests) and brought the wall up through the
+  "display over other apps" exemption for background activity starts, else a "Time's up"
+  notification. It passed an emulator test on Android 14 and 15. Its price: **no double tap to
+  lock** (only an accessibility service or device admin can turn the screen off), **no song name**
+  (needs notification access), one more switch to explain.
+- **The owner had it reverted the same day: the options matter more to him.** The services are
+  back, the CI guard against them is gone, and Play Protect blocks the download again where it
+  enforces this. Do not remove them again without his yes.
+- The variant is whole in git: `git show 5ebb0fd`; reverting the revert commit brings it back.
+  If it ever returns, it should come as a second build variant or behind his explicit choice,
+  not as a replacement.
+
 ## Bookkeeping
 `focus_limit_state` prefs: `ext_<pkg>` (continue until), `bypass_<pkg>` (date).
 `focus_limit_log` prefs: per day, per package `{b,c,m,x}` = blocked, continued, continued minutes,
