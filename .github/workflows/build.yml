@@ -58,6 +58,12 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          TOOLS=$(dirname "$aapt2"); APK=app/build/outputs/apk/release/app-release.apk
+          # Google Play Protect blocks the installation of a downloaded APK that declares any of these
+          # (developers.google.com/android/play-protect/warning-dev-guidance). Focus is installed from
+          # a download, so none of them may ever be in its manifest again.
+          blocked=$("$TOOLS/aapt2" dump xmltree --file AndroidManifest.xml "$APK" | grep -oE "BIND_ACCESSIBILITY_SERVICE|BIND_NOTIFICATION_LISTENER_SERVICE|android\.permission\.(READ|RECEIVE)_SMS" | sort -u | tr '\n' ' ')
+          if [ -n "$blocked" ]; then echo "::error::the APK declares what Play Protect blocks on: $blocked"; exit 1; fi
           version=$("$aapt2" dump badging app/build/outputs/apk/release/app-release.apk | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
           name="focus-launcher-${version}-ci-${HEAD_SHA::7}.apk"
           mkdir -p out

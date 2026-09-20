@@ -236,8 +236,8 @@
     <tbody>
       <tr><th scope="row">Home app</th><td>Being the screen you land on when you press Home.</td></tr>
       <tr><th scope="row">Usage access</th><td>Counting screen time. Today's total, the timers and the weekly review all come from it.</td></tr>
-      <tr><th scope="row">Accessibility service</th><td>Locking an app <em>while you are inside it</em>. The service is told only the name of the app in front. It is declared unable to read window content, so it cannot see what is on your screen.</td></tr>
-      <tr><th scope="row">Notifications <small>optional</small></th><td>One thing: telling you the weekly review is ready.</td></tr>
+      <tr><th scope="row">Display over other apps <small>optional</small></th><td>Locking an app <em>while you are inside it</em>: it lets the “Time's up” screen come up in front of the app that ran out of time. Focus draws nothing else over other apps.</td></tr>
+      <tr><th scope="row">Notifications <small>optional</small></th><td>Telling you the weekly review is ready, and that an app's time is up if Focus may not display over other apps.</td></tr>
       <tr><th scope="row">Calendar <small>optional</small></th><td>Showing your next events on the home screen.</td></tr>
     </tbody>
   </table>
@@ -249,7 +249,7 @@
   <ol class="steps">
     <li><strong>Download the APK</strong> on your phone. <a href="{{APK_FILE}}" download>{{APK_FILE}}</a> ({{SIZE}}).</li>
     <li><strong>Open it.</strong> Android asks whether your browser may install apps: allow it, then tap Install. Play Protect may offer to scan the file first, which is normal for anything from outside the Play Store.</li>
-    <li><strong>Open “Focus Settings” and go to Setup.</strong> Three switches: default launcher, usage access, and the Focus app timers service. If that last switch is greyed out as a “restricted setting”, open the app's App info, tap the ⋮ menu, choose <em>Allow restricted settings</em>, and try again.</li>
+    <li><strong>Open “Focus Settings” and go to Setup.</strong> Two switches: default launcher and usage access. If the usage access switch is greyed out as a “restricted setting”, open the app's App info, tap ⋮ at the top right, and choose “Allow restricted settings”. Optional: “display over other apps”, so that an app is locked while you are inside it.</li>
     <li><strong>Press Home.</strong> Swipe left for your apps. Long-press anything to change it.</li>
   </ol>
   <p class="fineprint">To check your download, compare its SHA-256 with this one:<br><code>{{SHA256}}</code></p>
@@ -276,8 +276,8 @@
     <p>Be as careful as you would with any download. Here is what you can check yourself: the file's SHA-256 is printed above so you can confirm it was not altered; Android lists an app's permissions before and after install, and you will see that internet access is not among them; and Play Protect can scan the file when you open it.</p>
   </details>
   <details>
-    <summary>Why does a launcher want an accessibility service?</summary>
-    <p>Because Android gives apps no other way to notice that you have been in a game for thirty-one minutes and do something about it. The service listens for one kind of event, “a different window is in front”, and reads one thing from it: the app's name. Without the service Focus still works, and still refuses to open an app whose time is used up. It just cannot interrupt you once you are inside.</p>
+    <summary>Does it use an accessibility service, or read my notifications?</summary>
+    <p>No, neither. Focus notices which app is in front by reading Android's usage log, the same log its screen-time numbers come from, so it needs nothing beyond usage access. To lock an app while you are inside it, it asks for “display over other apps”, and shows exactly one thing there: the “Time's up” screen. Without that switch it sends you a notification instead, and refuses to open the app the next time.</p>
   </details>
   <details>
     <summary>How does it know what counts as social media?</summary>

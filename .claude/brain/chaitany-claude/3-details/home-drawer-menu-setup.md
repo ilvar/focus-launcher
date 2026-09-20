@@ -47,14 +47,13 @@ Code: `ui/home/HomeScreen.kt`, `ui/home/HomeWidgets.kt`, `ui/drawer/DrawerScreen
      `AppRepository.musicPackages()` = a `MediaBrowserService`, `CATEGORY_APP_MUSIC` or
      `ApplicationInfo.CATEGORY_AUDIO`, read on IO when the picker opens; "All apps…" as the last
      row, through `AppPickerDialog(more = …)`);
-     **long-press** = choose that app. With **notification access**
-     (`service/MediaListener.kt`) it follows the active `MediaController` by callback, registered
-     in a `LifecycleStartEffect` so nothing listens while home is hidden; without it the three
-     words are sent as media keys (`AudioManager.dispatchMediaKeyEvent`) and one line offers the
-     access. The listener calls `requestUnbind()` in `onListenerConnected`: the *grant* is what
-     `MediaSessionManager.getActiveSessions` checks, while a bound listener, even an empty one, is
-     handed every notification on the phone. `NowPlaying` is a data class fed from the callback's
-     own arguments, so a player ticking its position every second redraws nothing.
+     **long-press** = choose that app. The three signs are sent as **media keys**
+     (`AudioManager.dispatchMediaKeyEvent`), which Android hands to the player used last; whether
+     something plays comes from `isMusicActive` and an `AudioPlaybackCallback` registered in a
+     `LifecycleStartEffect`. Neither needs a permission. **The song's name, artist and time are
+     gone since 2026-09-20**: they need notification access, and an APK that declares a
+     notification listener is blocked by Play Protect (`timers-wall-consent.md`). The line under
+     the title says "Playing · tap to open <app>".
    - **Note** (`NoteSection`): `Settings.note`, dim, up to `Fit.maxEvents` lines, **always
      shown; a tap edits it** (`TextInputDialog(multiline)`): "can't I see notes and write them
      quickly" won over "a tap opens my notes app", which hid the lines behind "Open <app> →". The
@@ -76,7 +75,7 @@ Code: `ui/home/HomeScreen.kt`, `ui/home/HomeWidgets.kt`, `ui/drawer/DrawerScreen
    is installed; either can be any app. Long-press a corner to change it in place;
    `showShortcuts` hides both.
 Background gestures (each a setting): swipe down = notifications, swipe up = drawer with search
-focused, double-tap = lock (on by default, needs the service), long-press = settings, swipe right
+focused, long-press = settings (double tap to lock went with the accessibility service), swipe right
 (finger moves right; nothing is to the left of home) = the phone's web search (`ui-system.md`).
 
 ## Drawer (page 1, swipe left)
@@ -110,14 +109,15 @@ Title = the app's name; the subtitle shows the system name if renamed, today's t
 6. **Hide app** / Unhide app.
 
 ## Setup page (Settings → Setup; also the "finish setup" notice)
-"Three switches make Focus work", each row opens the right system screen and shows its state on
-return:
+"Two switches make Focus work", each row opens the right system screen and shows its state on
+return; only these two count for the "Finish setting up Focus" notice:
 1. **Default home**: `RoleManager.ROLE_HOME` request on Android 10+, else the home settings.
-2. **Usage access**: screen time, timers and the review depend on it.
-3. **App locking**: the accessibility service. Sideloaded apps hit Android's "restricted setting"
-   block, so the row explains the way through (App info → ⋮ → Allow restricted settings).
-Optional: **Notifications** (used only for the weekly review) and **Calendar section** (requests
-`READ_CALENDAR` and turns the section on in one step).
+2. **Usage access**: screen time, timers and the review depend on it. Sideloaded apps hit
+   Android's "restricted setting" block, so a note explains the way through (App info → ⋮ → Allow
+   restricted settings).
+Optional: **Lock apps while you are in them** ("display over other apps", so the wall can come up
+in front of an open app), **Notifications** (the weekly review, and "time's up" without the
+overlay switch) and **Calendar section** (requests `READ_CALENDAR` and turns the section on).
 Focus never flips these switches itself, and neither does an agent over adb
 (`2-overview/device-testing.md`).
 

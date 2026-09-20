@@ -38,6 +38,9 @@ VERSION=$("$TOOLS/aapt2" dump badging "$APK" | sed -n "s/.*versionName='\([^']*\
 CERT=$("$TOOLS/apksigner" verify --print-certs "$APK" 2>/dev/null | sed -n 's/.*certificate SHA-256 digest: *//p' | sort -u)
 [ "$CERT" = "526a00b874660af4266699d5795a457ddebe958a78484820fac4b61b2a4852a2" ] || { echo "not signed with the release key" >&2; exit 1; }
 ! "$TOOLS/aapt2" dump badging "$APK" | grep -q "android.permission.INTERNET" || { echo "the APK asks for the INTERNET permission" >&2; exit 1; }
+# Play Protect blocks a downloaded APK that declares any of these; see the README.
+! "$TOOLS/aapt2" dump xmltree --file AndroidManifest.xml "$APK" | grep -qE "BIND_ACCESSIBILITY_SERVICE|BIND_NOTIFICATION_LISTENER_SERVICE|android\.permission\.(READ|RECEIVE)_SMS" \
+  || { echo "the APK declares an accessibility service, a notification listener or an SMS permission: Play Protect would block it" >&2; exit 1; }
 
 mkdir -p "$ROOT/build/clean"
 OUT="$ROOT/build/clean/focus-launcher-$VERSION.apk"

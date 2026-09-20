@@ -44,7 +44,7 @@ internal fun SetupPage(status: SetupStatus, onBack: () -> Unit, refresh: () -> U
 
     Page("Setup", onBack) {
         T(
-            "Three switches make Focus work. Tap one to open the right system screen, flip it, and come back.",
+            "Two switches make Focus work. Tap one to open the right system screen, flip it, and come back.",
             Modifier.padding(horizontal = 24.dp, vertical = 10.dp), size = 15.sp, color = c.dim, lineHeight = 22.sp,
         )
 
@@ -74,14 +74,7 @@ internal fun SetupPage(status: SetupStatus, onBack: () -> Unit, refresh: () -> U
             value = if (status.usageAccess) "Allowed" else "Allow",
             onClick = { Perms.openUsageAccess(context) },
         )
-        SettingRow(
-            "3 · Focus timer service",
-            subtitle = "An accessibility service that notices which app is in front, so an app can be locked the moment " +
-                "its time runs out. It cannot read your screen. Find “Focus app timers” under installed or downloaded apps.",
-            value = if (status.timerService) "On" else "Turn on",
-            onClick = { Perms.openAccessibility(context) },
-        )
-        if (!status.timerService) {
+        if (!status.usageAccess) {
             Note(
                 "Switch greyed out, or “restricted setting”? Open App info → ⋮ (top right) → Allow restricted " +
                     "settings, then try again.  Open App info  →",
@@ -90,8 +83,17 @@ internal fun SetupPage(status: SetupStatus, onBack: () -> Unit, refresh: () -> U
 
         Section("Optional")
         SettingRow(
+            "Lock apps while you are in them",
+            subtitle = "“Display over other apps” lets the “Time's up” screen come up in front of an app the moment its " +
+                "time runs out. Without it you get a notification instead, and the app is locked the next time you open " +
+                "it from Focus. Focus draws nothing over other apps except that one screen.",
+            value = if (status.overlay) "Allowed" else "Allow",
+            onClick = { Perms.openOverlaySettings(context) },
+        )
+        SettingRow(
             "Notifications",
-            subtitle = "Only used for one thing: telling you the weekly review is ready.",
+            subtitle = "Used for two things: telling you the weekly review is ready, and that an app's time is up when " +
+                "Focus may not display over other apps.",
             value = if (status.notifications) "Allowed" else "Allow",
             onClick = {
                 if (!status.notifications && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

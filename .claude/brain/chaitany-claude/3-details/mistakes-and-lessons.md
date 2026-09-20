@@ -3,6 +3,14 @@
 Each entry: symptom → cause → fix / rule. Add to this whenever something costs time.
 
 ## Product judgement
+- **Built the app's central feature on an accessibility service without checking how the app would
+  be installed.** Play Protect blocks the install of a *downloaded* APK that declares an
+  accessibility service, a notification listener or an SMS permission (select markets; no "install
+  anyway"). Nobody saw it for days because every install here went over adb, which is exempt; the
+  first people to meet it were the ones the website exists for. A contributor then added a
+  notification listener for a song title. → Before adding any service or special access, read
+  Google's Play Protect developer guidance; test an install the way users do it (download, tap),
+  not only over adb; CI refuses the four declarations.
 - **Put a limit on mail, browser and messenger apps.** Trusted `CATEGORY_SOCIAL`, which covers
   communication apps. → Classify by curated lists + intent probes; never guess towards a limit.
   (`app-classification.md`)
