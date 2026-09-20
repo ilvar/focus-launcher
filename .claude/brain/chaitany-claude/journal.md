@@ -721,3 +721,16 @@ installed on the owner's phone with `--user 0 -r` over 1.1.40 (data kept), compi
 did not come to the front during a passive wait of 2.5 minutes, so no guarded look was possible:
 his eyes are the test. Not pushed, so not published.
 
+## 2026-09-21 · The hiding music section goes straight to `main` (no pull request, his word)
+
+**Asked:** "push this changes no need to create new PR."
+**Done:** `main` was not protected and had not moved; the branch `music-auto-hide` was
+fast-forwarded into it and pushed, with this entry as its third commit, which makes the build
+number 43: the number the changelog `43.txt` was written for. No pull request means no CI before
+the merge, so what stood in for it was the local run (33 tests, lint 0 errors) and the clean
+build that the phone already runs as 1.1.41 (same code). The push starts Build and Publish;
+Publish waits for the owner's approval and makes it 1.1.43.
+**Decision recorded:** for his own small changes he may ask for a direct push; a pull request is
+not a rule of this repository. Contributors' work still gets a review first.
+**Open:** the results of Build and Publish, and his own look at the behaviour on the phone.
+
