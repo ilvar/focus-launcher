@@ -40,14 +40,27 @@ mentions on other sites. **Never promise rankings**: brand queries in days, long
 the head term in months and only with inbound links.
 
 ## Keeping the page true to the app
-The home mockup in the hero is hand-written HTML/CSS and must show what the published version
+**Five phones, all hand-written HTML/CSS** (`.phone` in `style.css`): home (hero), app list, the
+"Time's up" wall, **Today** and **Week** of the screen-time review. Since 2026-09-21 the frame is
+an **Android phone, not an iPhone** (owner: "phone model not an iPhone"): 20:9, modest corners,
+thin even bezel, a camera hole at the top centre, Android's status bar (time left; wifi wedge,
+signal triangle, upright battery and its percentage right; `{{STATUSICONS}}` in
+`fragments.json`), the gesture bar, volume and power together on the right edge. No "9:41"
+anywhere (Apple's marketing time): the mockups, `og.svg` and `fastlane/screenshots.py` say 10:24.
+The owner's own screenshots of the four screens were the **reference for layout only**: drawer
+tabs and "Sort:", the review's header, tabs, week navigation, values over the day bars, the
+parts-of-day rows, the track under each app. **Every name and number on the page stays invented**
+(rule below); the labels over the invented week's bars were computed from the bars, so they add up.
+The home mockup in the hero must show what the published version
 shows. 1.1 replaced the 24-hour bar on home with "Screen Time / total / N% of today"
 (`.screen-time` in `style.css`); the copy, the FAQ-derived JSON-LD and the feature list in
 `build.sh` were changed with it. Under the download button the page links to the GitHub release
 page ("Every version, with checksums").
 
 ## Rules
-No real phone screenshots on the page. No inline styles or scripts (CSP would block them; JSON-LD
+No real phone screenshots on the page, also when the owner hands them over as a reference: they
+show his apps, his usage and his calendar. Rebuild the screen, invent the content, and tell him;
+publishing the real ones is a decision he has to make knowingly, not a default. No inline styles or scripts (CSP would block them; JSON-LD
 data blocks are fine). Keep server details out of anything committed, this brain included.
 
 ## Tier 3 pointers

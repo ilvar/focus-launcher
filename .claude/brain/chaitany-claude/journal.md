@@ -774,4 +774,30 @@ Publish waits for the owner's approval and makes it 1.1.43.
 **Decision recorded:** for his own small changes he may ask for a direct push; a pull request is
 not a rule of this repository. Contributors' work still gets a review first.
 **Open:** the results of Build and Publish, and his own look at the behaviour on the phone.
+**After the push (a90f6bf, build number 43):** Build finished green; Publish is waiting for the
+owner's approval. He asked whether the app was signed, naming `apksigner verify --print-certs
+app-release.apk | grep SHA-256`: run for him on the files that matter. The APK on his phone
+(1.1.41) and the one on the website (1.1.40) carry the release certificate that the README, the
+F-Droid recipe and `verify-release.yml` name; `app-release.apk` in the working folder is the
+`release` build type, which is debug-key signed by design and is never published or put on his
+phone any more (`dist` / `site/clean-build.sh` is).
+
+## 2026-09-21 · Website: an Android phone instead of an iPhone-like frame, five screens after the real ones
+
+**Before anything:** `main` was 6 commits behind: a contributor's PR #13 (welcome screen and
+learn-by-doing tips) had been merged and published by the owner as **1.1.49**, which also carries
+the hiding music section (the Publish run for 1.1.43 was superseded). Screened after the fact:
+no manifest, Gradle, CI or site change, no network or reflection code, audit counts 0.
+**Asked:** with four screenshots of his phone (home, app list, Today, Week): update the website,
+"phone model not an iPhone", where the different screens are shown.
+**Done:** the `.phone` frame redrawn as an Android phone; status bar on every mockup; the app
+list got its tabs and "Sort:", the review was rebuilt after the real screen, a new section
+"Today, hour by hour" with its own phone; "9:41" replaced in the page, `og.svg` and the store
+listing drawing (`1.png` regenerated). His screenshots were used for layout only and are not in
+the repository; every name and number shown is invented. Details: `2-overview/website-and-server.md`.
+**Verified:** `site/build.sh` fills every placeholder; looked at all five phones in the local
+preview, dark at desktop width and light at phone width; no horizontal overflow (scrollWidth =
+clientWidth at 375 px); `og.png` and the listing image rendered and looked at.
+**Open:** pushed to `main` at his word of the day before (no pull request); the live page changes
+when he approves the Publish run, which also makes a new version number for the same app code.
 

@@ -7,6 +7,7 @@
   --faint: #5c5c5c;
   --line: #262626;
   --glow: rgba(255, 255, 255, 0.10);
+  --hole: #161616;
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --page: min(1120px, 100% - 3rem);
@@ -20,6 +21,7 @@
     --faint: #9c9c9c;
     --line: #e2e2e2;
     --glow: rgba(0, 0, 0, 0.07);
+    --hole: #000;
   }
 }
 
@@ -126,20 +128,39 @@ code { font: 0.8rem/1.6 var(--mono); color: var(--fg); word-break: break-all; }
 .phone-wrap { margin: 0; display: grid; justify-items: center; gap: 1.1rem; }
 .phone-wrap figcaption { color: var(--dim); font-size: 0.875rem; text-align: center; max-width: 22rem; }
 
+/* An Android phone, drawn in lines: a tall 20:9 screen with modest corners and an even, thin
+   bezel, the camera as a hole at the top centre, Android's status bar (time left, signs and the
+   battery's percentage right), the gesture bar at the bottom, and volume and power together on
+   the right edge. */
 .phone {
   container-type: inline-size;
-  width: min(330px, 82vw);
-  aspect-ratio: 9 / 19;
+  width: min(320px, 80vw);
+  aspect-ratio: 9 / 20;
   border: 1px solid var(--faint);
-  border-radius: 2.4rem;
+  border-radius: 1.7rem;
   position: relative;
-  overflow: hidden;
   background: var(--bg);
-  box-shadow: 0 0 0 0.45rem var(--bg), 0 0 0 calc(0.45rem + 1px) var(--line);
+  box-shadow: 0 0 0 0.3rem var(--bg), 0 0 0 calc(0.3rem + 1px) var(--line);
+}
+.phone::after {
+  content: "";
+  position: absolute;
+  right: calc(-0.3rem - 5px);
+  top: 16%;
+  width: 3px;
+  height: 19%;
+  border-radius: 2px;
+  background: linear-gradient(var(--faint) 0 56%, transparent 56% 70%, var(--faint) 70% 100%);
 }
 /* Container units resolve against the nearest *ancestor* container, so the element that declares
    container-type cannot use them for its own padding or font size. Hence the inner .screen. */
-.screen { position: relative; height: 100%; display: flex; flex-direction: column; padding: 9cqw 8cqw 6cqw; font-size: 4cqw; line-height: 1.35; }
+.screen { position: relative; height: 100%; display: flex; flex-direction: column; padding: 0 8cqw 8cqw; font-size: 4cqw; line-height: 1.35; overflow: hidden; border-radius: calc(1.7rem - 1px); }
+.screen::before { content: ""; position: absolute; top: 3.7cqw; left: 50%; width: 3.6cqw; height: 3.6cqw; margin-left: -1.8cqw; border-radius: 50%; background: var(--hole); box-shadow: 0 0 0 1px var(--line); }
+.screen::after { content: ""; position: absolute; bottom: 2.6cqw; left: 50%; width: 30cqw; height: 1.1cqw; margin-left: -15cqw; border-radius: 1cqw; background: var(--faint); }
+.status { flex: none; display: flex; justify-content: space-between; align-items: center; height: 11cqw; margin: 0 -1.5cqw 2cqw; font-size: 3.3cqw; font-weight: 500; color: var(--dim); }
+.status-icons { display: flex; align-items: center; gap: 1.3cqw; }
+.status svg { width: 3.5cqw; height: 3.5cqw; fill: currentColor; display: block; }
+.status b { font-weight: 500; margin-left: 0.2cqw; }
 .phone .cap { font-size: 2.7cqw; letter-spacing: 0.17em; color: var(--dim); display: block; }
 .phone .cap.pad { padding-left: 1cqw; }
 .phone .cap.gap, .phone .gap { margin-top: 5cqw; }
@@ -162,7 +183,7 @@ code { font: 0.8rem/1.6 var(--mono); color: var(--fg); word-break: break-all; }
 .clock-text .battery { font-size: 3cqw; color: var(--faint); margin-top: 0.8cqw; }
 
 /* the split clock: time | one section, a single line between them, no frame */
-.split { display: grid; grid-template-columns: 1fr 1fr; align-items: center; margin: 9cqw 0 7cqw; background: linear-gradient(var(--faint), var(--faint)) center / 1px 100% no-repeat; }
+.split { display: grid; grid-template-columns: 1fr 1fr; align-items: center; margin: 7cqw 0 7cqw; background: linear-gradient(var(--faint), var(--faint)) center / 1px 100% no-repeat; }
 .split-clock { display: grid; justify-items: end; padding: 2cqw 5cqw 2cqw 0; }
 .split-clock .time { font-size: 13cqw; font-weight: 300; letter-spacing: -0.03em; line-height: 1.05; }
 .split-clock .date { font-size: 3.7cqw; color: var(--dim); }
@@ -185,24 +206,42 @@ code { font: 0.8rem/1.6 var(--mono); color: var(--fg); word-break: break-all; }
 .daybar .cell { fill: var(--line); }
 .daybar .fill { fill: var(--fg); }
 .scale { display: flex; justify-content: space-between; font-size: 2.6cqw; color: var(--faint); }
-.scale.seven { padding: 0 2.2cqw; margin-top: 1cqw; }
+.scale.seven { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-top: 1cqw; }
+.scale.values { margin: 2.4cqw 0 -1.4cqw; }
+.scale .peak { color: var(--fg); }
 .event { display: grid; grid-template-columns: 35cqw 1fr; font-size: 3.5cqw; margin-top: 1.6cqw; white-space: nowrap; }
 .event span:first-child { color: var(--dim); }
 
-.favs { display: grid; gap: 3.1cqw; font-size: 6.6cqw; line-height: 1.15; margin-top: 1cqw; }
-.corners { margin-top: auto; display: flex; justify-content: space-between; color: var(--dim); font-size: 3.8cqw; }
+/* The fast apps sit low, where the thumb is; the corners are the last line above the gesture bar. */
+.favs { display: grid; gap: 3.4cqw; font-size: 6.8cqw; line-height: 1.15; margin-top: auto; padding-left: 1cqw; }
+.corners { margin-top: 26cqw; display: flex; justify-content: space-between; color: var(--dim); font-size: 3.8cqw; padding: 0 1cqw 3cqw; }
 
 /* drawer */
-.search { border: 1px solid var(--faint); padding: 3.2cqw 4cqw; color: var(--faint); font-size: 4.4cqw; margin-bottom: 5cqw; }
-.app { display: flex; justify-content: space-between; align-items: baseline; padding: 2.5cqw 7cqw 2.5cqw 1cqw; font-size: 5cqw; }
+.search { border: 1px solid var(--faint); padding: 3.4cqw 4cqw; color: var(--faint); font-size: 4.4cqw; margin: 1cqw -1.5cqw 3cqw; }
+.app { display: flex; justify-content: space-between; align-items: baseline; padding: 2.7cqw 7cqw 2.7cqw 1cqw; font-size: 5.2cqw; }
 .app.spent span { color: var(--faint); }
-.index { position: absolute; right: 3cqw; top: 25cqw; bottom: 8cqw; display: flex; flex-direction: column; justify-content: space-between; font-size: 2.4cqw; color: var(--faint); }
+.index { position: absolute; right: 3.4cqw; top: 47cqw; bottom: 9cqw; display: flex; flex-direction: column; justify-content: space-between; font-size: 2.3cqw; color: var(--faint); }
+
+/* tabs: the chosen one is inverted, as in the app (Personal / Work in the drawer, Today / Week in the review) */
+.tabs { flex: none; display: flex; align-items: center; margin: 0 -1.5cqw 4.5cqw -4.4cqw; }
+.tab { padding: 1.9cqw 4.4cqw; font-size: 3.9cqw; color: var(--dim); }
+.tab.on { background: var(--fg); color: var(--bg); }
+.sort { margin-left: auto; font-size: 3.5cqw; color: var(--dim); }
+.tabs.rule { margin: 0 -8cqw 5cqw; padding: 0 8cqw 3cqw 3.6cqw; border-bottom: 1px solid var(--line); }
+
+/* the review's own header: back, title */
+.app-bar { flex: none; display: flex; align-items: center; gap: 4.4cqw; font-size: 5.6cqw; margin: 2cqw 0 4.4cqw; }
+.app-bar span { font-size: 5cqw; }
+.week-nav { display: flex; justify-content: space-between; align-items: center; color: var(--dim); font-size: 5cqw; margin-bottom: 3cqw; }
+.week-name { display: grid; justify-items: center; color: var(--fg); font-size: 4.3cqw; line-height: 1.25; }
+.week-name small { font-size: 3.1cqw; }
 
 /* wall */
-.phone.wall .screen { padding-top: 26cqw; }
+.phone.wall .status { margin-bottom: 17cqw; }
 .wall-name { font-size: 11cqw; font-weight: 300; letter-spacing: -0.02em; margin: 3cqw 0 4cqw; }
 .wall-bar { display: block; height: 0.8cqw; background: var(--fg); }
 .wall-meta { color: var(--dim); font-size: 3.7cqw; margin-top: 3.4cqw; }
+.wall-meta.next { margin-top: 0.6cqw; }
 .wall-note { color: var(--faint); font-size: 3.2cqw; margin-top: 1.4cqw; }
 .btn { display: block; text-align: center; border: 1px solid var(--dim); padding: 3.4cqw 2cqw; font-size: 3.9cqw; font-weight: 500; }
 .btn.solid { background: var(--fg); color: var(--bg); border-color: var(--fg); }
@@ -210,18 +249,26 @@ code { font: 0.8rem/1.6 var(--mono); color: var(--fg); word-break: break-all; }
 .wall-link { color: var(--dim); font-size: 3.6cqw; padding: 4cqw 0 1cqw; }
 
 /* review */
-.review-total { font-size: 12cqw; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; margin-top: 2cqw; }
+.review-total { font-size: 14cqw; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; margin-top: 2cqw; }
 .chart { display: block; width: 100%; margin-top: 2.6cqw; }
-.chart.week { height: 15cqw; }
-.chart.hours { height: 10cqw; margin-bottom: 1cqw; }
+.chart.week { height: 22cqw; }
+.chart.hours { height: 15cqw; margin-bottom: 1cqw; }
 .chart .bar { fill: var(--faint); }
 .chart .bar.peak { fill: var(--fg); }
-.usage { display: grid; grid-template-columns: 1fr auto; align-items: baseline; font-size: 4cqw; margin-top: 2.6cqw; row-gap: 1.4cqw; }
-.usage small { font-size: 2.8cqw; }
-.usage i { grid-column: 1 / -1; height: 0.6cqw; background: var(--fg); display: block; }
-.usage i.w100 { width: 100%; }
-.usage i.w78 { width: 78%; }
-.usage i.w45 { width: 45%; }
+.usage { display: grid; grid-template-columns: 1fr auto; align-items: baseline; font-size: 4.3cqw; margin-top: 3.6cqw; row-gap: 1.6cqw; }
+.usage small { font-size: 3.1cqw; }
+.usage.part { margin-top: 6cqw; font-size: 4.6cqw; }
+.usage.part span small { display: block; color: var(--faint); font-size: 2.8cqw; }
+/* a track the whole width, and on it the app's share */
+.usage i { grid-column: 1 / -1; height: 0.6cqw; background: var(--line); display: block; }
+.usage b { display: block; height: 100%; background: var(--fg); }
+/* today: the day's 24 cells and the list under it have the room the real screen gives them */
+.phone.today .daybar { height: 5cqw; margin: 5.5cqw 0 1.2cqw; }
+.phone.today .usage { font-size: 4.8cqw; margin-top: 5.2cqw; row-gap: 2cqw; }
+.phone.today .cap.gap { margin-top: 9cqw; }
+.phone.review .cap.gap { margin-top: 7cqw; }
+.w100 { width: 100%; } .w75 { width: 75%; } .w58 { width: 58%; } .w45 { width: 45%; }
+.w29 { width: 29%; } .w25 { width: 25%; } .w24 { width: 24%; } .w19 { width: 19%; } .w8 { width: 8%; }
 
 /* ---- three ideas -------------------------------------------------------------------------- */
 

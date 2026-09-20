@@ -50,11 +50,12 @@
   <figure class="phone-wrap" aria-label="The Focus home screen">
     <div class="phone home" aria-hidden="true">
       <div class="screen">
+        <div class="status"><span>10:24</span><span class="status-icons">{{STATUSICONS}}<b>72%</b></span></div>
         <div class="split">
           <div class="split-clock">
-            <span class="time">9:41</span>
+            <span class="time">10:24</span>
             <span class="date">Tue, 22 Sept</span>
-            <span class="battery">72%</span>
+            <span class="battery">72%  ·  charging</span>
           </div>
           <div class="split-side">
             <span class="when">Today 14:00</span>
@@ -118,7 +119,9 @@
   <figure class="phone-wrap" aria-label="The app drawer">
     <div class="phone drawer" aria-hidden="true">
       <div class="screen">
+        <div class="status"><span>10:24</span><span class="status-icons">{{STATUSICONS}}<b>72%</b></span></div>
         <div class="search">Search</div>
+        <div class="tabs"><span class="tab on">Personal</span><span class="tab">Work</span><span class="sort">Sort: A–Z</span></div>
         <span class="cap pad">Installed in the last 24 hours</span>
         <div class="app"><span>Translate</span></div>
         <span class="cap pad gap">All apps</span>
@@ -134,8 +137,7 @@
         <div class="app"><span>Mail</span></div>
         <div class="app"><span>Maps</span></div>
         <div class="app"><span>Messages</span></div>
-        <div class="app"><span>Music</span></div>
-        <div class="index"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>I</span><span>K</span><span>L</span><span>M</span><span>N</span><span>P</span><span>R</span><span>S</span><span>T</span><span>W</span></div>
+        <div class="index"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>I</span><span>J</span><span>K</span><span>L</span><span>M</span><span>N</span><span>O</span><span>P</span><span>R</span><span>S</span><span>T</span><span>U</span><span>V</span><span>W</span><span>X</span><span>Y</span><span>Z</span></div>
       </div>
     </div>
     <figcaption>Swipe left: every app, as a list. Timers show next to the apps that have one.</figcaption>
@@ -156,6 +158,7 @@
   <figure class="phone-wrap" aria-label="The lock screen shown when an app's time is used up">
     <div class="phone wall" aria-hidden="true">
       <div class="screen">
+        <div class="status"><span>21:47</span><span class="status-icons">{{STATUSICONS}}<b>72%</b></span></div>
         <span class="cap">Time's up</span>
         <span class="wall-name">Feed</span>
         <span class="wall-bar"></span>
@@ -174,6 +177,41 @@
 
 <section class="feature">
   <div class="feature-copy">
+    <p class="label">Screen time</p>
+    <h2>Today, hour by hour.</h2>
+    <ul>
+      <li>Tap the screen time on your home screen: the total, its share of the day's 24 hours, and how often you unlocked the phone.</li>
+      <li>One cell for every hour of the day, filled by how much of that hour went to the screen.</li>
+      <li>The apps behind the number, longest first. One with a daily limit shows how much of it is gone.</li>
+      <li>Counted from Android's own usage log, on the phone. None of it leaves the phone.</li>
+    </ul>
+  </div>
+  <figure class="phone-wrap" aria-label="Today's screen time">
+    <div class="phone today" aria-hidden="true">
+      <div class="screen">
+        <div class="status"><span>16:05</span><span class="status-icons">{{STATUSICONS}}<b>72%</b></span></div>
+        <div class="app-bar"><span>←</span>Screen time</div>
+        <div class="tabs rule"><span class="tab on">Today</span><span class="tab">Week</span></div>
+        <span class="review-total">2h 41m</span>
+        <span class="wall-meta">of 24h  ·  11% of the day  ·  46 unlocks</span>
+        {{DAYBAR}}
+        <div class="scale"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+        <span class="cap gap">Apps today</span>
+        <div class="usage"><span>Video</span><small>48m</small><i><b class="w100"></b></i></div>
+        <div class="usage"><span>Browser</span><small>36m</small><i><b class="w75"></b></i></div>
+        <div class="usage"><span>Feed</span><small>28m / 30m</small><i><b class="w58"></b></i></div>
+        <div class="usage"><span>Messages</span><small>22m</small><i><b class="w45"></b></i></div>
+        <div class="usage"><span>Mail</span><small>14m</small><i><b class="w29"></b></i></div>
+        <div class="usage"><span>Chess</span><small>9m / 30m</small><i><b class="w19"></b></i></div>
+        <div class="usage"><span>Maps</span><small>4m</small><i><b class="w8"></b></i></div>
+      </div>
+    </div>
+    <figcaption>Today. What the number on your home screen is made of.</figcaption>
+  </figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-copy">
     <p class="label">Weekly review</p>
     <h2>See the week you actually had.</h2>
     <ul>
@@ -186,19 +224,23 @@
   <figure class="phone-wrap" aria-label="The weekly review">
     <div class="phone review" aria-hidden="true">
       <div class="screen">
-        <span class="cap">14 – 20 Sept</span>
+        <div class="status"><span>19:02</span><span class="status-icons">{{STATUSICONS}}<b>72%</b></span></div>
+        <div class="app-bar"><span>←</span>Screen time</div>
+        <div class="tabs rule"><span class="tab">Today</span><span class="tab on">Week</span></div>
+        <div class="week-nav"><span>‹</span><span class="week-name">14 – 20 Sept<small>Last week</small></span><span>›</span></div>
         <span class="review-total">18h 40m</span>
-        <span class="wall-meta">2h 40m a day · 12% less than last week</span>
+        <span class="wall-meta">2h 40m a day</span>
+        <span class="wall-meta next">That is 17% of your waking hours.</span>
         <span class="cap gap">Day by day</span>
+        <div class="scale seven values"><span>2.1h</span><span>3.4h</span><span>2.6h</span><span>2.2h</span><span class="peak">3.9h</span><span>2.5h</span><span>2.0h</span></div>
         {{WEEKBARS}}
-        <div class="scale seven"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+        <div class="scale seven days"><span>M</span><span>T</span><span>W</span><span>T</span><span class="peak">F</span><span>S</span><span>S</span></div>
+        <span class="wall-meta">Most on Friday (3h 53m), least on Sunday (1h 59m).</span>
         <span class="cap gap">When you were on your phone</span>
         {{HOURBARS}}
         <div class="scale"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
-        <span class="cap gap">Where it went</span>
-        <div class="usage"><span>Feed</span><small>5h 12m · mostly night</small><i class="w100"></i></div>
-        <div class="usage"><span>Video</span><small>4h 03m · mostly evening</small><i class="w78"></i></div>
-        <div class="usage"><span>Browser</span><small>2h 20m · mostly afternoon</small><i class="w45"></i></div>
+        <div class="usage part"><span>Morning<small>5 – 12</small></span><small>4h 38m  ·  25%</small><i><b class="w25"></b></i></div>
+        <div class="usage part"><span>Afternoon<small>12 – 17</small></span><small>4h 32m  ·  24%</small><i><b class="w24"></b></i></div>
       </div>
     </div>
     <figcaption>Sunday evening. Was this how you wanted to spend your week?</figcaption>

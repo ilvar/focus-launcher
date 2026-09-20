@@ -1,0 +1,1 @@
+The music section hides by itself while nothing is playing and comes back with the music. New installs get one welcome screen, then short tips on the home screen that go away as soon as you have tried them; Settings, About brings them back.

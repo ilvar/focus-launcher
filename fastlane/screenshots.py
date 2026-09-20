@@ -31,7 +31,7 @@ def page(body):
 
 def home():
     b = [f'<line x1="540" y1="250" x2="540" y2="560" stroke="{FAINT}" stroke-width="3"/>',
-         text(486, 410, "9:41", 168, weight=300, anchor="end"),
+         text(486, 410, "10:24", 168, weight=300, anchor="end"),
          text(486, 478, "Tue, 22 Sept", 42, DIM, anchor="end"),
          text(486, 532, "72%", 36, FAINT, anchor="end"),
          text(594, 330, "Today 14:00", 36, DIM), text(594, 384, "Design review", 45),
