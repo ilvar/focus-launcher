@@ -64,7 +64,8 @@ over `release` or the reverse: different signatures. No JDK path is pinned in th
 served): split clock (owner's second sketch), plus a collaborator's merged work: PR #1 (drawer
 sort and tabs, swipe right = web search, work badge, screen time in words) and PR #10 (music and
 note sections). What in them touches the owner's earlier decisions still waits for his word (open
-decisions 10–14). The owner's phone runs the same code as a debug-key build. GPL-3.0-or-later.
+decisions 10–14). The owner is moving his phone from the debug-key build to the website's APK
+(2026-09-20): test builds for it then need the release key. GPL-3.0-or-later.
 Versions are `<base>.<commit count>`. **CI publishing is live**: a push to `main` that touches the
 app or the site starts Publish, which waits for the owner's approval (first real run: 1.1.34).
 **F-Droid:** repo ready, recipe verified; the merge request needs the owner's GitLab account and

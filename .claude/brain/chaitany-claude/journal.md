@@ -621,3 +621,20 @@ leaving, the "Time's up" notification when the minute was over with the overlay 
 wall in front of the app with it on, no watcher back on home, no crash lines.
 **Not verified:** the owner's own phone (Android 16), and an actual download-and-install with
 Play Protect watching: only he can do that, in a market where the block is active.
+
+## 2026-09-20 · "Conflict" when installing the website's APK on his own phone
+
+**Asked:** installing from the site shows a conflict with an existing version.
+**Found (read-only):** the site serves 1.1.37 (he had approved the Publish run: the Play Protect
+fix is live). On the phone Focus was already uninstalled from his own profile, but still
+`installed=true`, never launched, in other Android users of the phone, signed with the debug key: leftovers
+of the early plain `adb install`s. Android refuses a differently signed APK while any user has the
+package. **Done:** explained, and handed him the command that removes the package for all users;
+nothing was uninstalled by me. Brain: the lesson, open decisions 2 and 15, and that test builds
+for his phone now need the release key.
+**Then:** the owner ran `adb uninstall com.focus.launcher` himself ("Success"). Verified read-only:
+`pm list packages --user <id>` finds it for no user, `pm list packages -u` finds no leftover
+record, `dumpsys package` has no entry: nothing on the phone holds the old signature any more.
+**Not verified:** the install from the site, and with it the first real download-and-install
+under Play Protect: both are his to report.
+

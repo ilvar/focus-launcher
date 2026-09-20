@@ -65,8 +65,8 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
 1. ~~License.~~ Decided 2026-09-20: **GPL-3.0** (recorded as GPL-3.0-or-later), chosen from three
    options when F-Droid required one. The collaborator's merged code is part of the app: he was
    asked in the pull request to confirm the license for his contributions; not answered yet.
-2. **His phone still runs the debug-key `release` build.** Moving to the public `dist` build needs
-   one uninstall (settings reset). Offered, not done. Never uninstall without asking.
+2. ~~His phone runs the debug-key `release` build.~~ 2026-09-20: he uninstalled it himself to move
+   to the website's APK (settings reset, as predicted). See 15 for what blocked the install.
 3. **Google Search Console** verification (needs his Google account).
 4. A link to `/focusapp/` from the how2me.me homepage (his other site; offered, not edited).
 5. Commit author address: his global git identity is used; GitHub's noreply alternative offered.
@@ -89,9 +89,11 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
     was part of the owner's original sketch. The site's home mockup and copy were changed to match
     1.1; the review still has the bar. Keep, revert, or bring back as an option: owner's call.
 15. Early installs used plain `adb install`, which installs for **every** Android user on a
-    phone. On the owner's phone Focus is therefore also present in the profiles besides his own.
-    Removing it there is a per-user uninstall: reported, waiting for his yes. Installs now use
-    `--user 0`.
+    phone. 2026-09-20: he uninstalled Focus from his own profile to install the website's APK,
+    and the copies left in other users of the phone (debug key) blocked it with a package conflict. He ran
+    the removal for all users himself (`adb uninstall <pkg>`; verified afterwards that no user
+    and no leftover record has the package). **Closed.** Removing an app from his phone stays
+    his action, not an agent's; installs over adb use `--user 0`.
 16. **CI publishing waits for one command from him**: `site/setup-ci-publishing.sh` (it handles
     his signing key and a new server key, so an agent must not run it, **also not when he says
     "run it"**: he did, 2026-09-20, and was given the reason and the Run button instead). Until
