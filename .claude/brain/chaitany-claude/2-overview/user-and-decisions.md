@@ -39,6 +39,7 @@
 | **A release page with the APK** | GitHub releases, tag per version, the same APK as the website with its checksum; 1.0 and 1.1 are there |
 | **Submit to F-Droid, with a manually run CI for it** (2026-09-20) | Repo made F-Droid-ready (GPL-3.0, Fastlane listing, reproducible build so F-Droid ships the APK signed with his own key, recipe). `fdroid.yml` runs only by hand: it checks the recipe with F-Droid's tools and can open the merge request. The GitLab account, fork and token are his to create (open decision 20) |
 | **Get past Google Play Protect: only necessary permissions, and the less critical one where there is a choice** (2026-09-20), then the same day: **"revert the merge the changes 11 as it removes the option"** | Play Protect blocks a downloaded APK that declares an accessibility service or a notification listener; Focus has both. PR #11 removed both (published as 1.1.37): locking moved to a usage-log watcher, and double tap to lock and the song's name went away. He had it reverted: **the options matter more to him than the clean download.** The services are back; do not remove an option again without asking him first. What was learned is kept in `3-details/timers-wall-consent.md` |
+| **"When nothing is playing the music control should hide automatically"** (2026-09-20) | The music section shows only while something plays, plus one minute after a stop he could see (so play is one tap away and songs do not flicker). On by default for everyone; a switch in Settings → Home screen keeps the contributor's always-there behaviour available |
 | **CI that builds an APK on GitHub** | Tests, lint and an APK on every push and pull request; that APK is signed with a throwaway key |
 | **The site gets the latest APK when CI has built it** (2026-09-20), **automatically, with his approval** (chosen from three options) | `publish.yml`: signs with the real key, uploads, creates the release, after he approves the run. Keys live in a protected GitHub environment; the server upload key can only deliver site files. He switches it on himself with `site/setup-ci-publishing.sh` |
 
@@ -65,8 +66,9 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
 1. ~~License.~~ Decided 2026-09-20: **GPL-3.0** (recorded as GPL-3.0-or-later), chosen from three
    options when F-Droid required one. The collaborator's merged code is part of the app: he was
    asked in the pull request to confirm the license for his contributions; not answered yet.
-2. ~~His phone runs the debug-key `release` build.~~ 2026-09-20: he uninstalled it himself to move
-   to the website's APK (settings reset, as predicted). See 15 for what blocked the install.
+2. ~~His phone runs the debug-key `release` build.~~ 2026-09-20: he uninstalled it himself and
+   installed the website's APK (settings reset, as predicted; see 15 for what blocked it at first).
+   His phone is on the release key now; updates over adb come from `site/clean-build.sh`.
 3. **Google Search Console** verification (needs his Google account).
 4. A link to `/focusapp/` from the how2me.me homepage (his other site; offered, not edited).
 5. Commit author address: his global git identity is used; GitHub's noreply alternative offered.
@@ -75,6 +77,8 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
 7. ~~No GitHub Release with the APK attached.~~ Done 2026-09-19 (1.0 and 1.1).
 8. The accessibility service has never been switched on on his phone, so mid-session locking and
    double tap to lock are unseen there. (Between 1.1.37 and its revert on 2026-09-20 there was none.)
+   After the last fresh install of 2026-09-20 (1.1.40 over adb) he made Focus the default home
+   and gave it usage access; the accessibility switch and notification access were still off.
 9. One observation about the main site's configuration, unrelated to Focus: `private/server.md`.
 10. **The work marker is now a drawn briefcase glyph**, at the contributor's repeated request: the
     first exception to the owner's "no icons". Owner's call whether it stays.
@@ -118,7 +122,8 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
     approve it, and answer the reviewers on GitLab. Agents do not create accounts or enter tokens.
 21. ~~What the Play Protect fix cost.~~ He weighed it on 2026-09-20: the options stay, PR #11 was
     reverted. What is left open is the other half: **Play Protect blocks the download again**
-    wherever it enforces this (his own report started it). Ways out that keep the options, none
+    wherever it enforces this (his own report started it; 1.1.37, without the services, did
+    install from a browser download on his phone, so the diagnosis was right). Ways out that keep the options, none
     built, all his call: installs over adb (exempt, what his phone can use); F-Droid, once the
     merge request is through (whether its installs are exempt is not verified); two variants,
     "full" and one without the two services (two builds to publish and explain).

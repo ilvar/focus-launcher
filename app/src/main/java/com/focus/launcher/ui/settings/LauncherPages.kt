@@ -143,6 +143,10 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
             "Music", settings.showMusic,
             subtitle = "Previous, play or pause, next, in words. It can name the song if you allow it notification access.",
         ) { v -> update { it.copy(showMusic = v) } }
+        ToggleRow(
+            "Hide it while nothing is playing", settings.musicAutoHide, enabled = settings.showMusic,
+            subtitle = "The section comes with the music and leaves a minute after it stops. Off: it is always there.",
+        ) { v -> update { it.copy(musicAutoHide = v) } }
         SettingRow(
             "Music app",
             subtitle = "Opens when you tap the section and nothing is playing. Long-pressing the section gets you here too.",

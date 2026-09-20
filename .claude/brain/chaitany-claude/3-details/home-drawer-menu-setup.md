@@ -55,6 +55,25 @@ Code: `ui/home/HomeScreen.kt`, `ui/home/HomeWidgets.kt`, `ui/drawer/DrawerScreen
      `MediaSessionManager.getActiveSessions` checks, while a bound listener, even an empty one, is
      handed every notification on the phone. `NowPlaying` is a data class fed from the callback's
      own arguments, so a player ticking its position every second redraws nothing.
+     **The section is only there while there is music** (owner, 2026-09-20: "when nothing is
+     playing the music control should hide automatically"; `Settings.musicAutoHide`, on by
+     default, also for existing installs; off = always there, as the contributor built it).
+     `rememberMusicState` (called by `HomeScreen`, because the line above the section, its share
+     of `heightOf` and `anySection` all hang on it) holds a `MusicState`: `playing` = the active
+     session's `STATE_PLAYING` with notification access, else the audio system's word
+     (`AudioPlaybackCallback` + `activePlaybackConfigurations`, usage MEDIA or UNKNOWN only, so a
+     key click or a notification sound is not music; this replaced the 400 ms re-read of
+     `isMusicActive` after a key press). Listeners live in one `LifecycleStartEffect`: nothing
+     listens while home is hidden. **It lingers for `MUSIC_LINGER_MS` = 1 min after a stop that
+     was seen happening** (a callback): room to press play again, and no flicker between two
+     songs (BUFFERING is not PLAYING). What is found on returning to the home screen is *not*
+     such a moment (`live = false`): music that stopped while he was elsewhere shows nothing,
+     but a minute already running survives the return, and one that ran out during sleep is
+     cleared by the same read (the expiry `delay` counts uptime, the rule elapsedRealtime). The
+     rule is the pure `lingerUntil(...)` in `ui/home/MusicLinger.kt`, 7 unit tests. Show and hide
+     are instant on purpose: an enter animation would unfold the section on every return home
+     with music on, and an exit animation can be held back while the launcher is frozen in the
+     background and play on return.
    - **Note** (`NoteSection`): `Settings.note`, dim, up to `Fit.maxEvents` lines, **always
      shown; a tap edits it** (`TextInputDialog(multiline)`): "can't I see notes and write them
      quickly" won over "a tap opens my notes app", which hid the lines behind "Open <app> →". The

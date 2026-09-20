@@ -40,8 +40,9 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
   personal Google account is the sanctioned way to get it onto the home screen.
 - Two more optional sections under the calendar, in words only and told apart by a thin line, not a
   box: **music** (Prev · Play/Pause · Next; they work with no permission at all, as media keys, and
-  with notification access the section also names the song and artist) and a **note** of a few
-  lines that you tap to edit.
+  with notification access the section also names the song and artist. It is only there while
+  something is playing, and for a minute after it stops so that play is one tap away; a switch in
+  Settings → Home screen keeps it there always) and a **note** of a few lines that you tap to edit.
 - Up to 5 "fast apps", as plain text. One that lives in a Work profile carries a small
   briefcase outline after its name, drawn in the text colour: the launcher's one pictogram.
 - Two corner shortcuts (Phone / Camera by default). Long-press one to change it.
