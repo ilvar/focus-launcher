@@ -76,13 +76,20 @@ Inputs: `tag` (empty = newest `vX.Y.Z`), `build` (default on), `submit` (default
   `lint`, and `fdroid build`, which with `Binaries` set also compares the result with the
   published APK. The recipe as F-Droid's tools left it, and `fdroid/MERGE_REQUEST.md`, become the
   artifact `fdroid-recipe`.
-- **submit:** runs in the protected `release` environment (owner's approval). With
-  `FDROID_GITLAB_TOKEN` (environment secret) and `FDROID_GITLAB_FORK` (repository variable,
-  `<gitlab user>/fdroiddata`) it commits the recipe to the branch `com.focus.launcher` of the fork
-  through GitLab's API (no git push from a shallow clone) and opens "New app: Focus Launcher"
-  against fdroid/fdroiddata with the filled-in checklist, or says that the MR is already open.
-  Without them it stops with the instruction. Agents do not create the GitLab account or enter
-  the token: the owner does (`gh secret set FDROID_GITLAB_TOKEN --env release` prompts for it).
+- **submit:** runs in the protected `release` environment (owner's approval) and calls
+  `fdroid/submit.py` with `FDROID_GITLAB_TOKEN` (environment secret) and `FDROID_GITLAB_FORK`
+  (repository variable, `<gitlab user>/fdroiddata`). Everything goes through GitLab's API (no git
+  push from a shallow clone). **There is only ever one merge request** (the owner asked for this
+  on 2026-09-20): the recipe is committed to the fork's branch `com.focus.launcher`; an **open**
+  MR from that branch is updated by that commit plus a note for the reviewers, and no second one
+  is opened; an unchanged recipe commits nothing; a **closed** MR is reopened and updated; MRs of
+  other forks with the same branch name are ignored (matched by `source_project_id`, not by
+  author name); if the recipe is already on fdroiddata's `master`, Focus is included and nothing
+  is submitted (F-Droid's bot owns the file from then on). Only with none of these is "New app:
+  Focus Launcher" opened, with the filled-in checklist. `fdroid/test_submit.py` runs nine such
+  scenarios against a fake GitLab at the start of every workflow run. Agents do not create the
+  GitLab account or enter the token: the owner does (`gh secret set FDROID_GITLAB_TOKEN --env
+  release` prompts for it).
 
 ## What only the owner can do
 1. A GitLab.com account; fork gitlab.com/fdroid/fdroiddata (public fork).

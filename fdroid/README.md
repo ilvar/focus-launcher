@@ -11,8 +11,11 @@ versions by itself from this repository's tags; nothing has to be pushed for an 
 - `.github/workflows/fdroid.yml` ("F-Droid", run by hand from the Actions tab) fills the template
   for a tag, runs F-Droid's own tools on it in F-Droid's build container (`fdroid lint`,
   `fdroid rewritemeta`, `fdroid checkupdates`, `fdroid build`), and, only if asked to and only if
-  the GitLab secrets exist, pushes the recipe to the owner's fork of fdroiddata and opens the
-  merge request.
+  the GitLab secrets exist, runs `submit.py`: it puts the recipe on the owner's fork of fdroiddata
+  and makes sure there is exactly **one** merge request. An open one is updated (a new commit on
+  the same branch and a note for the reviewers; never a force-push), a closed one is reopened, a
+  new one is opened only if there is none, and once Focus is in F-Droid nothing is submitted any
+  more. `test_submit.py` checks all of that against a fake GitLab at the start of every run.
 - The listing (name, descriptions, icon, screenshots, changelogs) is read by F-Droid from
   `fastlane/metadata/android/en-US/` in this repository. The screenshots are drawn by
   `fastlane/screenshots.py`, not captured: a real screenshot shows somebody's apps and calendar.
