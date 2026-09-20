@@ -1,5 +1,6 @@
 package com.focus.launcher
 
+import com.focus.launcher.data.Tip
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -56,6 +57,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Graph.settings.value.let { applyFocusWindow(it.dark, it.hideStatusBar) }
+        // First start ever: the introduction, once. Marked as seen here already, so that pressing
+        // Home in the middle of it never brings it back.
+        if (savedInstanceState == null && !Graph.state.tutorialSeen) {
+            Graph.state.tutorialSeen = true
+            startActivity(SettingsActivity.intent(this, "welcome"))
+        }
         setContent {
             val settings by Graph.settings.flow.collectAsStateWithLifecycle()
             LaunchedEffect(settings.dark, settings.hideStatusBar) { applyFocusWindow(settings.dark, settings.hideStatusBar) }
@@ -81,6 +88,7 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
     val loaded by Graph.apps.loaded.collectAsStateWithLifecycle()
     val today by Graph.usage.today.collectAsStateWithLifecycle()
     val pendingReview by Graph.state.pendingReview.collectAsStateWithLifecycle()
+    val tip by Graph.state.tip.collectAsStateWithLifecycle()
 
     val pager = rememberPagerState { 2 }
     // The drawer counts as open from the moment a swipe is let go towards it: not halfway through
@@ -128,6 +136,9 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
         }
     }
 
+    // Arrived in the app list, by whichever way: that tip is learnt.
+    LaunchedEffect(pager.settledPage) { if (pager.settledPage == 1) Graph.state.did(Tip.SWIPE_LEFT) }
+
     LaunchedEffect(Unit) {
         homePresses.collect {
             menuApp = null
@@ -160,6 +171,7 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
                     val moved = change.position - down.position
                     if (moved.x > threshold && moved.x > abs(moved.y) * 2) {
                         openWebSearch(context)
+                        Graph.state.did(Tip.SWIPE_RIGHT)
                         break
                     }
                 }
@@ -193,7 +205,7 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
                     pendingReview = pendingReview,
                     resumeCount = resumeCount,
                     onLaunch = launch,
-                    onAppMenu = { menuApp = it },
+                    onAppMenu = { Graph.state.did(Tip.APP_MENU); menuApp = it },
                     onOpenDrawer = { focusSearch ->
                         wantsSearchFocus = focusSearch
                         scope.launch { pager.animateScrollToPage(1) }
@@ -213,7 +225,8 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
                     wantsSearchFocus = wantsSearchFocus,
                     onSearchFocusHandled = { wantsSearchFocus = false },
                     onLaunch = launch,
-                    onAppMenu = { menuApp = it },
+                    onAppMenu = { Graph.state.did(Tip.APP_MENU); menuApp = it },
+                    hint = tip?.takeIf { it == Tip.APP_MENU }?.let { it.gesture + "  →  " + it.result },
                 )
             }
         }

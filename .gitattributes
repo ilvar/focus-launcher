@@ -1,0 +1,3 @@
+# The brain's journal is append-only and every branch adds to its end: keep both sides instead of
+# conflicting. (Local merges only; GitHub's merge button ignores this, so merge main locally first.)
+.claude/brain/chaitany-claude/journal.md merge=union

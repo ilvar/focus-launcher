@@ -48,6 +48,10 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   using it. → Declare fields above `init`; first `reload()` runs on another thread.
 
 ## Editing and scripting
+- **`journal.md` conflicted on every merge with `main`** (three times in two days): both sides
+  append at the end of the same file. → `.gitattributes`: `journal.md merge=union`. It works for
+  local merges only; GitHub's merge button ignores it, so merge `main` into the branch locally
+  before opening the pull request. Tried first in a throwaway clone.
 - **Duplicated 150 lines of `UsageRepository.kt`** with a Python splice: my end anchor also
   occurred *earlier* in the file, so `s[:start] + new + s[end:]` repeated a chunk. → Assert every
   anchor is unique (`s.count(x) == 1`) **and** `start < end`; afterwards grep for duplicate
@@ -98,6 +102,11 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   the section. Keep such values in plain fields and let one slow reader turn them into state.
   Found only because frames were counted with nobody touching the phone (`dumpsys input` →
   `RecentQueue … age=` tells whether a window was quiet).
+- **"Focus is the top activity" is not "Focus is what is on the screen".** A capture guarded only
+  by `topResumedActivity` and the keyguard showed the pulled-down notification shade, full of
+  private messages; deleted at once. The guard must also require `mCurrentFocus` (`dumpsys
+  window`) to be a Focus window, before and after the shot, and `mInputShown=false` if the
+  keyboard would be in the way.
 - A guarded screenshot can still catch a **heads-up notification** with a person's name and
   picture on it. Look at what was captured before anything else, and delete it if so.
 - A guarded screenshot must check "Focus in front, unlocked" **after** the capture too: the owner

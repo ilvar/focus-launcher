@@ -82,6 +82,12 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
   how often limits were hit / continued / ignored, and unlock counts. It ends with one question
   and a one-line intention that is shown again the following week.
 
+**First start**
+- One welcome screen, once. After that the home screen teaches itself: one tip at a time ("Swipe
+  right: search the web", "Long-press the clock: choose what a tap on it opens", …), and each goes
+  away as soon as you have done it, or when you tap it. Settings → About brings them back. There is
+  no splash on later starts: a launcher is opened too often to put anything in front of it.
+
 ## How apps are sorted into "social", "game" and the rest
 
 Android's own label cannot be used as is. Its `CATEGORY_SOCIAL` officially means *"messaging,

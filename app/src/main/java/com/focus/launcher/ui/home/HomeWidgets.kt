@@ -1,5 +1,7 @@
 package com.focus.launcher.ui.home
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.key
 import android.os.SystemClock
 import androidx.compose.foundation.layout.offset
@@ -108,6 +110,12 @@ import java.time.format.TextStyle as JavaTextStyle
 import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
+
+/**
+ * Marks what the current tip is about: a thin outline in the text colour, there for as long as the
+ * tip is. Still, not pulsing: nothing on the home screen moves by itself.
+ */
+fun Modifier.tipTarget(on: Boolean, color: Color): Modifier = if (on) border(1.dp, color, RoundedCornerShape(12.dp)) else this
 
 /** The user's locale, read so that a language change recomposes whatever formats text with it. */
 @Composable
@@ -290,6 +298,8 @@ fun SplitClockRow(
     onTap: () -> Unit,
     onLongPress: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Outline the clock half: a tip is pointing at it. */
+    highlight: Boolean = false,
     side: @Composable () -> Unit,
 ) {
     val c = LocalFocusColors.current
@@ -318,6 +328,7 @@ fun SplitClockRow(
         Column(
             Modifier
                 .weight(1f)
+                .tipTarget(highlight, c.fg)
                 .press(onLongClick = onLongPress, onClick = onTap)
                 .padding(start = 12.dp, end = 18.dp, top = 8.dp, bottom = 8.dp),
             horizontalAlignment = Alignment.End,
@@ -345,11 +356,12 @@ fun SplitClockRow(
 
 /** Right half of the split clock: today's screen time. */
 @Composable
-fun SplitScreenTime(today: DayUsage?, hasAccess: Boolean, onClick: () -> Unit, onLongPress: () -> Unit) {
+fun SplitScreenTime(today: DayUsage?, hasAccess: Boolean, onClick: () -> Unit, onLongPress: () -> Unit, highlight: Boolean = false) {
     val c = LocalFocusColors.current
     Column(
         Modifier
             .fillMaxWidth()
+            .tipTarget(highlight, c.fg)
             .press(onLongClick = onLongPress, onClick = onClick)
             .padding(start = 18.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
     ) {
