@@ -69,6 +69,11 @@ data class Settings(
     val showWeekStrip: Boolean = false,
     /** Previous, play or pause, next, and what is playing, as a section of the home screen. */
     val showMusic: Boolean = false,
+    /**
+     * The music section leaves the home screen while nothing is playing and comes back with the
+     * music (the owner's wish). Off = it is always there, as a way into the music app.
+     */
+    val musicAutoHide: Boolean = true,
     /** A few lines of the user's own as a section of the home screen; [note] is the text. */
     val showNote: Boolean = false,
     val note: String = "",
@@ -143,6 +148,7 @@ data class Settings(
         put("calendarKey", calendarKey)
         put("showWeekStrip", showWeekStrip)
         put("showMusic", showMusic)
+        put("musicAutoHide", musicAutoHide)
         put("showNote", showNote)
         put("note", note)
         put("musicApp", musicApp)
@@ -219,6 +225,7 @@ data class Settings(
                 },
                 showWeekStrip = o.optBoolean("showWeekStrip", d.showWeekStrip),
                 showMusic = o.optBoolean("showMusic", d.showMusic),
+                musicAutoHide = o.optBoolean("musicAutoHide", d.musicAutoHide),
                 showNote = o.optBoolean("showNote", d.showNote),
                 note = o.optString("note", d.note),
                 musicApp = o.optString("musicApp", d.musicApp),

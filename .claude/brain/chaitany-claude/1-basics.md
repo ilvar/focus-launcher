@@ -40,7 +40,7 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 | What | Where |
 | --- | --- |
 | App source | `app/src/main/java/com/focus/launcher/` (`data/`, `service/`, `ui/`) |
-| Unit tests | `app/src/test/…/data/` (ForegroundTracker 13, StripEmoji 6, SettingsMigration 6) |
+| Unit tests | `app/src/test/…/` `data/` (tracker 13, emoji 6, settings 7) · `ui/home/` (music linger 7) |
 | Website source / output | `site/src/` → `site/public/` (generated, ignored) |
 | nginx rules for the site | `site/nginx-focusapp.conf` (installed on the server as a snippet) |
 | Signing key / its password | outside the repo / both named in `keystore.properties` (ignored) |
@@ -53,20 +53,20 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 ```bash
 # On the owner's Mac add -Dorg.gradle.java.home=<JDK 21 home> to every ./gradlew (default java is too new)
 ./gradlew :app:testDebugUnitTest :app:lintDebug      # must stay: all tests pass, lint 0 errors
-./gradlew :app:assembleRelease                        # optimized, DEBUG-key signed: for the owner's phone
-adb install --user 0 -r app/build/outputs/apk/release/app-release.apk   # --user 0: not into a work profile
+./gradlew :app:assembleRelease                        # optimized, DEBUG-key signed: CI and emulators only
+adb install --user 0 -r build/clean/focus-launcher-<version>.apk   # owner's phone: release key, --user 0
 adb shell cmd package compile -m speed-profile -f com.focus.launcher
 FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh   # public APK from a CLEAN checkout + site
 ```
-Three build types: `debug`, `release` (owner's phone), `dist` (public). `dist` cannot be installed
-over `release` or the reverse: different signatures. No JDK path is pinned in the repo any more.
+Three build types: `debug`, `release` (debug key), `dist` (release key: public *and* the owner's
+phone). One cannot be installed over the other. No JDK path is pinned in the repo any more.
 
 ## State of the world (2026-09-20)
 **Public:** the newest `vX.Y.Z` release on the site and the release page (older APKs still
 served): split clock (owner's second sketch), plus a collaborator's merged PR #1 (drawer sort and
 tabs, web search, work badge) and PR #10 (music and note sections); what in them touches his
-earlier decisions waits for his word (open decisions 10–14). GPL-3.0-or-later. His phone is moving
-from the debug-key build to the website's APK: test builds for it then need the release key.
+earlier decisions waits for his word (open decisions 10–14). GPL-3.0-or-later. His phone runs the
+release-key build since 2026-09-20: what goes onto it comes from `site/clean-build.sh` or the site.
 Versions are `<base>.<commit count>`. **CI publishing is live**: a push to `main` that touches the
 app or the site starts Publish, which waits for the owner's approval (first real run: 1.1.34).
 **F-Droid:** repo ready, recipe verified; the merge request needs the owner's GitLab account and

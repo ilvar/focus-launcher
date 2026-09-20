@@ -42,11 +42,14 @@ next start uses the compiled code. Then read `logcat -b crash` for the package (
 Always `adb install --user 0 -r`: a plain install goes into every profile on the phone.
 
 ## Which build goes on the phone
-**Since 2026-09-20 the owner is moving his phone to the website's APK (release key).** Once that
-is on it, the debug-key `release` build can no longer be installed over it
-(`INSTALL_FAILED_UPDATE_INCOMPATIBLE`): a test build for his phone then has to be signed with the
-release key too (`site/clean-build.sh`, or `:app:assembleDist`), and must not have a lower build
-number than what is installed. The paragraph below describes the time before that.
+**Since 2026-09-20 the owner's phone runs the release-key build** (he installed 1.1.37 from the
+website himself; 1.1.40 went over it by adb from `site/clean-build.sh`, data kept). The debug-key
+`release` build can no longer be installed over it (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`): what
+goes onto his phone is `build/clean/focus-launcher-<version>.apk` from `site/clean-build.sh` (a
+committed tree is required) or the published APK, never with a lower build number than what is
+installed. An app first installed from a browser download keeps Android's "restricted settings"
+mark, so he may have to allow those in App info before the accessibility switch can be flipped.
+The paragraph below describes the time before that.
 
 `release` (optimized, debug-key signed) + `cmd package compile -m speed-profile -f`. Debuggable
 Compose is visibly janky and reads as "not smooth". `debug` only for short verification that needs

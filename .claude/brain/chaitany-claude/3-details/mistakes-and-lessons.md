@@ -144,6 +144,17 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   the package. → `adb uninstall <pkg>` (all users) or App info → ⋮ → "Uninstall for all users";
   check `pm list packages --user <id> <pkg>` for every id in `pm list users` before saying an app
   is gone.
+- **A fresh `adb install` can hang for minutes on a locked phone.** Updates over an installed
+  package went through in seconds; installing the same APK after the owner had uninstalled the
+  app did not return while the screen was off (package verifier = Play Store; an unseen APK can
+  wait for an answer on the screen). → Run it in the background with a generous timeout, tell the
+  owner to unlock and look at the phone, never switch verification off over adb.
+- **An adb that lost its authorization answers with nothing, and `grep -c` turns nothing into
+  "0".** After an install the phone showed up as `unauthorized`; a read-only check then printed
+  0 for "service declared" and an empty version, which looked like findings. → Before trusting
+  any read, `adb devices` must say `device`; treat an empty `dumpsys` as "no reading". Accepting
+  the debugging prompt on the phone is the owner's action. What an APK contains can be checked
+  without the phone: `aapt2 dump xmltree --file AndroidManifest.xml <apk>`.
 - **`adb install` without `--user` installs for every user, a work profile included.** Focus then
   shows up inside the work profile too, which the phone's owner noticed at once. → Always
   `adb install --user 0 …`; check with `pm list packages --user <id> com.focus.launcher`.
