@@ -536,3 +536,49 @@ Pull request, CI, merged.
 against the real GitLab, which needs the owner's account and token (still open decision 20).
 (The two brain files from the battery check earlier the same day went out with this push.)
 
+## 2026-09-20 · Music and note as plain sections, lines between sections (a contributor)
+
+**Asked:** after dropping his whole cards round for `main`: add the media controls and the notes
+feature like the owner's first sketch, "no icons rendering or no fancy UI, separation is by lines
+not boxes". Standing instruction from him: never commit or push; hand over the commands.
+**Done** (branch `home-music-note`, uncommitted): `Settings.showMusic/showNote/note`;
+`MusicSection`, `NoteSection` and the media-session code in `HomeWidgets.kt`; the unbinding
+`MediaListener`; `TextInputDialog(multiline)`; the sections block in `HomeScreen` with a `faint`
+hairline above each section and below the last, counted in `heightOf`; two toggles in Settings →
+Home screen; README. The media code was taken from the dropped branch with its audit fixes.
+**Verified:** 25 unit tests, lint 0 errors, release build (1,378,822 bytes), installed for user 0,
+no crash. Two guarded screenshots: split clock, then the music and note sections between lines,
+five pinned apps and both shortcuts; the note edited on the phone; "Nothing playing" once the
+grant was read (the first frame after the update still offered the access).
+**Not verified:** a song title on this build, the ring and plain clock styles with the sections,
+the calendar section together with both.
+Same evening, after he tried it: make Prev / Play / Next buttons; "why isn't the music app
+opening"; the note should likewise ask which app to open. → `MediaGlyph` buttons; `musicApp` and
+`noteApp` (+ `NOTE_OWN`) with tap = open, first tap = ask, long-press = choose (the note's
+long-press also edits the lines); the same two choices as rows in Settings → Home screen.
+Verified: 25 unit tests, lint 0 errors, release build, installed for user 0, no crash; a guarded
+screenshot happened to catch the "Music app" picker he had just opened by tapping the section.
+Not verified by me: the launch after picking, the note's menu.
+Then three corrections from the phone: the music picker listed every app (→ players only, "All
+apps…" last); "the button and the clicks are not aligned, the animation is not proper" (→ 48dp
+squares, sign centred; cause in `mistakes-and-lessons.md`); show time played and time left at the
+bottom right (→ `rememberProgress`). Verified: 25 unit tests, lint 0 errors, release build,
+installed for user 0, no crash; a guarded screenshot with a song playing shows title · artist,
+"0:07 · −2:50" in the corner and the three buttons ending at the line; another caught the chosen
+music app opening from a tap. Not measured: frames per second while a song plays on the home
+screen (by design one small text update a second, and none when paused or hidden).
+And then: the note still showed Focus's old lines although a notes app was chosen (→ hidden while
+an app is chosen); "can I choose which page to show?" (→ content no, a link to one page yes:
+`noteLink`); time as "1:02 / 2:00" between the word MUSIC and the buttons. Verified: 25 unit
+tests, lint 0 errors, release build, installed for user 0, no crash; a guarded screenshot shows
+"MUSIC  0:27 / 2:58  [three buttons]", the song under it, and "Open <notes app> →".
+Not verified: opening a pasted page link.
+Late changes, each from the phone: marquee for long titles tried and removed at his word (plain
+"…", time back in the bottom-right corner as "played / length"); "will it consume more power?" →
+measured, found and fixed the position-as-state redraw loop (`mistakes-and-lessons.md`); the note
+shows his own lines again with tap = write, the notes app as a word beside the title; section
+titles bright, song line and note text dim. Verified each time: 25 unit tests, lint 0 errors,
+release build, installed for user 0, no crash. One capture contained a private notification and
+was deleted unread beyond noticing it. The last re-measurement was stopped by him; the figures
+in `home-drawer-menu-setup.md` are from before `ProgressText` was split off.
+

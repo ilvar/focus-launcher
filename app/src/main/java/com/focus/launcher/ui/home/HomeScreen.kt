@@ -1,5 +1,9 @@
 package com.focus.launcher.ui.home
 
+import com.focus.launcher.ui.components.FocusDialog
+import com.focus.launcher.ui.components.MenuRow
+import com.focus.launcher.ui.components.Hairline
+import com.focus.launcher.ui.components.TextInputDialog
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -144,6 +148,12 @@ fun HomeScreen(
 
     var editingShortcut by remember { mutableStateOf<Boolean?>(null) } // true = left, false = right
     var choosingClockTap by remember { mutableStateOf(false) }
+    var editingNote by remember { mutableStateOf(false) }
+    var choosingMusicApp by remember { mutableStateOf(false) }
+    var choosingNoteApp by remember { mutableStateOf(false) }
+    var noteMenu by remember { mutableStateOf(false) }
+    var editingNoteLink by remember { mutableStateOf(false) }
+    val noteApp = remember(settings.noteApp, apps) { apps.firstOrNull { it.key == settings.noteApp } }
     var choosingSplitSide by remember { mutableStateOf(false) }
 
     // Split clock: the section in its right half is not shown a second time further down. The
@@ -237,10 +247,16 @@ fun HomeScreen(
             val shownEvents = fit.maxEvents.coerceAtMost(eventCount).coerceAtLeast(1)
             val strip = if (settings.showWeekStrip) 46f + 14f * textScale else 0f
             val calendar = if (settings.showCalendar && !sideCalendar) 22f + 14f * textScale + strip + shownEvents * (18f * textScale + 6f) else 0f
+            // Title row as tall as its 48dp buttons, then the song.
+            val music = if (settings.showMusic) 12f + 48f + 24f * textScale else 0f
+            val noteLines = if (settings.note.isBlank()) 1 else fit.maxEvents
+            val note = if (settings.showNote) 20f + 14f * textScale + 8f + noteLines * 20f * textScale else 0f
+            val sectionCount = listOf(settings.showCalendar && !sideCalendar, settings.showMusic, settings.showNote).count { it }
+            val lines = if (sectionCount > 0) (sectionCount + 1) * 1f else 0f
             val shortcuts = if (settings.showShortcuts) 28f + 20f * textScale else 20f
             val rows = rowCount * (fit.textSp * 1.2f * textScale + fit.padDp * 2)
             val screenTime = if (sideScreenTime) 0f else 25f + 64f * textScale // gap, title, total, share of the day
-            return clock + screenTime + noticeLines + calendar + rows + shortcuts + 6f + 36f // 36 = air
+            return clock + screenTime + noticeLines + calendar + music + note + lines + rows + shortcuts + 6f + 36f // 36 = air
         }
 
         val options = listOf(
@@ -322,7 +338,12 @@ fun HomeScreen(
 
             Spacer(Modifier.weight(0.8f))
 
-            if (settings.showCalendar && !sideCalendar) {
+            // The sections, one under the other as in the owner's sketch: calendar, music, note. No
+            // boxes: a line above each and one below the last, the same line the split clock uses.
+            val calendarSection = settings.showCalendar && !sideCalendar
+            val anySection = calendarSection || settings.showMusic || settings.showNote
+            if (calendarSection) {
+                Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
                 CalendarWidget(
                     today = now.toLocalDate(),
                     mondayStart = settings.weekStartsMonday,
@@ -336,8 +357,30 @@ fun HomeScreen(
                     showWeekStrip = settings.showWeekStrip,
                 )
             }
+            if (settings.showMusic) {
+                Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
+                MusicSection(
+                    resumeCount,
+                    // Nothing playing: the music app of the user's choice; the first tap asks which.
+                    onOpenDefault = { apps.firstOrNull { it.key == settings.musicApp }?.let(onLaunch) ?: run { choosingMusicApp = true } },
+                    onChoose = { choosingMusicApp = true },
+                )
+            }
+            if (settings.showNote) {
+                Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
+                NoteSection(
+                    note = settings.note,
+                    appLabel = noteApp?.label,
+                    maxLines = fit.maxEvents,
+                    onEdit = { editingNote = true },
+                    // One page of the app, if a link to it was given; the app itself otherwise.
+                    onOpenApp = { noteApp?.let { app -> if (settings.noteLink.isBlank() || !openLink(context, settings.noteLink, app.packageName)) onLaunch(app) } },
+                    onLongClick = { noteMenu = true },
+                )
+            }
+            if (anySection) Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
 
-            Spacer(Modifier.weight(if (settings.showCalendar && !sideCalendar) 0.9f else 0.6f))
+            Spacer(Modifier.weight(if (anySection) 0.9f else 0.6f))
 
             // Fast apps
             if (favorites.isEmpty()) {
@@ -392,6 +435,63 @@ fun HomeScreen(
     }
 
     if (choosingClockTap) ClockTapDialog(settings, apps) { choosingClockTap = false }
+
+    val visibleApps = remember(apps, settings.hidden) { apps.filter { it.key !in settings.hidden } }
+    if (choosingMusicApp) {
+        MusicAppPicker(
+            apps = visibleApps,
+            subtitle = "Opens when you tap the music section and nothing is playing. Long-press the section to change it.",
+            onDismiss = { choosingMusicApp = false },
+            onPick = { app ->
+                Graph.settings.update { it.copy(musicApp = app.key) }
+                onLaunch(app)
+            },
+        )
+    }
+    if (choosingNoteApp) {
+        AppPickerDialog(
+            title = "Notes app",
+            subtitle = "Shown as a word next to the note's title; a tap on it opens the app. Your own lines stay where they are.",
+            apps = visibleApps,
+            onDismiss = { choosingNoteApp = false },
+            leading = listOf("None" to { Graph.settings.update { it.copy(noteApp = "", noteLink = "") } }),
+            onPick = { app -> Graph.settings.update { it.copy(noteApp = app.key, noteLink = "") } },
+        )
+    }
+    if (noteMenu) {
+        FocusDialog({ noteMenu = false }, title = "Note") {
+            MenuRow("Notes app", detail = noteApp?.label ?: "none") {
+                noteMenu = false
+                choosingNoteApp = true
+            }
+            if (noteApp != null) {
+                MenuRow("Open one page instead of the app", detail = if (settings.noteLink.isBlank()) null else "set") {
+                    noteMenu = false
+                    editingNoteLink = true
+                }
+            }
+        }
+    }
+
+    if (editingNoteLink) {
+        TextInputDialog(
+            title = "Link to the page",
+            initial = settings.noteLink,
+            placeholder = "https://…",
+            subtitle = "In ${noteApp?.label ?: "your notes app"}, open the page, choose Share or Copy link, and paste it here. Leave it empty to open the app itself.",
+            onDismiss = { editingNoteLink = false },
+        ) { link -> Graph.settings.update { it.copy(noteLink = link) } }
+    }
+
+    if (editingNote) {
+        TextInputDialog(
+            title = "Note",
+            initial = settings.note,
+            placeholder = "Write something",
+            onDismiss = { editingNote = false },
+            multiline = true,
+        ) { text -> Graph.settings.update { it.copy(note = text) } }
+    }
     if (choosingSplitSide) {
         ChoiceDialog(
             "Next to the clock",
@@ -455,6 +555,18 @@ private fun launchShortcut(context: Context, spec: String, apps: List<AppEntry>,
         )
         else -> apps.firstOrNull { it.key == spec }?.let(onLaunch)
     }
+}
+
+/** Opens [link] in [packageName] if that app takes it, else in whatever does. False when nothing could. */
+private fun openLink(context: Context, link: String, packageName: String): Boolean {
+    val uri = link.trim().toUri()
+    if (uri.scheme.isNullOrEmpty()) return false
+    return Perms.start(
+        context,
+        Intent(Intent.ACTION_VIEW, uri).setPackage(packageName),
+        Intent(Intent.ACTION_VIEW, uri),
+        options = launchOptions(context),
+    )
 }
 
 private fun openCalendarApp(context: Context) {

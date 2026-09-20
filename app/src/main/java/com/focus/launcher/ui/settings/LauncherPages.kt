@@ -1,5 +1,6 @@
 package com.focus.launcher.ui.settings
 
+import com.focus.launcher.ui.home.MusicAppPicker
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -53,7 +54,7 @@ private fun update(transform: (Settings) -> Settings) = Graph.settings.update(tr
 
 // ---- Home screen -----------------------------------------------------------------------------
 
-private enum class HomeDialog { NONE, CLOCK, SPLIT_SIDE, RING, TAP, TIME_FORMAT, ALIGN, LEFT, RIGHT, CALENDAR }
+private enum class HomeDialog { NONE, CLOCK, SPLIT_SIDE, RING, TAP, TIME_FORMAT, ALIGN, LEFT, RIGHT, CALENDAR, MUSIC_APP, NOTE_APP }
 
 @Composable
 internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Unit, go: (String) -> Unit) {
@@ -138,6 +139,28 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
             "Week strip", settings.showWeekStrip, enabled = settings.showCalendar,
             subtitle = "Monday to Sunday with today marked, above the events.",
         ) { v -> update { it.copy(showWeekStrip = v) } }
+        ToggleRow(
+            "Music", settings.showMusic,
+            subtitle = "Previous, play or pause, next, in words. It can name the song if you allow it notification access.",
+        ) { v -> update { it.copy(showMusic = v) } }
+        SettingRow(
+            "Music app",
+            subtitle = "Opens when you tap the section and nothing is playing. Long-pressing the section gets you here too.",
+            value = apps.firstOrNull { it.key == settings.musicApp }?.label ?: "Asks first",
+            enabled = settings.showMusic,
+            onClick = { dialog = HomeDialog.MUSIC_APP },
+        )
+        ToggleRow(
+            "Note", settings.showNote,
+            subtitle = "A few lines of your own, always in sight. Tap them on the home screen to write.",
+        ) { v -> update { it.copy(showNote = v) } }
+        SettingRow(
+            "Notes app",
+            subtitle = "A word next to the note's title that opens it. Your own lines stay on the home screen either way.",
+            value = apps.firstOrNull { it.key == settings.noteApp }?.label ?: "None",
+            enabled = settings.showNote,
+            onClick = { dialog = HomeDialog.NOTE_APP },
+        )
 
         Section("Fast apps")
         SettingRow("Fast apps", subtitle = "Up to $MAX_FAVORITES apps, one tap from the home screen.", value = "$favoriteCount / $MAX_FAVORITES", onClick = { go(Routes.FAST_APPS) })
@@ -173,6 +196,19 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
         )
         HomeDialog.TIME_FORMAT -> ChoiceDialog("Time format", TimeFormat.entries.map { it to it.label }, settings.timeFormat, close) { v -> update { it.copy(timeFormat = v) } }
         HomeDialog.ALIGN -> ChoiceDialog("Alignment", HomeAlign.entries.map { it to it.label }, settings.homeAlign, close) { v -> update { it.copy(homeAlign = v) } }
+        HomeDialog.MUSIC_APP -> MusicAppPicker(
+            apps = apps.filter { it.key !in settings.hidden },
+            subtitle = null,
+            onDismiss = close,
+            onPick = { app -> update { it.copy(musicApp = app.key) } },
+        )
+        HomeDialog.NOTE_APP -> AppPickerDialog(
+            title = "Notes app",
+            apps = apps.filter { it.key !in settings.hidden },
+            onDismiss = close,
+            leading = listOf("None" to { update { it.copy(noteApp = "", noteLink = "") } }),
+            onPick = { app -> update { it.copy(noteApp = app.key, noteLink = "") } },
+        )
         HomeDialog.LEFT, HomeDialog.RIGHT -> {
             val left = dialog == HomeDialog.LEFT
             val set: (String) -> Unit = { spec -> update { if (left) it.copy(leftShortcut = spec) else it.copy(rightShortcut = spec) } }

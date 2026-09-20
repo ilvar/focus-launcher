@@ -44,6 +44,7 @@
 ## Asked for by a contributor (2026-09-19, on a clone); shipped in 1.1 at the owner's request
 | Request | What was done |
 | --- | --- |
+| Media controls and a note on the home screen, "like [the owner's first sketch]: no icons rendering, no fancy UI, separation is by lines not boxes" (2026-09-20) | `MusicSection` and `NoteSection`, plain text, a thin line between sections. He had first asked for cards, hosted widgets and drag-to-arrange (PR #5), then had all of it dropped in favour of `main`; do not bring any of that back unasked. Not yet seen by the owner |
 | Double tap locks the screen | Existed already; the default is now on. Needs the accessibility service; without it a toast, and Settings → Gestures points to Setup |
 | "Swiping left should open the Google search widget" | Read as the page *left* of home on a stock launcher: the finger moves right on the home page. Opens the phone's search app by intent; toggle in Settings → Gestures. Finger-left stays the drawer. No embedded widget: it would break "no icons, black and white" |
 | Sort the drawer | A–Z (default) / Most used / Recent (7 days), chosen from "Sort: …" under the search bar |

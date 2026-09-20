@@ -21,6 +21,53 @@ Code: `ui/home/HomeScreen.kt`, `ui/home/HomeWidgets.kt`, `ui/drawer/DrawerScreen
    is still missing. The 24-hour bar that used to be a home section now lives only in the review
    (a contributor's change; open decision 14 in `2-overview/user-and-decisions.md`).
    **Section**, a toggle: the calendar agenda (`calendar.md`; off until calendar access is given).
+   **More sections**, each a toggle in Settings → Home screen and off by default, drawn under the
+   calendar in this order and **separated by 1dp lines in the split clock's line colour
+   (`faint`), never by boxes** (a contributor's request, after the owner's first sketch; an
+   earlier round of rounded cards, hosted widgets and drag-to-arrange was dropped entirely):
+   - **Music** (`MusicSection`): "MUSIC" with three drawn buttons (previous, play or pause, next:
+     `MediaGlyph`, Canvas shapes in the text colour; words were tried first and he asked for
+     buttons), and under it "title · artist" (dim, cut with "…") with **"played / length"**
+     ("1:02 / 2:00", faint) in the right corner. (Tried and taken back the same evening: the time
+     between the word and the buttons; a marquee for long titles, which draws every frame while
+     it moves.)
+     (`ProgressText`, a composable of its own so that nothing else recomposes with it: from `PlaybackState.position / lastPositionUpdateTime / playbackSpeed`
+     and `METADATA_KEY_DURATION`; one text update a second, only while something plays *and* the
+     home screen is STARTED; paused it stands still; no duration, e.g. radio, = played only).
+     **The position is deliberately not Compose state** (`Progress`, plain fields): players report
+     it several times a second, and as state each report recomposed the section: 6–8 frames a
+     second on a still home screen, found by measuring. Measured afterwards, quiet 5 s windows,
+     home in front: paused = 0 frames, 0–20 ms CPU; playing = 5 frames (one a second),
+     240–340 ms CPU, probes included, before `ProgressText` was split off; not re-measured since.
+     Each button is a **48dp square with the sign centred** (`MediaButton`): Compose widens a
+     smaller clickable's touch target to 48dp invisibly, so with padded 14dp signs the glow lit
+     up beside the finger ("the button and the clicks are not aligned"). The button row is
+     offset 17dp so the last sign, not its square, ends where the lines end. **Tap** = whatever is playing, else the music app
+     of his choice (`Settings.musicApp`; the first tap asks with `MusicAppPicker`, which lists only players:
+     `AppRepository.musicPackages()` = a `MediaBrowserService`, `CATEGORY_APP_MUSIC` or
+     `ApplicationInfo.CATEGORY_AUDIO`, read on IO when the picker opens; "All apps…" as the last
+     row, through `AppPickerDialog(more = …)`);
+     **long-press** = choose that app. With **notification access**
+     (`service/MediaListener.kt`) it follows the active `MediaController` by callback, registered
+     in a `LifecycleStartEffect` so nothing listens while home is hidden; without it the three
+     words are sent as media keys (`AudioManager.dispatchMediaKeyEvent`) and one line offers the
+     access. The listener calls `requestUnbind()` in `onListenerConnected`: the *grant* is what
+     `MediaSessionManager.getActiveSessions` checks, while a bound listener, even an empty one, is
+     handed every notification on the phone. `NowPlaying` is a data class fed from the callback's
+     own arguments, so a player ticking its position every second redraws nothing.
+   - **Note** (`NoteSection`): `Settings.note`, dim, up to `Fit.maxEvents` lines, **always
+     shown; a tap edits it** (`TextInputDialog(multiline)`): "can't I see notes and write them
+     quickly" won over "a tap opens my notes app", which hid the lines behind "Open <app> →". The
+     notes app (`Settings.noteApp`, "" = none) is a word at the right of the title, "<app> →";
+     a tap on it opens the app, or one page of it if `Settings.noteLink` holds a link
+     (`ACTION_VIEW` aimed at the app's package, then at anything; cleared when the app changes).
+     **Long-press** = notes app / page link. A notes app's *content* cannot be shown: it lives on
+     the app's server and Focus has no INTERNET permission.
+   Section titles (CALENDAR, MUSIC, NOTE) are full brightness like the fast apps, what is under
+   them is dim: his call, after finding the dim titles "faded".
+   Both choices are also rows in Settings → Home screen, and apps open through `onLaunch`, so the
+   daily timers apply to them as to any other launch.
+   Both are counted in `heightOf`.
 3. **Notices**, only when needed: "Finish setting up Focus →" and "Your weekly review is ready →".
 4. **Fast apps**: at most `MAX_FAVORITES = 5`, text only, aligned by `homeAlign`
    (left / center / right). Long-press = the app menu.
