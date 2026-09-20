@@ -703,3 +703,21 @@ of running (left running because it was in front: the compiled code applies from
 start); 0 crash lines. The accessibility service and notification access were still off: his to
 switch on, so double tap to lock, mid-session locking and the song's name remain unseen there.
 
+## 2026-09-20 · The music section hides while nothing is playing
+
+**Asked:** "when there is nothing playing then the music control should hide automatically."
+**Done (branch `music-auto-hide`, local, not pushed):** `MusicState` / `rememberMusicState` hoist
+what the section knows up to `HomeScreen`, so the section, the line above it and its share of
+`heightOf` exist only while something plays, or for one minute after a stop that was seen
+happening (`ui/home/MusicLinger.kt`, pure). Without notification access the audio system's
+playback callback says whether media is sounding. `Settings.musicAutoHide` (default on, also for
+existing installs) with a row in Settings → Home screen; README; changelog `43.txt` for the
+version a merge of this branch becomes. Details: `3-details/home-drawer-menu-setup.md`.
+**Verified:** 33 unit tests (7 new for the rule, 1 for the setting's default on old installs),
+lint 0 errors; `site/clean-build.sh` → 1.1.41 (release key), checked to contain the new code;
+installed on the owner's phone with `--user 0 -r` over 1.1.40 (data kept), compiled
+`speed-profile`, 0 crash lines. He has given Focus notification access in the meantime.
+**Not verified:** the behaviour itself on the phone. Nothing was playing and the home screen
+did not come to the front during a passive wait of 2.5 minutes, so no guarded look was possible:
+his eyes are the test. Not pushed, so not published.
+
