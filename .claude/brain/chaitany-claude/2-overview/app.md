@@ -2,7 +2,7 @@
 
 Kotlin 2.3.21, Compose BOM 2026.06.01 (foundation + ui + animation only, **no Material**), AGP
 8.13.2, Gradle 8.14.3, compileSdk/targetSdk 36, minSdk 26. One process; activities and the
-accessibility service share state through `Graph` (a hand-rolled service locator).
+timer watcher service share state through `Graph` (a hand-rolled service locator).
 
 ## Shape
 ```
@@ -20,7 +20,7 @@ data/   Settings(+Store)     one immutable data class, JSON in SharedPreferences
         WeekSummary          aggregation for the review
         CalendarRepository   calendars, one-calendar agenda (cached), emoji stripping
         AppState             pending weekly review, reflection notes
-service/ FocusAccessibilityService   mid-session enforcement, global actions (notifications, lock)
+service/ TimerWatchService           mid-session enforcement from the usage log; NOT an accessibility service
          WeeklyReview (+Receiver)    inexact weekly alarm, notification
 ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.kt (the launch gate)
 ```
@@ -37,9 +37,8 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 | Work marker: drawn briefcase outline (`WorkBadge`) on drawer rows and pinned work apps | `ui/components/Basics.kt`, `DrawerScreen.kt`, `ui/home/HomeScreen.kt` |
 | Keyboard opens with the drawer (`autoKeyboard`, toggled from Settings → App drawer *and* → Gestures); when the drawer counts as open | `MainActivity.kt` `drawerActive`, `DrawerScreen.kt` |
 | Swipe right on home = the phone's web search | `MainActivity.kt` `Launcher` (pointerInput on the pager), `ui/Launching.kt` `openWebSearch`, `Settings.swipeRightSearch` |
-| Double tap = lock (default on; needs the accessibility service) | `HomeScreen.kt`, `Settings.doubleTapLock`, `FocusAccessibilityService` |
 | Long-press menu, timer dialog | `ui/drawer/AppMenu.kt` |
-| Music and note sections on home (text, lines between sections, off by default) | `HomeWidgets.kt` `MusicSection`, `NoteSection`; `service/MediaListener.kt`; toggles in `LauncherPages.kt` `HomePage` |
+| Music and note sections on home (text, lines between sections, off by default) | `HomeWidgets.kt` `MusicSection`, `NoteSection`; media keys, no listener |
 | Fast apps (≤5), corner shortcuts, home gestures, notices | `ui/home/HomeScreen.kt` |
 | Weekly review: alarm, home notice, notification, the week's summary | `service/WeeklyReview.kt`, `data/WeekSummary.kt`, `ui/review/ReviewScreen.kt` |
 | Setup page (default home, usage access, app locking, notifications, calendar) | `ui/settings/SetupPage.kt` |
@@ -50,7 +49,9 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 
 ## Things that are easy to get wrong
 - **Timers work in two layers.** The launcher's gate needs only usage access. Mid-session locking
-  needs the accessibility service. Keep both working independently.
+  is `TimerWatchService` (usage log + optional "display over other apps"). Keep both working
+  independently. **Never add an accessibility service or a notification listener**: Play Protect
+  blocks the download (`3-details/timers-wall-consent.md`).
 - **Settings is one JSON blob**; `fromJson` must tolerate missing keys (older installs).
 - **Changing a default does not reach existing installs**: the saved JSON already holds the key.
   When an old stored value has to be reinterpreted, bump `Settings.SCHEMA` (stored as `"v"`) and
@@ -72,10 +73,10 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
   (use `currentLocale()` and `collectAsStateWithLifecycle`).
 
 ## Quality bar
-25 unit tests pass (tracker 13, emoji 6, settings migration 6; `org.json` is a test-only
+35 unit tests pass (tracker 13, emoji 6, settings migration 6, timer watcher 10; `org.json` is a test-only
 dependency because the JVM has none); `lintDebug` = 0 errors (remaining warnings are "newer
 version available", deliberate: newer AndroidX needs compileSdk 37 + AGP 9.1). 35 Kotlin files,
-about 7,200 lines.
+about 7,700 lines.
 Release APK = 1,366,083 bytes (≈ 1.37 MB). Version **1.1** (`versionCode` 2) since 2026-09-19;
 1.0 was 1,366,063 bytes. The same checks run on GitHub for every push and pull request.
 

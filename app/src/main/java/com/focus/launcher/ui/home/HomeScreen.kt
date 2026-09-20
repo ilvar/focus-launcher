@@ -71,7 +71,6 @@ import com.focus.launcher.data.TAP_CALENDAR
 import com.focus.launcher.data.TAP_NOTHING
 import com.focus.launcher.data.TAP_SCREEN_TIME
 import com.focus.launcher.data.TimeFormat
-import com.focus.launcher.service.FocusAccessibilityService
 import com.focus.launcher.ui.components.AppPickerDialog
 import com.focus.launcher.ui.components.ChoiceDialog
 import com.focus.launcher.ui.components.T
@@ -90,7 +89,7 @@ import java.time.LocalDate
  * the optional calendar section, up to five fast apps, and the two corner shortcuts. Text only.
  *
  * Gestures on empty space: long-press opens settings, swipe down pulls the notification shade,
- * swipe up jumps to search, double-tap locks the phone. Swiping left (handled by the pager that
+ * swipe up jumps to search. Swiping left (handled by the pager that
  * hosts this page) opens the app drawer.
  */
 @Composable
@@ -192,19 +191,12 @@ fun HomeScreen(
                     },
                 )
             }
-            .pointerInput(settings.doubleTapLock) {
+            .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = {
                         haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                         openSettings(null)
                     },
-                    onDoubleTap = if (settings.doubleTapLock) {
-                        {
-                            if (!FocusAccessibilityService.lockScreen()) {
-                                Toast.makeText(context, "Turn on the Focus timer service to lock with a double tap", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    } else null,
                 )
             },
     ) {
@@ -359,10 +351,12 @@ fun HomeScreen(
             }
             if (settings.showMusic) {
                 Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
+                val musicApp = apps.firstOrNull { it.key == settings.musicApp }
                 MusicSection(
                     resumeCount,
-                    // Nothing playing: the music app of the user's choice; the first tap asks which.
-                    onOpenDefault = { apps.firstOrNull { it.key == settings.musicApp }?.let(onLaunch) ?: run { choosingMusicApp = true } },
+                    appLabel = musicApp?.label,
+                    // The music app of the user's choice; the first tap asks which.
+                    onOpen = { musicApp?.let(onLaunch) ?: run { choosingMusicApp = true } },
                     onChoose = { choosingMusicApp = true },
                 )
             }
@@ -611,10 +605,9 @@ private fun performClockTap(
     }
 }
 
-/** Pulls the notification shade down: via the timer service when it is on, else the status-bar service. */
+/** Pulls the notification shade down through the status-bar service (the EXPAND_STATUS_BAR permission). */
 @SuppressLint("WrongConstant", "PrivateApi")
 private fun expandNotifications(context: Context) {
-    if (FocusAccessibilityService.openNotifications()) return
     try {
         val statusBar = context.getSystemService("statusbar")
         Class.forName("android.app.StatusBarManager").getMethod("expandNotificationsPanel").invoke(statusBar)

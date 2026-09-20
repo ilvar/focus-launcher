@@ -45,8 +45,8 @@ fun launchOptions(context: Context): Bundle? {
  * Starts an app from the launcher, passing the daily timers on the way:
  *  - an app whose time for today is used never opens at all: the wall is shown in its place;
  *  - an app whose limit was ignored for today opens only after the user confirms, every time.
- * This gate needs only usage access, so timers keep working from the launcher even while the
- * accessibility service is switched off.
+ * This gate needs only usage access. What happens while the user is inside an app is the job of
+ * [com.focus.launcher.service.TimerWatchService], which starts when the home screen is left.
  */
 fun launchApp(context: Context, scope: CoroutineScope, entry: AppEntry) {
     val limits = Graph.limits

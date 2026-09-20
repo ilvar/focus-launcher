@@ -1,7 +1,6 @@
 package com.focus.launcher.ui.home
 
 import androidx.compose.runtime.key
-import android.os.SystemClock
 import androidx.compose.foundation.layout.offset
 import com.focus.launcher.Graph
 import com.focus.launcher.data.AppEntry
@@ -13,20 +12,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import android.media.AudioManager
-import android.media.MediaMetadata
-import android.media.session.MediaController
-import android.media.session.MediaSessionManager
-import android.media.session.PlaybackState
-import android.provider.Settings as AndroidSettings
+import android.media.AudioPlaybackConfiguration
 import android.view.KeyEvent
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.LifecycleStartEffect
-import com.focus.launcher.service.MediaListener
 import com.focus.launcher.ui.components.hasColourGlyphs
 import com.focus.launcher.ui.components.monochrome
-import com.focus.launcher.util.Perms
 import kotlinx.coroutines.launch
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -55,9 +47,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -449,155 +442,37 @@ fun ScreenTimeLine(today: DayUsage?, hasAccess: Boolean, align: Alignment.Horizo
     }
 }
 
-/** A data class on purpose: a player that reports the same thing again changes no state, so nothing redraws. */
-private data class NowPlaying(
-    val controller: MediaController,
-    val title: String?,
-    val artist: String?,
-    val playing: Boolean,
-    /** Length of the song in ms; 0 when the player does not say (radio, a live stream). */
-    val duration: Long = 0L,
-    /** Carried along unchanged by [copy], so a new position report leaves this object equal to the last one. */
-    val progress: Progress = Progress(),
-) {
-    fun positionNow(): Long =
-        (if (playing) progress.position + ((SystemClock.elapsedRealtime() - progress.at) * progress.speed).toLong() else progress.position)
-            .coerceIn(0L, if (duration > 0) duration else Long.MAX_VALUE)
-}
-
 /**
- * Where the song was ([position], ms) at [at] (elapsedRealtime) and how fast it moves; the player
- * reports this, the clock does the rest. Plain fields and not state on purpose: players report
- * their position several times a second, and as state every report recomposed the section
- * (measured: 6 to 8 frames a second on an otherwise still home screen). The once-a-second reader
- * in [ProgressText] is the only thing that looks here.
- */
-private class Progress {
-    var position = 0L
-    var at = 0L
-    var speed = 1f
-}
-
-/**
- * The player that is active right now, while the home screen is visible and only then. Needs
- * notification access ([MediaListener]); without it this stays null and the card falls back to
- * media keys. Everything here is pushed by the system: nothing polls.
- */
-@Composable
-private fun rememberNowPlaying(hasAccess: Boolean): NowPlaying? {
-    val context = LocalContext.current
-    var now by remember { mutableStateOf<NowPlaying?>(null) }
-    LifecycleStartEffect(hasAccess) {
-        val sessions = context.getSystemService(MediaSessionManager::class.java)
-        val component = MediaListener.component(context)
-        var watched: MediaController? = null
-        val callback = object : MediaController.Callback() {
-            // Players report their position every second or so. Take what the callback hands over
-            // instead of fetching everything again (the metadata carries the album art).
-            override fun onMetadataChanged(metadata: MediaMetadata?) {
-                now = now?.copy(title = metadata.title(), artist = metadata.artist(), duration = metadata.duration())
-            }
-
-            override fun onPlaybackStateChanged(state: PlaybackState?) {
-                now = now?.withState(state)
-            }
-            override fun onSessionDestroyed() { now = null }
-        }
-        fun watch(controllers: List<MediaController>?) {
-            watched?.unregisterCallback(callback)
-            // The system lists the session that would receive a media key first.
-            watched = controllers?.firstOrNull()?.also { it.registerCallback(callback) }
-            now = watched?.read()
-        }
-        val listener = MediaSessionManager.OnActiveSessionsChangedListener { watch(it) }
-        if (hasAccess && sessions != null) {
-            try {
-                sessions.addOnActiveSessionsChangedListener(listener, component)
-                watch(sessions.getActiveSessions(component))
-            } catch (_: SecurityException) {
-                now = null
-            }
-        } else {
-            now = null
-        }
-        onStopOrDispose {
-            watched?.unregisterCallback(callback)
-            sessions?.removeOnActiveSessionsChangedListener(listener)
-        }
-    }
-    return now
-}
-
-private fun MediaMetadata?.title(): String? = this?.getString(MediaMetadata.METADATA_KEY_TITLE)?.takeIf { it.isNotBlank() }
-
-private fun MediaMetadata?.artist(): String? =
-    (this?.getString(MediaMetadata.METADATA_KEY_ARTIST) ?: this?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST))?.takeIf { it.isNotBlank() }
-
-private fun MediaMetadata?.duration(): Long = this?.getLong(MediaMetadata.METADATA_KEY_DURATION)?.coerceAtLeast(0L) ?: 0L
-
-private fun NowPlaying.withState(state: PlaybackState?): NowPlaying {
-    progress.position = state?.position?.coerceAtLeast(0L) ?: 0L
-    progress.at = state?.lastPositionUpdateTime ?: 0L
-    progress.speed = state?.playbackSpeed?.takeIf { it > 0f } ?: 1f
-    return copy(playing = state?.state == PlaybackState.STATE_PLAYING)
-}
-
-private fun MediaController.read(): NowPlaying {
-    val data = metadata
-    return NowPlaying(this, data.title(), data.artist(), playing = false, duration = data.duration()).withState(playbackState)
-}
-
-/** "1:05", "1:02:40". */
-private fun clock(ms: Long): String {
-    val s = ms / 1000
-    return if (s >= 3600) "%d:%02d:%02d".format(Locale.US, s / 3600, s / 60 % 60, s % 60) else "%d:%02d".format(Locale.US, s / 60, s % 60)
-}
-
-/**
- * "1:02 / 2:00": played, then the song's length. Ticks once a second, and only while something plays and the
- * home screen is showing; paused, it is worked out once and stands still.
- */
-@Composable
-private fun ProgressText(now: NowPlaying?, modifier: Modifier = Modifier) {
-    val owner = LocalLifecycleOwner.current
-    val text by produceState<String?>(null, now, owner) {
-        fun read() = now?.let { n ->
-            val at = n.positionNow()
-            if (n.duration > 0) clock(at) + " / " + clock(n.duration) else if (at > 0) clock(at) else null
-        }
-        value = read()
-        if (now?.playing == true) owner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            while (true) {
-                value = read()
-                delay(1000)
-            }
-        }
-    }
-    text?.let { T(it, modifier, size = 12.sp, color = LocalFocusColors.current.faint, maxLines = 1) }
-}
-
-/**
- * Music as a section of the home screen: what is playing, and previous · play or pause · next as
- * the three buttons every player has. With notification access the section talks to the active
- * player and knows the song; without it the buttons still work, as media keys that Android hands
- * to the last-used player, and one line offers the access that would bring the song's name.
+ * Music as a section of the home screen: previous · play or pause · next, the three buttons every
+ * player has. They are sent as media keys, which Android hands to the player that was used last,
+ * and whether something is playing is what the audio system says. Neither needs a permission.
  *
- * A tap on the section opens whatever is playing, or else [onOpenDefault] (the music app the user
- * chose); a long-press is [onChoose], like every other thing on the home screen that can be set.
+ * The song's name is not shown, on purpose. Android only tells it to an app with notification
+ * access, and an APK that declares a notification listener is blocked by Google Play Protect when
+ * it is installed from a download. The name is one tap away, in the player.
+ *
+ * A tap on the section is [onOpen] (the music app the user chose); a long-press is [onChoose],
+ * like every other thing on the home screen that can be set.
  */
 @Composable
-fun MusicSection(resumeCount: Int, onOpenDefault: () -> Unit, onChoose: () -> Unit, modifier: Modifier = Modifier) {
+fun MusicSection(resumeCount: Int, appLabel: String?, onOpen: () -> Unit, onChoose: () -> Unit, modifier: Modifier = Modifier) {
     val c = LocalFocusColors.current
     val context = LocalContext.current
     val audio = context.getSystemService(AudioManager::class.java)
     val scope = rememberCoroutineScope()
-    val hasAccess = remember(resumeCount) { MediaListener.hasAccess(context) }
-    val now = rememberNowPlaying(hasAccess)
 
-    // Only consulted without a controller: the audio system's word on whether something plays.
-    var keyPlaying by remember { mutableStateOf(false) }
-    LaunchedEffect(resumeCount) { if (!hasAccess) keyPlaying = audio?.isMusicActive == true }
-    val playing = now?.playing ?: keyPlaying
+    // Pushed by the audio system while the home screen shows; nothing polls.
+    var playing by remember { mutableStateOf(false) }
+    LifecycleStartEffect(resumeCount) {
+        playing = audio?.isMusicActive == true
+        val callback = object : AudioManager.AudioPlaybackCallback() {
+            override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>?) {
+                playing = audio?.isMusicActive == true
+            }
+        }
+        audio?.registerAudioPlaybackCallback(callback, null)
+        onStopOrDispose { audio?.unregisterAudioPlaybackCallback(callback) }
+    }
 
     fun key(code: Int) {
         audio?.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
@@ -605,13 +480,11 @@ fun MusicSection(resumeCount: Int, onOpenDefault: () -> Unit, onChoose: () -> Un
         // The player needs a moment to act on the key before it can be asked whether it plays.
         scope.launch {
             delay(400)
-            keyPlaying = audio?.isMusicActive == true
+            playing = audio?.isMusicActive == true
         }
     }
-    val controls = now?.controller?.transportControls
 
-    val open = { now?.let { openPlayer(context, it.controller) } ?: onOpenDefault() }
-    Column(modifier.fillMaxWidth().press(onLongClick = onChoose, onClick = open).padding(horizontal = 12.dp, vertical = 6.dp)) {
+    Column(modifier.fillMaxWidth().press(onLongClick = onChoose, onClick = onOpen).padding(horizontal = 12.dp, vertical = 6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Label("Music", Modifier.weight(1f), color = c.fg)
             // Each button is a 48dp square with its sign in the middle: Android widens a smaller
@@ -619,30 +492,17 @@ fun MusicSection(resumeCount: Int, onOpenDefault: () -> Unit, onChoose: () -> Un
             // the finger was. The row is pulled right by the last square's margin, so the "next"
             // sign itself ends where the lines end.
             Row(Modifier.offset(x = 17.dp)) {
-                MediaButton(Glyph.PREVIOUS, 14.dp, c.dim) { controls?.skipToPrevious() ?: key(KeyEvent.KEYCODE_MEDIA_PREVIOUS) }
-                MediaButton(if (playing) Glyph.PAUSE else Glyph.PLAY, 17.dp, c.fg) {
-                    if (controls == null) key(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) else if (playing) controls.pause() else controls.play()
-                }
-                MediaButton(Glyph.NEXT, 14.dp, c.dim) { controls?.skipToNext() ?: key(KeyEvent.KEYCODE_MEDIA_NEXT) }
+                MediaButton(Glyph.PREVIOUS, 14.dp, c.dim) { key(KeyEvent.KEYCODE_MEDIA_PREVIOUS) }
+                MediaButton(if (playing) Glyph.PAUSE else Glyph.PLAY, 17.dp, c.fg) { key(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) }
+                MediaButton(Glyph.NEXT, 14.dp, c.dim) { key(KeyEvent.KEYCODE_MEDIA_NEXT) }
             }
         }
-        when {
-            !hasAccess -> T(
-                "Show the song's name  →",
-                Modifier.press { Perms.start(context, Intent(AndroidSettings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }.padding(vertical = 3.dp),
-                size = 14.sp, color = c.dim, maxLines = 1,
-            )
-            now?.title == null -> T("Nothing playing  ·  tap to open your music app", Modifier.padding(vertical = 3.dp), size = 14.sp, color = c.dim, maxLines = 1)
-            else -> Row(Modifier.padding(vertical = 3.dp), verticalAlignment = Alignment.Bottom) {
-                val line = listOfNotNull(now.title, now.artist).joinToString("  ·  ")
-                // A title too long for the row ends in "…", a little short of the time. (A sliding
-                // title was tried and dropped: it draws every frame for as long as it moves.)
-                T(line, Modifier.weight(1f).then(if (hasColourGlyphs(line)) Modifier.monochrome() else Modifier), size = 14.sp, color = c.dim, maxLines = 1)
-                // Played / length, in the corner where players put it. A composable of its own: it
-                // changes once a second, and nothing else in the section should recompose with it.
-                ProgressText(now, Modifier.padding(start = 17.dp))
-            }
+        val line = when {
+            appLabel == null -> "Tap to choose your music app"
+            playing -> "Playing  ·  tap to open $appLabel"
+            else -> "Tap to open $appLabel"
         }
+        T(line, Modifier.padding(vertical = 3.dp), size = 14.sp, color = c.dim, maxLines = 1)
     }
 }
 
@@ -732,14 +592,6 @@ private fun MediaGlyph(glyph: Glyph, side: Dp, color: Color, modifier: Modifier 
                 triangle(w, bar + w * 0.06f)
             }
         }
-    }
-}
-
-/** The player's own "now playing" screen if it offers one, else just the player. */
-private fun openPlayer(context: Context, controller: MediaController) {
-    try {
-        controller.sessionActivity?.send() ?: context.packageManager.getLaunchIntentForPackage(controller.packageName)?.let { Perms.start(context, it) }
-    } catch (_: Exception) {
     }
 }
 

@@ -10,7 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.focus.launcher.service.FocusAccessibilityService
+import com.focus.launcher.service.TimerWatchService
 import com.focus.launcher.ui.block.BlockRequest
 import com.focus.launcher.ui.block.BlockScreen
 import com.focus.launcher.ui.launchOptions
@@ -99,7 +99,7 @@ class BlockActivity : ComponentActivity() {
             if (entry != null) start(this, entry)
             else packageManager.getLaunchIntentForPackage(current.packageName)?.let { startActivity(it, launchOptions(this)) }
         }
-        FocusAccessibilityService.recheck()
+        TimerWatchService.recheck()
         finish()
     }
 

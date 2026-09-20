@@ -582,3 +582,40 @@ release build, installed for user 0, no crash. One capture contained a private n
 was deleted unread beyond noticing it. The last re-measurement was stopped by him; the figures
 in `home-drawer-menu-setup.md` are from before `ProgressText` was split off.
 
+## 2026-09-20 · Play Protect: the accessibility service and the notification listener are gone
+
+**Asked:** pull the new changes; the app is blocked by Google Play Protect; request only necessary
+permissions, and where a less critical one does the job, use that.
+
+**Found:** the pull brought PR #10 (music and note sections, by the collaborator) and the news
+that CI publishing is live: the owner had run the setup script and approved the first Publish run,
+which put 1.1.34 on the site and the release page. That APK declares an accessibility service
+(since 1.0) and, new with the music section, a notification listener. Google's Play Protect
+developer guidance names exactly these (plus two SMS permissions) as what gets a downloaded APK's
+installation blocked. Installs over adb are exempt, which is why it never showed here.
+
+**Done:**
+- Both declarations removed. Mid-session locking is now `TimerWatchService`: a foreground service
+  that runs only between leaving the home screen and coming back, reads the usage log every 4 s
+  while the screen is on, and keeps the old decision logic as a pure, tested function. The wall
+  comes up in front of an app if the user allows "display over other apps"; otherwise one
+  notification per visit, and the gate locks the next launch. Started with `startService` and a
+  guarded `startForeground`, so a refusal can never crash the launcher.
+- Music section: buttons as media keys, play state from the audio system, no song name.
+  Double tap to lock removed (nothing but accessibility or device admin can do it).
+- Setup: two required switches instead of three (the "finish setup" notice no longer nags about a
+  service that does not exist); overlay and notifications are optional rows. Texts in Settings,
+  README, website (permissions table, FAQ, install steps, JSON-LD) and the store listing rewritten.
+- `QUERY_ALL_PACKAGES` kept on purpose; every other permission checked and explained in the README.
+- Guard in `build.yml`, `publish.yml` and `site/clean-build.sh`: an APK that declares any of the
+  four is refused. It catches the published 1.1.34 and passes the new build.
+- Brain: the rule (Tier 1, rule 11), the mechanism (`timers-wall-consent.md`), decisions 8, 21, 22,
+  the lesson, the review checklist.
+
+**Verified:** 35 unit tests (10 new), lint 0 errors, release build; the built manifest contains
+none of the four and lists exactly the ten expected permissions; the guard tested on both APKs;
+site builds. **Not verified:** anything on a device. The phone was not attached during the work,
+so the new service has never run: its start from `onPause`, the polling, the notification and the
+overlay path are untested, and so is an actual download-and-install with Play Protect watching.
+That is said plainly to the owner, because merging now means publishing as soon as he approves.
+

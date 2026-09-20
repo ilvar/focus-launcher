@@ -21,7 +21,7 @@ Focus is a minimalist launcher: a home screen built to be looked at as little as
 
 <b>Private by construction</b>
 * No internet permission: nothing can leave the phone. No account, no ads, no analytics.
-* Usage access is used to count screen time. The optional accessibility service only learns which app is in front, so that it can lock it; it cannot read the screen.
+* No accessibility service and no notification access. Usage access is used to count screen time and to notice which app is in front; the optional "display over other apps" switch lets the "Time's up" screen come up in front of an app that ran out of time.
 * Calendar access is optional and only used to show your next events.
 
 Website: https://how2me.me/focusapp/
