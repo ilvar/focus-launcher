@@ -49,6 +49,35 @@ is shared runtime, framework and GPU-driver code. **Never claim a memory win fro
 readings.** `speed-profile` was chosen over `speed`: nearly the same speed, less mapped code
 (with `speed`, "Code" read 17.8 MB), and it is what Android converges to for store installs.
 
+## Battery, measured over a real day (2026-09-20, release build, about 14.5 h on battery)
+Asked by the owner after half a day of use: which apps use the battery, and what does Focus use.
+```bash
+adb shell dumpsys batterystats --charged > stats.txt        # since the last full charge; read-only
+adb shell cmd package list packages -U com.focus.launcher   # uid 10NNN  ->  "u0aNNN" in the dump
+grep -n "Estimated power use" stats.txt                     # global numbers, then one "UID …: mAh" line per app
+awk '/^  u0aNNN:$/{on=1} on' stats.txt | head -20           # the app's block: Top for, Total cpu time, wake locks, alarms, jobs
+```
+- Focus: about **0.6% of the battery's capacity** in 14.5 h, around one percent of what was
+  discharged, and a small fraction of what the biggest app took. **89 s of CPU in total** (half of
+  it kernel time: binder calls for usage events, packages and the calendar), of which 22 s with
+  the screen off; **no alarms, no jobs, no wake locks of its own**; 2 process starts.
+- Most of a launcher's "mAh" is not its work: Android's model books the *screen's* power to
+  whichever app is on top, and the home screen was on top for about ten minutes in total.
+- **Why the stock launcher keeps running although Focus is the home app** (the owner asked):
+  Android keeps gesture navigation and the recent-apps screen *inside the stock launcher*. System
+  UI binds its `QUICKSTEP_SERVICE` (`…quickstep.TouchInteractionService`), and
+  `dumpsys activity recents` names its `RecentsActivity` as `mRecentsComponent`. It therefore runs
+  as a foreground service the whole time, comes to the front every time recents opens, used more
+  CPU than Focus over the same day, and is booked a similar amount of battery without ever being
+  the home screen. No launcher can take that role over, and switching the package off breaks
+  gestures and recents: never suggest it. Check: `dumpsys activity services <stock launcher>`.
+- **Why Focus has a battery figure at all:** it is in front for a few seconds at every unlock,
+  every return home and every app switch (dozens of visits a day, about ten minutes in total),
+  and the display's power for those seconds is booked to it.
+- The per-app numbers are estimates from a power model (their sum exceeded the measured
+  discharge): good for ranking, not for absolute claims. Which apps ranked where is the owner's
+  business and is not recorded here; he got the list in the session.
+
 ## Traps
 `TRIM_MEMORY_UI_HIDDEN` fires on every app launch from a launcher: clearing caches there defeats
 them. After `adb install`, run `compile -m speed-profile -f` only once the app has been running

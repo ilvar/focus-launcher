@@ -502,3 +502,37 @@ and 1.0 still served), and the F-Droid workflow for `v1.1.29` passed for real: b
 container and "successfully verified" against the published APK. What is left is the merge
 request itself, which needs the owner's GitLab account, fork and token (open decision 20).
 
+## 2026-09-20 · Battery check after half a day of real use
+
+**Asked:** the app had been on the phone for about 12 hours: look at the battery consumption, which
+app is using the battery.
+
+**Done:** read-only `dumpsys batterystats --charged` (14.5 h on battery since the last charge),
+ranked the per-app estimates with package names, and read Focus's own block. The ranking went to
+the owner in the session and nowhere else. Focus: a fraction of a percent of the battery, 89 s of
+CPU in total (22 s with the screen off), no alarms, jobs or wake locks of its own; most of its
+figure is the screen's power while the home screen was on top. Nothing to fix.
+Method and numbers: `3-details/performance.md` → "Battery". The dump was deleted afterwards.
+
+**Not verified:** whether the 22 s of screen-off CPU has a single cause worth removing (too small
+to show up anywhere; it would need a trace). **Open:** nothing new.
+Follow-up question the same hour: why Focus has "screen" use at all, and why the stock launcher
+still runs. Checked read-only and answered: the home screen is in front briefly at every unlock
+and app switch, and gestures plus recents live inside the stock launcher (`performance.md`).
+
+## 2026-09-20 · F-Droid workflow: update the open merge request, never open a second one
+
+**Asked:** "update the CI so that if there is an already opened MR then it will update that MR
+instead of opening a new one".
+
+**Found:** the inline script already skipped creating an MR when it found an open one, but only
+loosely: it looked MRs up by author name (wrong for a fork in a group), failed outright when the
+recipe had not changed, ignored closed and merged MRs, told the reviewers nothing, and could not
+be tested.
+**Done:** `fdroid/submit.py` replaces it (behaviour in `3-details/fdroid.md`), with
+`fdroid/test_submit.py`: a fake GitLab and nine scenarios, run at the start of every workflow run.
+Pull request, CI, merged.
+**Verified:** the nine tests locally and on the runner; workflow YAML parses. **Not verified:**
+against the real GitLab, which needs the owner's account and token (still open decision 20).
+(The two brain files from the battery check earlier the same day went out with this push.)
+
