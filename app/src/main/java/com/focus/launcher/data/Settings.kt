@@ -67,6 +67,17 @@ data class Settings(
     val calendarKey: String = CALENDAR_AUTO,
     /** The Mon-Sun strip with today marked. Off: the ring already carries the date. */
     val showWeekStrip: Boolean = false,
+    /** Previous, play or pause, next, and what is playing, as a section of the home screen. */
+    val showMusic: Boolean = false,
+    /** A few lines of the user's own as a section of the home screen; [note] is the text. */
+    val showNote: Boolean = false,
+    val note: String = "",
+    /** [AppEntry.key] opened by a tap on the music section while nothing is playing. "" = not chosen yet: the first tap asks. */
+    val musicApp: String = "",
+    /** [AppEntry.key] of the notes app offered next to the note's title; "" = none. */
+    val noteApp: String = "",
+    /** With a notes app chosen: a link to one page in it (what its "copy link" gives). Blank = the app's own start screen. */
+    val noteLink: String = "",
     val homeAlign: HomeAlign = HomeAlign.CENTER,
     val favorites: List<String> = emptyList(),
     val showShortcuts: Boolean = true,
@@ -131,6 +142,12 @@ data class Settings(
         put("showCalendar", showCalendar)
         put("calendarKey", calendarKey)
         put("showWeekStrip", showWeekStrip)
+        put("showMusic", showMusic)
+        put("showNote", showNote)
+        put("note", note)
+        put("musicApp", musicApp)
+        put("noteApp", noteApp)
+        put("noteLink", noteLink)
         put("homeAlign", homeAlign.name)
         put("favorites", JSONArray(favorites))
         put("showShortcuts", showShortcuts)
@@ -201,6 +218,12 @@ data class Settings(
                     }
                 },
                 showWeekStrip = o.optBoolean("showWeekStrip", d.showWeekStrip),
+                showMusic = o.optBoolean("showMusic", d.showMusic),
+                showNote = o.optBoolean("showNote", d.showNote),
+                note = o.optString("note", d.note),
+                musicApp = o.optString("musicApp", d.musicApp),
+                noteApp = o.optString("noteApp", d.noteApp),
+                noteLink = o.optString("noteLink", d.noteLink),
                 homeAlign = enumOr(o.optString("homeAlign"), d.homeAlign),
                 favorites = o.optJSONArray("favorites").strings().take(MAX_FAVORITES),
                 showShortcuts = o.optBoolean("showShortcuts", d.showShortcuts),

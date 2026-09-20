@@ -38,6 +38,10 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
   calendar API, so they only appear if the organisation managing the profile allows this app.
   When it does not, settings say so instead of showing nothing; sharing the work calendar with a
   personal Google account is the sanctioned way to get it onto the home screen.
+- Two more optional sections under the calendar, in words only and told apart by a thin line, not a
+  box: **music** (Prev · Play/Pause · Next; they work with no permission at all, as media keys, and
+  with notification access the section also names the song and artist) and a **note** of a few
+  lines that you tap to edit.
 - Up to 5 "fast apps", as plain text. One that lives in a Work profile carries a small
   briefcase outline after its name, drawn in the text colour: the launcher's one pictogram.
 - Two corner shortcuts (Phone / Camera by default). Long-press one to change it.
@@ -107,6 +111,7 @@ decision is visible in "Limited apps" and can be overridden per app.
 | Accessibility service ("Focus app timers") | Locking an app *while you are in it*. It only listens for window changes to learn the name of the app in front; `canRetrieveWindowContent` is false, so it cannot read the screen. |
 | Notifications (optional) | The weekly review reminder. |
 | Calendar (optional) | The calendar section. |
+| Notification access (optional, "Focus music section") | The song and artist in the music section. Android ties "which player is active" to this access. The service behind it reads no notification and drops its binding the moment it is connected. |
 
 Without the accessibility service, timers still work at launch time: a spent app opened from Focus
 shows the wall instead. With it, the wall also comes up mid-session.

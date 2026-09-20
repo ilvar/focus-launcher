@@ -39,6 +39,7 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 | Swipe right on home = the phone's web search | `MainActivity.kt` `Launcher` (pointerInput on the pager), `ui/Launching.kt` `openWebSearch`, `Settings.swipeRightSearch` |
 | Double tap = lock (default on; needs the accessibility service) | `HomeScreen.kt`, `Settings.doubleTapLock`, `FocusAccessibilityService` |
 | Long-press menu, timer dialog | `ui/drawer/AppMenu.kt` |
+| Music and note sections on home (text, lines between sections, off by default) | `HomeWidgets.kt` `MusicSection`, `NoteSection`; `service/MediaListener.kt`; toggles in `LauncherPages.kt` `HomePage` |
 | Fast apps (≤5), corner shortcuts, home gestures, notices | `ui/home/HomeScreen.kt` |
 | Weekly review: alarm, home notice, notification, the week's summary | `service/WeeklyReview.kt`, `data/WeekSummary.kt`, `ui/review/ReviewScreen.kt` |
 | Setup page (default home, usage access, app locking, notifications, calendar) | `ui/settings/SetupPage.kt` |

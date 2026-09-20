@@ -381,6 +381,27 @@ class AppRepository(
     }
 
     /**
+     * Packages that play music, by what they declare rather than by name: a media browser service
+     * (what Android Auto and Bluetooth use to find players), the "music app" launcher category, or
+     * the audio app category the Play Store sets. Asked only when the music picker opens; blocking.
+     */
+    fun musicPackages(): Set<String> {
+        val out = HashSet<String>()
+        try {
+            pm.queryIntentServices(Intent("android.media.browse.MediaBrowserService"), 0).forEach { out += it.serviceInfo.packageName }
+            pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_MUSIC), 0).forEach { out += it.activityInfo.packageName }
+        } catch (_: Exception) {
+        }
+        for (app in apps.value) {
+            try {
+                if (pm.getApplicationInfo(app.packageName, 0).category == ApplicationInfo.CATEGORY_AUDIO) out += app.packageName
+            } catch (_: Exception) {
+            }
+        }
+        return out
+    }
+
+    /**
      * Apps that must never be walled off: this launcher, the dialer (emergency calls), system
      * settings (the way out of any misconfiguration) and other home screens.
      */

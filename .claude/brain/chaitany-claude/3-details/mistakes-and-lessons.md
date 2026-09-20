@@ -76,6 +76,23 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   difficult (`brain-upkeep.md`).
 
 ## Android platform
+- A clickable smaller than 48dp gets a 48dp touch target that is *not drawn*: the press indication
+  covers the layout bounds only, so taps near it light up "somewhere else". Make the element 48dp
+  and centre its content instead of padding a small one unevenly.
+- **State that changes faster than it is shown is a redraw loop.** A player's position arrives
+  several times a second; held in a data class that was Compose state, every report recomposed
+  the section. Keep such values in plain fields and let one slow reader turn them into state.
+  Found only because frames were counted with nobody touching the phone (`dumpsys input` →
+  `RecentQueue … age=` tells whether a window was quiet).
+- A guarded screenshot can still catch a **heads-up notification** with a person's name and
+  picture on it. Look at what was captured before anything else, and delete it if so.
+- A guarded screenshot must check "Focus in front, unlocked" **after** the capture too: the owner
+  of the phone can open an app in the second between the check and the shot.
+- The name of the playing song is only available through `MediaSessionManager.getActiveSessions`,
+  which demands an enabled `NotificationListenerService`. Media *keys* need nothing. An "empty"
+  listener is still handed every notification while bound: `requestUnbind()` on connect, the grant
+  is enough. Right after an app update the first read of the grant can still say "no"; the next
+  resume has it.
 - `makeCustomAnimation` is ignored for task-level opens since Android 13; scale-up / clip-reveal
   are honoured.
 - `TRIM_MEMORY_UI_HIDDEN` fires on every app launch from a launcher.

@@ -17,6 +17,10 @@ Today / Week and the drawer's Personal / Work; moved here from `ReviewScreen.kt`
 `MultiChoiceDialog`, `ConfirmDialog`, `TextInputDialog(numeric)`, `UnderlinedField`,
 `AppPickerDialog(leading=…)`.
 
+**Drawn signs** (the only ones): `WorkBadge` and the music section's three buttons
+(`MediaGlyph`, `HomeWidgets.kt`). Canvas shapes in the text colour with a `contentDescription`;
+never the Unicode characters, which many phones turn into colour emoji.
+
 ## Touch feedback: it lights up (owner's requirement)
 `PressIndication` (an `IndicationNodeFactory`, installed as `LocalIndication`) draws a rounded
 rect of white at `0.17 × level` with **`BlendMode.Difference`** *behind* the content, so the same

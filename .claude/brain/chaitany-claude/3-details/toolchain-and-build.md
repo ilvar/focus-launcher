@@ -39,7 +39,8 @@ Compose lints that have bitten: `NonObservableLocale` (use `currentLocale()` fro
 ## Manifest notes
 Permissions: PACKAGE_USAGE_STATS, QUERY_ALL_PACKAGES (a launcher must see every app; also lets
 the service resolve any activity), REQUEST_DELETE_PACKAGES, POST_NOTIFICATIONS, READ_CALENDAR,
-EXPAND_STATUS_BAR. **No INTERNET**: a public promise (site, README), never add it.
+EXPAND_STATUS_BAR. Services: the accessibility service and `MediaListener` (notification access,
+optional; see `home-drawer-menu-setup.md`). **No INTERNET**: a public promise (site, README), never add it.
 `MainActivity`: HOME + DEFAULT, `singleTask`, `clearTaskOnLaunch`, `excludeFromRecents`,
 `stateAlwaysHidden|adjustResize`, portrait. `SettingsActivity`: own task affinity (`…settings`), or a launcher cannot open it (see
 `mistakes-and-lessons.md`). `BlockActivity`: `singleInstance`, own task affinity,
