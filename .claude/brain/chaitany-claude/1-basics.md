@@ -1,11 +1,12 @@
 # Tier 1 · Basics (read all of it, every time)
 
 **Focus** is a text-only, strictly black-and-white Android launcher (Kotlin + Jetpack Compose, no
-Material, package `com.focus.launcher`, 35 Kotlin files, ~7,700 lines). Home = split clock (the
+Material, package `com.focus.launcher`, 36 Kotlin files, ~7,750 lines). Home = split clock (the
 time | the next events or screen time, one line between them), up to 5 fast apps, 2 corner shortcuts.
 Swipe left = searchable app list (sortable; Personal / Work tabs), swipe right = the phone's web
-search. Social apps and games get daily timers that lock the app; a weekly review shows where the
-time went. No INTERNET permission, **no accessibility service, no notification listener**.
+search, double tap = lock. Social apps and games get daily timers that lock the app; a weekly
+review shows where the time went. No INTERNET permission. Optional: an accessibility service
+(locks an app mid-session, locks the screen) and a notification listener (the song's name).
 
 **Owner:** Chaitany (GitHub `patelchaitany`). His phone runs Android 16 with Focus as its default
 launcher. He wants things done end to end and verified, and honest reports of what was not.
@@ -16,8 +17,8 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
 ## Rules that prevent damage
 1. **The phone is in use while you test.** Never inject blind taps or swipes. Open screens by
    intent; screenshot only when `topResumedActivity` is `com.focus.launcher/`.
-2. **Never grant special access over adb** (usage access, display over other apps, default home).
-   The in-app Setup page sends the owner to each switch.
+2. **Never grant special access over adb** (usage access, accessibility, notification access,
+   default home). The in-app Setup page sends the owner to each switch.
 3. **The repo is public.** Before every push, run the audit in `2-overview/github-and-release.md`.
    Never commit `keystore.properties`, `local.properties`, `site/deploy.env`, `site/public/`,
    `.claude/launch.json`, or anything under a `private/` folder.
@@ -31,8 +32,9 @@ device or what is on his phone lives only in the git-ignored `private/` folder n
    exception, asked for by a contributor: the work-profile briefcase, `WorkBadge`.)
 9. **Do not work around a managed work profile's restrictions** (calendar, usage). Explain the limit.
 10. **Never promise search rankings.** Say what was done and what it depends on.
-11. **Never declare an accessibility service, a notification listener or an SMS permission.** Play
-    Protect blocks the install of a downloaded APK that has one. CI and the publish job refuse it.
+11. **The accessibility service and the notification listener stay** (owner, 2026-09-20). PR #11
+    removed them to get past Play Protect; that took options away and he had it reverted. Never
+    remove an option he uses, or add an SMS permission, without his yes first.
 
 ## Where things are
 | What | Where |
@@ -61,17 +63,17 @@ over `release` or the reverse: different signatures. No JDK path is pinned in th
 
 ## State of the world (2026-09-20)
 **Public:** the newest `vX.Y.Z` release on the site and the release page (older APKs still
-served): split clock (owner's second sketch), plus a collaborator's merged work: PR #1 (drawer
-sort and tabs, swipe right = web search, work badge, screen time in words) and PR #10 (music and
-note sections). What in them touches the owner's earlier decisions still waits for his word (open
-decisions 10–14). The owner's phone runs the same code as a debug-key build. GPL-3.0-or-later.
+served): split clock (owner's second sketch), plus a collaborator's merged PR #1 (drawer sort and
+tabs, web search, work badge) and PR #10 (music and note sections); what in them touches his
+earlier decisions waits for his word (open decisions 10–14). GPL-3.0-or-later. His phone is moving
+from the debug-key build to the website's APK: test builds for it then need the release key.
 Versions are `<base>.<commit count>`. **CI publishing is live**: a push to `main` that touches the
 app or the site starts Publish, which waits for the owner's approval (first real run: 1.1.34).
 **F-Droid:** repo ready, recipe verified; the merge request needs the owner's GitLab account and
 token (`3-details/fdroid.md`). Agents never run the setup script, create accounts or enter tokens.
-Mid-session locking is `TimerWatchService` (usage log, 2026-09-20): passes the emulator test on
-Android 14 and 15, not yet seen on the owner's Android 16 phone; "display over other apps" is his
-to switch on. Whether Play Protect now lets the download through only he can confirm.
+**Play Protect** blocks a downloaded APK that declares those two services (select markets; adb is
+exempt). 1.1.37 had neither; he had that reverted the same day (`3-details/timers-wall-consent.md`).
+Mid-session locking through the accessibility service is still unseen on his phone.
 The brain is committed and public (`3-details/brain-upkeep.md`). Publishing happens on request.
 
 ## Tier 2 index: read the area(s) you will touch

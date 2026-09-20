@@ -139,11 +139,6 @@ jobs:
           badging=$("$tools/aapt2" dump badging "$apk")
           name=$(printf '%s\n' "$badging" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
           [ "$name" = "$VERSION" ] || { echo "::error::the APK says version '$name', expected '$VERSION'"; exit 1; }
-          # Google Play Protect blocks the installation of a downloaded APK that declares any of these
-          # (developers.google.com/android/play-protect/warning-dev-guidance). Focus is installed from
-          # a download, so none of them may ever be in its manifest again.
-          blocked=$("$tools/aapt2" dump xmltree --file AndroidManifest.xml "$apk" | grep -oE "BIND_ACCESSIBILITY_SERVICE|BIND_NOTIFICATION_LISTENER_SERVICE|android\.permission\.(READ|RECEIVE)_SMS" | sort -u | tr '\n' ' ')
-          if [ -n "$blocked" ]; then echo "::error::the APK declares what Play Protect blocks on: $blocked"; exit 1; fi
           # A public promise of this project: the app cannot go online.
           if printf '%s\n' "$badging" | grep -q "android.permission.INTERNET"; then
             echo "::error::the APK asks for the INTERNET permission"; exit 1

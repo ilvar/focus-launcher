@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.core.net.toUri
 import com.focus.launcher.Graph
+import com.focus.launcher.service.FocusAccessibilityService
 
 /** Checks for, and deep links to, the handful of system switches the launcher depends on. */
 object Perms {
@@ -22,11 +23,15 @@ object Perms {
 
     fun hasUsageAccess(): Boolean = Graph.usage.hasAccess()
 
-    /**
-     * True when the user let Focus display over other apps. That switch is what allows the "time's
-     * up" screen to come up in front of an app that is open; without it Focus sends a notification.
-     */
-    fun canDrawOverlays(context: Context): Boolean = Settings.canDrawOverlays(context)
+    /** True when the user switched the timer service on in Accessibility settings. */
+    fun isTimerServiceEnabled(context: Context): Boolean {
+        if (FocusAccessibilityService.isRunning) return true
+        val enabled = Settings.Secure.getString(
+            context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+        ) ?: return false
+        val mine = ComponentName(context, FocusAccessibilityService::class.java)
+        return enabled.split(':').any { ComponentName.unflattenFromString(it) == mine }
+    }
 
     fun canPostNotifications(context: Context): Boolean {
         val enabled = context.getSystemService(NotificationManager::class.java)?.areNotificationsEnabled() ?: false
@@ -44,11 +49,7 @@ object Perms {
         Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS),
     )
 
-    fun openOverlaySettings(context: Context) = start(
-        context,
-        Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${context.packageName}".toUri()),
-        Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION),
-    )
+    fun openAccessibility(context: Context) = start(context, Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
 
     fun openHomeSettings(context: Context) = start(
         context,

@@ -621,3 +621,38 @@ leaving, the "Time's up" notification when the minute was over with the overlay 
 wall in front of the app with it on, no watcher back on home, no crash lines.
 **Not verified:** the owner's own phone (Android 16), and an actual download-and-install with
 Play Protect watching: only he can do that, in a market where the block is active.
+
+## 2026-09-20 · "Conflict" when installing the website's APK on his own phone
+
+**Asked:** installing from the site shows a conflict with an existing version.
+**Found (read-only):** the site serves 1.1.37 (he had approved the Publish run: the Play Protect
+fix is live). On the phone Focus was already uninstalled from his own profile, but still
+`installed=true`, never launched, in other Android users of the phone, signed with the debug key: leftovers
+of the early plain `adb install`s. Android refuses a differently signed APK while any user has the
+package. **Done:** explained, and handed him the command that removes the package for all users;
+nothing was uninstalled by me. Brain: the lesson, open decisions 2 and 15, and that test builds
+for his phone now need the release key.
+**Then:** the owner ran `adb uninstall com.focus.launcher` himself ("Success"). Verified read-only:
+`pm list packages --user <id>` finds it for no user, `pm list packages -u` finds no leftover
+record, `dumpsys package` has no entry: nothing on the phone holds the old signature any more.
+**Not verified:** the install from the site, and with it the first real download-and-install
+under Play Protect: both are his to report.
+
+## 2026-09-20 · PR #11 reverted on the owner's word ("it removes the option")
+
+**Asked:** "revert the merge the changes 11 as it removes the option."
+**Done:** branch `revert-pr-11`: `git revert -m 1` of the merge of #11 for everything outside the
+brain, which is now byte-identical to the tree before it (`git diff 21a7fbf^1 -- . ':(exclude).claude'`
+is empty): the accessibility service, the notification listener, double tap to lock, the song's
+name and the three-switch Setup page are back; `TimerWatchService`, its tests, the emulator
+workflow and the Play Protect guards in Build, Publish and `site/clean-build.sh` are gone; site,
+README and listing text say so again. Changelog `40.txt` for the release this becomes. The brain
+was not reverted but rewritten: Tier 1 rule 11 now says the services stay, the decision and its
+reason are in `user-and-decisions.md`, the Play Protect facts and the reverted variant are kept
+in `3-details/timers-wall-consent.md`, and the lesson (a fix that costs an option needs his yes
+before the merge) is in `mistakes-and-lessons.md`.
+**Verified:** 25 unit tests pass, lint 0 errors, release build assembles; its manifest declares
+both services again and no INTERNET permission (aapt2).
+**Open:** Play Protect blocks this download again where it enforces the rule (open decision 21).
+Mid-session locking through the accessibility service is still unseen on his phone.
+

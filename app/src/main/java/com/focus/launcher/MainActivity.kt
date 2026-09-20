@@ -33,7 +33,6 @@ import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.focus.launcher.data.AppEntry
 import com.focus.launcher.data.Settings
-import com.focus.launcher.service.TimerWatchService
 import com.focus.launcher.service.WeeklyReview
 import com.focus.launcher.ui.drawer.AppMenu
 import com.focus.launcher.ui.drawer.DrawerScreen
@@ -102,11 +101,8 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
     LifecycleResumeEffect(settings.timersEnabled) {
         resumeCount++
         usageAccess = Perms.hasUsageAccess()
-        setupIncomplete = !Perms.isDefaultLauncher(context) || !usageAccess
-        // Home again: the visit the user agreed to is over, and from here the launch gate does the
-        // work. The watcher only runs between leaving this screen and coming back to it.
-        Graph.limits.sessionConsent = null
-        TimerWatchService.stop(context)
+        setupIncomplete = !Perms.isDefaultLauncher(context) || !usageAccess ||
+            (settings.timersEnabled && !Perms.isTimerServiceEnabled(context))
         val job = scope.launch {
             WeeklyReview.checkDue()
             val now = System.currentTimeMillis()
@@ -119,11 +115,7 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
                 delay(60_000)
             }
         }
-        onPauseOrDispose {
-            job.cancel()
-            // Still in front at this moment, which is when Android lets a foreground service start.
-            TimerWatchService.start(context)
-        }
+        onPauseOrDispose { job.cancel() }
     }
 
     // Leaving the launcher (an app was opened, the screen went off) always resets it to page 0.

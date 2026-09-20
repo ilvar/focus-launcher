@@ -356,5 +356,9 @@ internal fun GesturesPage(settings: Settings, status: SetupStatus, onBack: () ->
         // Also under App drawer. It is looked for here too: it is what swiping to the drawer does.
         ToggleRow("Keyboard opens with the drawer", settings.autoKeyboard, subtitle = "Start typing the moment you swipe to your apps.") { v -> update { it.copy(autoKeyboard = v) } }
         ToggleRow("Swipe right for web search", settings.swipeRightSearch, subtitle = "Opens the Google search box, like the page left of a stock home screen.") { v -> update { it.copy(swipeRightSearch = v) } }
+        ToggleRow("Double tap to lock", settings.doubleTapLock, subtitle = "Turns the screen off. Uses the Focus timer service.") { v -> update { it.copy(doubleTapLock = v) } }
+        if (settings.doubleTapLock && !status.timerService) {
+            Note("The Focus timer service is off, so double tap cannot lock yet.  Open setup  →") { go(Routes.SETUP) }
+        }
     }
 }

@@ -10,7 +10,13 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   first people to meet it were the ones the website exists for. A contributor then added a
   notification listener for a song title. → Before adding any service or special access, read
   Google's Play Protect developer guidance; test an install the way users do it (download, tap),
-  not only over adb; CI refuses the four declarations.
+  not only over adb. (The owner later chose to keep both services: next entry.)
+- **Took options away to reach a goal the owner had asked for, merged it, and he had it reverted
+  within hours.** He asked to get past Play Protect with fewer permissions; the fix (PR #11)
+  removed double tap to lock and the song's name and changed how locking is switched on. The cost
+  was written down as an open decision *after* the merge, and the merge was a release. → When a
+  fix costs a user-visible option, put the cost in front of him and wait for a yes **before**
+  merging; "he asked for the goal" is not a yes to the price.
 - **Put a limit on mail, browser and messenger apps.** Trusted `CATEGORY_SOCIAL`, which covers
   communication apps. → Classify by curated lists + intent probes; never guess towards a limit.
   (`app-classification.md`)
@@ -121,6 +127,14 @@ Each entry: symptom → cause → fix / rule. Add to this whenever something cos
   a plain `adb install -r`, and a per-user check (`pm list packages --user <id>`) showed Focus in
   all of the phone's profiles. Nobody had looked. → After any install, list the package per user;
   taking it out of a profile again is an uninstall, so it is the owner's decision.
+- **A copy left in ANY Android user keeps the whole phone tied to its signature.** The owner
+  uninstalled the debug-key build from his own profile to install the website's APK and got
+  "package conflicts with an existing package": the copies my early plain `adb install`s had put
+  into the phone's other users were still there (`dumpsys package` → `User N: installed=true`), signed
+  with the debug key, and Android will not install a differently signed APK while any user has
+  the package. → `adb uninstall <pkg>` (all users) or App info → ⋮ → "Uninstall for all users";
+  check `pm list packages --user <id> <pkg>` for every id in `pm list users` before saying an app
+  is gone.
 - **`adb install` without `--user` installs for every user, a work profile included.** Focus then
   shows up inside the work profile too, which the phone's owner noticed at once. → Always
   `adb install --user 0 …`; check with `pm list packages --user <id> com.focus.launcher`.
