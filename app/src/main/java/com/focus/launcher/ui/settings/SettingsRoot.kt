@@ -83,13 +83,21 @@ object Routes {
     const val APPEARANCE = "appearance"
     const val GESTURES = "gestures"
     const val ABOUT = "about"
+    const val WELCOME = "welcome"
 }
 
 @Composable
 fun SettingsRoot(settings: Settings, startRoute: String?, onExit: () -> Unit) {
     val context = LocalContext.current
     val stack = remember {
-        mutableStateListOf(Routes.MAIN).apply { if (startRoute != null && startRoute != Routes.MAIN) add(startRoute) }
+        mutableStateListOf(Routes.MAIN).apply {
+            if (startRoute != null && startRoute != Routes.MAIN) add(startRoute)
+            // Someone new who found "Focus Settings" before making Focus their home screen.
+            else if (startRoute == null && !Graph.state.tutorialSeen) {
+                Graph.state.tutorialSeen = true // shown once, however it is left
+                add(Routes.WELCOME)
+            }
+        }
     }
     val back: () -> Unit = { if (stack.size > 1) stack.removeAt(stack.lastIndex) else onExit() }
     val go: (String) -> Unit = { stack.add(it) }
@@ -125,7 +133,13 @@ fun SettingsRoot(settings: Settings, startRoute: String?, onExit: () -> Unit) {
             Routes.WEEKLY -> WeeklyPage(settings, status, back, go)
             Routes.APPEARANCE -> AppearancePage(settings, back)
             Routes.GESTURES -> GesturesPage(settings, status, back, go)
-            Routes.ABOUT -> AboutPage(back)
+            Routes.ABOUT -> AboutPage(back, go)
+            Routes.WELCOME -> WelcomePage { toSetup ->
+                Graph.state.tutorialSeen = true
+                Graph.state.restartTips() // also how "again" works, from About
+                stack.remove(Routes.WELCOME)
+                if (toSetup) go(Routes.SETUP) else onExit() // Start: to the home screen, where the tips are
+            }
             else -> MainPage(settings, apps.size, status, back, go)
         }
     }
@@ -165,9 +179,10 @@ private fun MainPage(settings: Settings, appCount: Int, status: SetupStatus, onB
 }
 
 @Composable
-private fun AboutPage(onBack: () -> Unit) {
+private fun AboutPage(onBack: () -> Unit, go: (String) -> Unit) {
     val c = LocalFocusColors.current
     Page("About", onBack) {
+        SettingRow("Welcome screen and tips", subtitle = "Shows the tips on the home screen again, one at a time.", onClick = { go(Routes.WELCOME) })
         Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
             T("Focus ${BuildConfig.VERSION_NAME}", size = 20.sp, weight = FontWeight.Medium)
             VSpace(12.dp)

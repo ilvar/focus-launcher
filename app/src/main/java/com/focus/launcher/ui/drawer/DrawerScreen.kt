@@ -97,6 +97,8 @@ fun DrawerScreen(
     onSearchFocusHandled: () -> Unit,
     onLaunch: (AppEntry) -> Unit,
     onAppMenu: (AppEntry) -> Unit,
+    /** A tip that is about this page, shown under the search bar until it has been done. */
+    hint: String? = null,
 ) {
     val c = LocalFocusColors.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -236,6 +238,8 @@ fun DrawerScreen(
                 )
             }
         }
+
+        if (hint != null && !searching) T(hint, Modifier.padding(horizontal = 30.dp, vertical = 6.dp), size = 15.sp, lineHeight = 21.sp)
 
         var scrubbing by remember { mutableStateOf<Char?>(null) }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {

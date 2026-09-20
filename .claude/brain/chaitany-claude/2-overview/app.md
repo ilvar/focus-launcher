@@ -40,6 +40,7 @@ ui/     theme/ components/ home/ drawer/ block/ review/ settings/   + Launching.
 | Double tap = lock (default on; needs the accessibility service) | `HomeScreen.kt`, `Settings.doubleTapLock`, `FocusAccessibilityService` |
 | Long-press menu, timer dialog | `ui/drawer/AppMenu.kt` |
 | Music and note sections on home (text, lines between sections, off by default) | `HomeWidgets.kt` `MusicSection`, `NoteSection`; `service/MediaListener.kt`; toggles in `LauncherPages.kt` `HomePage` |
+| Welcome screen (once) and learn-by-doing tips on the home screen | `ui/settings/WelcomePage.kt` (route `welcome`), `data/AppState.kt` `Tip` / `did()` / `tutorialSeen`; hooks in `HomeScreen.kt`, `MainActivity.kt`; drawer hint in `DrawerScreen.kt` |
 | Fast apps (≤5), corner shortcuts, home gestures, notices | `ui/home/HomeScreen.kt` |
 | Weekly review: alarm, home notice, notification, the week's summary | `service/WeeklyReview.kt`, `data/WeekSummary.kt`, `ui/review/ReviewScreen.kt` |
 | Setup page (default home, usage access, app locking, notifications, calendar) | `ui/settings/SetupPage.kt` |

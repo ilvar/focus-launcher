@@ -582,3 +582,34 @@ release build, installed for user 0, no crash. One capture contained a private n
 was deleted unread beyond noticing it. The last re-measurement was stopped by him; the figures
 in `home-drawer-menu-setup.md` are from before `ProgressText` was split off.
 
+## 2026-09-20 · Introduction for first-time users (a contributor)
+
+**Asked:** "add a splash screen properly with a proper tutorial, include all features for
+first-time users". (He had committed and pushed the music/note work himself as `77f4554`.)
+**Done** (uncommitted, branch `home-music-note`): `WelcomePage.kt`, route `welcome`,
+`AppState.tutorialSeen`, first-start hook in `MainActivity`, "Introduction" row in About, README.
+No splash, on purpose (`home-drawer-menu-setup.md` → "The introduction").
+**Verified:** 25 unit tests, lint 0 errors, release build. **Not verified:** anything on a device;
+the phone was not connected. In particular the first-start path needs a fresh install to be seen.
+The eight pages were rejected the same hour ("too much text, too many next pages; it should come
+as a tutorial when using; keep the splash"). Replaced by one welcome screen plus nine
+learn-by-doing tips on the home screen (`home-drawer-menu-setup.md` → "Welcome screen and tips").
+Verified: 25 unit tests, lint 0 errors, release build, installed for user 0, welcome route opens
+without a crash. Not verified: the look of either, and the tips ticking off, on a device (the
+phone was locked).
+Later, at his request, one guarded screenshot of the home screen: "Tip 9 of 9 · Long-press an
+empty spot: …" as two dim lines under the split clock, the sections and five pinned apps intact
+below it. He had worked through tips 1 to 8 on the phone by then, so the ticking-off works. Not
+seen by me: the welcome screen itself, and the app-list tip inside the drawer.
+Tips reworded and restyled after "the text is not visible, it goes outside the screen, it is too
+much text": gesture bright + "→ result", a few words each; welcome screen shortened and made
+scrollable. Verified: 25 unit tests, lint 0 errors, release build, installed for user 0; a guarded
+screenshot of the drawer shows "Long-press an app → pin, timer, hide" on one line under the
+tabs. Not seen: the new tip line on the home page (he had already worked through the tips again
+when the home page could be captured) and the welcome screen. One capture showed the
+notification shade instead of Focus and was deleted; the guard was tightened (lesson recorded).
+Asked whether the tips miss anything: three hidden gestures had no tip (tap screen time, long-press
+a corner, long-press music or note) and got one each; tips for absent things skip themselves.
+Re-running the guide: Settings → About → "Welcome screen and tips" → Start, or the `welcome` route
+by intent. 25 unit tests, lint 0 errors, release build, installed for user 0.
+

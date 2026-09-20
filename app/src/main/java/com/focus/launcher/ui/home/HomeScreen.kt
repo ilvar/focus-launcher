@@ -1,5 +1,7 @@
 package com.focus.launcher.ui.home
 
+import com.focus.launcher.data.Tip
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.focus.launcher.ui.components.FocusDialog
 import com.focus.launcher.ui.components.MenuRow
 import com.focus.launcher.ui.components.Hairline
@@ -148,6 +150,12 @@ fun HomeScreen(
 
     var editingShortcut by remember { mutableStateOf<Boolean?>(null) } // true = left, false = right
     var choosingClockTap by remember { mutableStateOf(false) }
+    val tip by Graph.state.tip.collectAsStateWithLifecycle()
+    // A tip about something that is not on the screen teaches nothing: pass over it.
+    LaunchedEffect(tip, settings.showMusic, settings.showNote, settings.showShortcuts) {
+        val absent = (tip == Tip.SECTION_APPS && !settings.showMusic && !settings.showNote) || (tip == Tip.CORNERS && !settings.showShortcuts)
+        if (absent) Graph.state.nextTip()
+    }
     var editingNote by remember { mutableStateOf(false) }
     var choosingMusicApp by remember { mutableStateOf(false) }
     var choosingNoteApp by remember { mutableStateOf(false) }
@@ -185,9 +193,11 @@ fun HomeScreen(
                         if (!fired && dragged > threshold && settings.swipeDownNotifications) {
                             fired = true
                             expandNotifications(context)
+                            Graph.state.did(Tip.SWIPE_DOWN)
                         } else if (!fired && dragged < -threshold && settings.swipeUpSearch) {
                             fired = true
                             openDrawer(true)
+                            Graph.state.did(Tip.SWIPE_UP)
                         }
                     },
                 )
@@ -196,10 +206,12 @@ fun HomeScreen(
                 detectTapGestures(
                     onLongPress = {
                         haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        Graph.state.did(Tip.SETTINGS)
                         openSettings(null)
                     },
                     onDoubleTap = if (settings.doubleTapLock) {
                         {
+                            Graph.state.did(Tip.DOUBLE_TAP)
                             if (!FocusAccessibilityService.lockScreen()) {
                                 Toast.makeText(context, "Turn on the Focus timer service to lock with a double tap", Toast.LENGTH_SHORT).show()
                             }
@@ -216,7 +228,7 @@ fun HomeScreen(
         val bars = WindowInsets.systemBars.asPaddingValues()
         val available = (maxHeight - bars.calculateTopPadding() - bars.calculateBottomPadding()).value
         val textScale = LocalDensity.current.fontScale * settings.textScale
-        val notices = (if (setupIncomplete) 1 else 0) + (if (pendingReview != null) 1 else 0)
+        val notices = (if (setupIncomplete) 1 else 0) + (if (pendingReview != null) 1 else 0) + (if (tip != null) 2 else 0) // a tip may take two lines
         val rowCount = favorites.size.coerceAtLeast(2) // the empty-state hint is two lines tall
         val eventCount = events.size
         val preferredRing = (maxHeight * if (settings.showCalendar) 0.25f else 0.29f).coerceIn(140.dp, 236.dp)
@@ -279,14 +291,17 @@ fun HomeScreen(
             Spacer(Modifier.weight(if (split) 0.35f else 0.9f))
 
             val clockTap: () -> Unit = { performClockTap(context, settings.clockTap, apps, onLaunch) { onOpenReview(null) } }
-            val openScreenTime: () -> Unit = { if (usageAccess) onOpenReview(null) else Perms.openUsageAccess(context) }
+            val openScreenTime: () -> Unit = {
+                Graph.state.did(Tip.SCREEN_TIME)
+                if (usageAccess) onOpenReview(null) else Perms.openUsageAccess(context)
+            }
             if (split) {
                 SplitClockRow(
                     settings = settings,
                     now = now,
                     timeSize = splitTimeSp.sp,
                     onTap = clockTap,
-                    onLongPress = { choosingClockTap = true },
+                    onLongPress = { Graph.state.did(Tip.CLOCK); choosingClockTap = true },
                 ) {
                     if (sideCalendar) {
                         SplitCalendar(
@@ -308,7 +323,7 @@ fun HomeScreen(
                     now = now,
                     ringSize = ring,
                     onTap = clockTap,
-                    onLongPress = { choosingClockTap = true },
+                    onLongPress = { Graph.state.did(Tip.CLOCK); choosingClockTap = true },
                     modifier = if (settings.clockStyle == ClockStyle.RING) Modifier.align(Alignment.CenterHorizontally) else Modifier,
                 )
             }
@@ -326,13 +341,20 @@ fun HomeScreen(
             }
 
             // One-line notices. They disappear as soon as they have been dealt with.
-            if (setupIncomplete || pendingReview != null) {
+            if (setupIncomplete || pendingReview != null || tip != null) {
                 VSpace(14.dp)
                 if (pendingReview != null) {
                     Notice("Your weekly review is ready  →", strong = true) { onOpenReview(pendingReview) }
                 }
                 if (setupIncomplete) {
                     Notice("Finish setting up Focus  →", strong = false) { onOpenSettings("setup") }
+                }
+                // One thing a new user could not guess, until they have done it once. A tap moves on.
+                tip?.let { current ->
+                    TipLine(current) {
+                        Graph.state.nextTip()
+                        if (current == Tip.SECTIONS) onOpenSettings("home")
+                    }
                 }
             }
 
@@ -363,7 +385,7 @@ fun HomeScreen(
                     resumeCount,
                     // Nothing playing: the music app of the user's choice; the first tap asks which.
                     onOpenDefault = { apps.firstOrNull { it.key == settings.musicApp }?.let(onLaunch) ?: run { choosingMusicApp = true } },
-                    onChoose = { choosingMusicApp = true },
+                    onChoose = { Graph.state.did(Tip.SECTION_APPS); choosingMusicApp = true },
                 )
             }
             if (settings.showNote) {
@@ -375,7 +397,7 @@ fun HomeScreen(
                     onEdit = { editingNote = true },
                     // One page of the app, if a link to it was given; the app itself otherwise.
                     onOpenApp = { noteApp?.let { app -> if (settings.noteLink.isBlank() || !openLink(context, settings.noteLink, app.packageName)) onLaunch(app) } },
-                    onLongClick = { noteMenu = true },
+                    onLongClick = { Graph.state.did(Tip.SECTION_APPS); noteMenu = true },
                 )
             }
             if (anySection) Hairline(Modifier.padding(horizontal = 12.dp), c.faint)
@@ -421,7 +443,7 @@ fun HomeScreen(
                         T(
                             shortcutLabel(spec, apps),
                             Modifier
-                                .press(onLongClick = { editingShortcut = left }) { launchShortcut(context, spec, apps, onLaunch) }
+                                .press(onLongClick = { Graph.state.did(Tip.CORNERS); editingShortcut = left }) { launchShortcut(context, spec, apps, onLaunch) }
                                 .padding(vertical = 14.dp, horizontal = 12.dp),
                             size = 15.sp, color = c.dim, maxLines = 1,
                         )
@@ -521,8 +543,26 @@ fun HomeScreen(
     }
 }
 
+/**
+ * A tip: the gesture in full brightness, what it does next to it, quieter. Short enough for one
+ * line; if a large text size makes it longer it wraps, it is never cut off. A tap skips it.
+ */
 @Composable
-private fun Notice(text: String, strong: Boolean, onClick: () -> Unit) {
+private fun TipLine(tip: Tip, onClick: () -> Unit) {
+    val c = LocalFocusColors.current
+    Column(Modifier.fillMaxWidth().press(onClick = onClick).padding(horizontal = 12.dp, vertical = 6.dp)) {
+        T("Tip ${tip.ordinal + 1} / ${Tip.entries.size}", size = 11.sp, color = c.faint, letterSpacing = 1.2.sp, maxLines = 1)
+        VSpace(2.dp)
+        Row(verticalAlignment = Alignment.Top) {
+            T(tip.gesture, size = 16.sp, weight = FontWeight.Medium, maxLines = 1)
+            T("  →  ", size = 16.sp, color = c.dim, maxLines = 1)
+            T(tip.result, Modifier.weight(1f, fill = false), size = 16.sp, color = c.dim)
+        }
+    }
+}
+
+@Composable
+private fun Notice(text: String, strong: Boolean, lines: Int = 1, onClick: () -> Unit) {
     val c = LocalFocusColors.current
     T(
         text,
@@ -530,7 +570,8 @@ private fun Notice(text: String, strong: Boolean, onClick: () -> Unit) {
         size = 14.sp,
         color = if (strong) c.fg else c.dim,
         weight = if (strong) FontWeight.Medium else FontWeight.Normal,
-        maxLines = 1,
+        maxLines = lines,
+        lineHeight = 20.sp,
     )
 }
 
