@@ -178,7 +178,7 @@ fun HomeScreen(
     val sideCalendar = split && settings.splitSide == SplitSide.CALENDAR && settings.showCalendar
     val sideScreenTime = split && !sideCalendar
 
-    val favorites = remember(settings.favorites, apps) { settings.favorites.mapNotNull { key -> apps.firstOrNull { it.key == key } } }
+    val favorites = remember(settings.favorites, settings.homeAppsCount, apps) { settings.favorites.take(settings.homeAppsCount).mapNotNull { key -> apps.firstOrNull { it.key == key } } }
     // Fast apps whose allowance for today is gone are shown dimmed.
     val spent = remember(favorites, today, settings.appLimits, settings.timersEnabled, settings.socialDefaultMin, settings.gameDefaultMin) {
         favorites.filter { app ->

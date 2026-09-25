@@ -52,6 +52,7 @@ fun AppMenu(
     val favorites = settings.favorites.filter { key -> installed.any { it.key == key } }
     val isFavorite = app.key in favorites
     val isHidden = app.key in settings.hidden
+    val isPinned = app.key in settings.pinned
     val limit = Graph.limits.limitFor(app.packageName, settings)
     val used = today?.perApp?.get(app.packageName)
 
@@ -90,6 +91,10 @@ fun AppMenu(
                             onDismiss()
                         }
                     }
+                }
+                MenuRow(if (isPinned) "Unpin from top" else "Pin to top") {
+                    Graph.settings.update { s -> s.copy(pinned = if (isPinned) s.pinned - app.key else s.pinned + app.key) }
+                    onDismiss()
                 }
                 if (Graph.apps.canLimit(app.packageName)) {
                     MenuRow("App timer", detail = limit?.let { formatMinutes(it.minutes) + " a day" } ?: "Off") { sub = Sub.TIMER }
