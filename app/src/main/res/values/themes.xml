@@ -12,4 +12,10 @@
         <item name="android:colorAccent">@android:color/white</item>
         <item name="android:textCursorDrawable">@null</item>
     </style>
+    <!-- The home window must have a translucent surface or Compose's transparent pixels
+         still resolve to black instead of the system wallpaper. -->
+    <style name="Theme.Focus.Wallpaper" parent="Theme.Focus">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowShowWallpaper">true</item>
+    </style>
 </resources>

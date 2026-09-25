@@ -40,6 +40,15 @@ android {
         rootProject.file("keystore.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
     }
     signingConfigs {
+        create("ciDebug") {
+            val ciKey = System.getenv("FOCUS_CI_KEYSTORE_PATH")
+            if (!ciKey.isNullOrBlank()) {
+                storeFile = file(ciKey)
+                storePassword = System.getenv("FOCUS_CI_KEYSTORE_PASSWORD")
+                keyAlias = "focus-ci"
+                keyPassword = System.getenv("FOCUS_CI_KEYSTORE_PASSWORD")
+            }
+        }
         create("dist") {
             if (keystoreProperties.containsKey("storeFile")) {
                 storeFile = file(keystoreProperties.getProperty("storeFile"))
@@ -51,6 +60,11 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            if (!System.getenv("FOCUS_CI_KEYSTORE_PATH").isNullOrBlank()) {
+                signingConfig = signingConfigs.getByName("ciDebug")
+            }
+        }
         // Optimized build for the developer's own phone. Signed with the debug key, so it installs
         // over the debug build without losing data. Never hand this one to anybody else.
         release {

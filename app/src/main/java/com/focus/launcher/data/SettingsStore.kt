@@ -27,6 +27,24 @@ class SettingsStore(context: Context) {
         prefs.edit { putString(KEY, next.toJson().toString()) }
     }
 
+    /** Export only launcher preferences. System permissions and usage history are not part of this file. */
+    fun exportBackup(): String = value.toJson().toString(2)
+
+    /** Reject unrelated or newer files before replacing the current preferences. */
+    fun parseBackup(raw: String): Settings? = try {
+        val json = JSONObject(raw)
+        if (json.optInt("v", -1) !in 1..Settings.SCHEMA || !json.has("favorites") || !json.has("dark")) null
+        else Settings.fromJson(json)
+    } catch (_: Exception) {
+        null
+    }
+
+    @Synchronized
+    fun restoreBackup(settings: Settings) {
+        prefs.edit { putString(KEY, settings.toJson().toString()) }
+        _flow.value = settings
+    }
+
     private fun load(): Settings {
         val raw = prefs.getString(KEY, null) ?: return Settings()
         return try {

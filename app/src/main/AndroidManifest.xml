@@ -31,6 +31,7 @@
         <!-- The launcher itself: home page + app drawer. -->
         <activity
             android:name=".MainActivity"
+            android:theme="@style/Theme.Focus.Wallpaper"
             android:clearTaskOnLaunch="true"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:excludeFromRecents="true"

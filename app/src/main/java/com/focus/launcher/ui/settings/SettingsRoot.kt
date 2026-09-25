@@ -1,6 +1,10 @@
 package com.focus.launcher.ui.settings
 
 import android.content.Context
+import android.widget.Toast
+import java.io.ByteArrayOutputStream
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -40,6 +44,8 @@ import com.focus.launcher.BuildConfig
 import com.focus.launcher.Graph
 import com.focus.launcher.data.CalendarRepository
 import com.focus.launcher.data.Settings
+import com.focus.launcher.ui.components.FocusDialog
+import com.focus.launcher.ui.components.MenuRow
 import com.focus.launcher.ui.components.Label
 import com.focus.launcher.ui.components.SettingRow
 import com.focus.launcher.ui.components.T
@@ -109,6 +115,37 @@ fun SettingsRoot(settings: Settings, startRoute: String?, onExit: () -> Unit) {
         onPauseOrDispose { }
     }
     val apps by Graph.apps.apps.collectAsStateWithLifecycle()
+    var backupToRestore by remember { mutableStateOf<Settings?>(null) }
+    val exportSettings = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) {
+            val saved = runCatching {
+                context.contentResolver.openOutputStream(uri)?.use { stream ->
+                    stream.write(Graph.settings.exportBackup().toByteArray(Charsets.UTF_8))
+                } ?: error("Could not open destination")
+            }.isSuccess
+            Toast.makeText(context, if (saved) "Settings saved" else "Could not save settings", Toast.LENGTH_SHORT).show()
+        }
+    }
+    val importSettings = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            val parsed = runCatching {
+                context.contentResolver.openInputStream(uri)?.use { stream ->
+                    // A settings backup is small; reject unexpectedly large files.
+                    val output = ByteArrayOutputStream()
+                    val buffer = ByteArray(8192)
+                    while (true) {
+                        val count = stream.read(buffer)
+                        if (count < 0) break
+                        if (output.size() + count > 1_048_576) error("Backup too large")
+                        output.write(buffer, 0, count)
+                    }
+                    Graph.settings.parseBackup(output.toString(Charsets.UTF_8.name()))
+                }
+            }.getOrNull()
+            if (parsed == null) Toast.makeText(context, "Not a valid Focus settings backup", Toast.LENGTH_LONG).show()
+            else backupToRestore = parsed
+        }
+    }
 
     // Going deeper slides in from the right, going back from the left; both with a short fade.
     AnimatedContent(
@@ -140,13 +177,27 @@ fun SettingsRoot(settings: Settings, startRoute: String?, onExit: () -> Unit) {
                 stack.remove(Routes.WELCOME)
                 if (toSetup) go(Routes.SETUP) else onExit() // Start: to the home screen, where the tips are
             }
-            else -> MainPage(settings, apps.size, status, back, go)
+            else -> MainPage(settings, apps.size, status, back, go,
+                onBackup = { exportSettings.launch("focus-settings.json") },
+                onRestore = { importSettings.launch(arrayOf("application/json", "text/plain")) })
+        }
+    }
+    if (backupToRestore != null) {
+        FocusDialog(onDismiss = { backupToRestore = null }, title = "Restore settings?",
+            subtitle = "This replaces your current launcher preferences. System permissions and screen-time history stay on this phone.") {
+            MenuRow("Restore") {
+                backupToRestore?.let(Graph.settings::restoreBackup)
+                backupToRestore = null
+                Toast.makeText(context, "Settings restored", Toast.LENGTH_SHORT).show()
+            }
+            MenuRow("Cancel") { backupToRestore = null }
         }
     }
 }
 
 @Composable
-private fun MainPage(settings: Settings, appCount: Int, status: SetupStatus, onBack: () -> Unit, go: (String) -> Unit) {
+private fun MainPage(settings: Settings, appCount: Int, status: SetupStatus, onBack: () -> Unit, go: (String) -> Unit,
+    onBackup: () -> Unit, onRestore: () -> Unit) {
     Page("Focus", onBack) {
         VSpace(6.dp)
         SettingRow(
@@ -173,6 +224,9 @@ private fun MainPage(settings: Settings, appCount: Int, status: SetupStatus, onB
             value = if (settings.weeklyEnabled) "On" else "Off",
             onClick = { go(Routes.WEEKLY) },
         )
+        Section("Backup")
+        SettingRow("Save settings to a file", subtitle = "Export launcher preferences as JSON.", onClick = onBackup)
+        SettingRow("Restore settings from a file", subtitle = "Replace launcher preferences from a backup.", onClick = onRestore)
         Section("")
         SettingRow("About", onClick = { go(Routes.ABOUT) })
     }

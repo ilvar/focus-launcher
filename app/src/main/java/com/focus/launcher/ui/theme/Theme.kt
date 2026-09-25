@@ -1,6 +1,7 @@
 package com.focus.launcher.ui.theme
 
 import android.os.Build
+import android.graphics.PixelFormat
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -96,8 +97,13 @@ fun ComponentActivity.applyFocusWindow(dark: Boolean, hideStatusBar: Boolean = f
     val transparent = android.graphics.Color.TRANSPARENT
     val style = if (dark) SystemBarStyle.dark(transparent) else SystemBarStyle.light(transparent, transparent)
     enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
-    if (showWallpaper) window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
-    else window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+    if (showWallpaper) {
+        window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+        window.setFormat(PixelFormat.TRANSLUCENT)
+    } else {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+        window.setFormat(PixelFormat.OPAQUE)
+    }
     window.setBackgroundDrawable((if (showWallpaper) android.graphics.Color.TRANSPARENT else if (dark) android.graphics.Color.BLACK else android.graphics.Color.WHITE).toDrawable())
 
     preferHighestRefreshRate()
