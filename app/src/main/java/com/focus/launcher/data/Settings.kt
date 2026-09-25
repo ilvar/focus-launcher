@@ -27,7 +27,7 @@ enum class DrawerSort(val label: String) { ALPHA("A–Z"), MOST_USED("Most used"
 
 enum class TimeFormat(val label: String) { SYSTEM("Follow system"), H24("24-hour"), H12("12-hour") }
 
-const val MAX_FAVORITES = 8
+const val MAX_FAVORITES = 16
 
 /** Corner shortcuts that resolve to whatever the phone's default dialer / camera is. */
 const val SHORTCUT_PHONE = "auto:phone"
@@ -245,7 +245,8 @@ data class Settings(
                 noteLink = o.optString("noteLink", d.noteLink),
                 homeAlign = enumOr(o.optString("homeAlign"), d.homeAlign),
                 favorites = o.optJSONArray("favorites").strings().take(MAX_FAVORITES),
-                homeAppsCount = o.optInt("homeAppsCount", d.homeAppsCount).coerceIn(0, MAX_FAVORITES),
+                homeAppsCount = o.optInt("homeAppsCount", d.homeAppsCount).coerceIn(0,
+                    if (o.optInt("fastAppColumns", d.fastAppColumns) == 2) MAX_FAVORITES else 8),
                 fastAppColumns = o.optInt("fastAppColumns", d.fastAppColumns).coerceIn(1, 2),
                 showShortcuts = o.optBoolean("showShortcuts", d.showShortcuts),
                 leftShortcut = o.optString("leftShortcut", d.leftShortcut),

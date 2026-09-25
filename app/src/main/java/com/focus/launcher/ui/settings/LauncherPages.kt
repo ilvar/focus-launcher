@@ -183,8 +183,10 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
 
     when (dialog) {
         HomeDialog.NONE -> Unit
-        HomeDialog.COUNT -> ChoiceDialog("Apps on home screen", (0..MAX_FAVORITES).map { it to it.toString() }, settings.homeAppsCount, close) { v -> update { it.copy(homeAppsCount = v) } }
-        HomeDialog.COLUMNS -> ChoiceDialog("Fast app columns", listOf(1 to "One", 2 to "Two"), settings.fastAppColumns, close) { v -> update { it.copy(fastAppColumns = v) } }
+        HomeDialog.COUNT -> ChoiceDialog("Apps on home screen", (0..(if (settings.fastAppColumns == 2) MAX_FAVORITES else 8)).map { it to it.toString() }, settings.homeAppsCount, close) { v -> update { it.copy(homeAppsCount = v) } }
+        HomeDialog.COLUMNS -> ChoiceDialog("Fast app columns", listOf(1 to "One", 2 to "Two"), settings.fastAppColumns, close) { v ->
+            update { it.copy(fastAppColumns = v, homeAppsCount = it.homeAppsCount.coerceAtMost(if (v == 1) 8 else MAX_FAVORITES)) }
+        }
         HomeDialog.CLOCK -> ChoiceDialog("Clock style", ClockStyle.entries.map { it to it.label }, settings.clockStyle, close) { v -> update { it.copy(clockStyle = v) } }
         HomeDialog.SPLIT_SIDE -> ChoiceDialog(
             "Next to the clock",
