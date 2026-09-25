@@ -24,6 +24,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.focus.launcher.data.CALENDAR_ALL
+import com.focus.launcher.data.CALENDAR_AUTO
+import com.focus.launcher.data.CALENDAR_SELECTED
 import com.focus.launcher.data.CalendarInfo
 import com.focus.launcher.ui.components.FocusDialog
 import com.focus.launcher.ui.components.Hairline
@@ -41,10 +43,11 @@ import com.focus.launcher.ui.theme.LocalFocusColors
 internal fun CalendarPickerDialog(
     calendars: List<CalendarInfo>,
     upcomingCounts: Map<String, Int>,
-    selectedKey: String?,
+    selectedKey: String,
+    selectedKeys: Set<String>,
     workProfileBlocked: Boolean,
     onDismiss: () -> Unit,
-    onPick: (String) -> Unit,
+    onPick: (String, Set<String>) -> Unit,
 ) {
     val c = LocalFocusColors.current
     var query by remember { mutableStateOf(TextFieldValue("")) }
@@ -54,7 +57,7 @@ internal fun CalendarPickerDialog(
         else calendars.filter { it.name.contains(q, ignoreCase = true) || it.account.contains(q, ignoreCase = true) }
     }
 
-    FocusDialog(onDismiss, title = "Calendar to show", subtitle = "One calendar at a time. Search by calendar or account name.", tall = true) {
+    FocusDialog(onDismiss, title = "Calendars to show", subtitle = "Tap calendars to include them. Changes save immediately.", tall = true) {
         UnderlinedField(
             value = query,
             onValueChange = { query = it },
@@ -83,10 +86,11 @@ internal fun CalendarPickerDialog(
                     name = calendar.name,
                     account = calendar.account.takeIf { it.isNotEmpty() && it != calendar.name },
                     detail = if (count > 0) "$count upcoming" else "empty",
-                    selected = calendar.key == selectedKey,
+                    selected = if (selectedKey == CALENDAR_SELECTED) calendar.key in selectedKeys else calendar.key == selectedKey,
                 ) {
-                    onPick(calendar.key)
-                    onDismiss()
+                    val current = if (selectedKey == CALENDAR_SELECTED) selectedKeys else if (selectedKey.startsWith("p:") || selectedKey.startsWith("w:")) setOf(selectedKey) else emptySet()
+                    val next = if (calendar.key in current) current - calendar.key else current + calendar.key
+                    onPick(if (next.isEmpty()) CALENDAR_AUTO else CALENDAR_SELECTED, next)
                 }
             }
             if (shown.isEmpty()) {
@@ -95,10 +99,14 @@ internal fun CalendarPickerDialog(
                 }
             }
             if (query.text.isBlank()) {
+                item(key = "auto") {
+                    CalendarRow("Automatically choose one", null, null, selectedKey == CALENDAR_AUTO) {
+                        onPick(CALENDAR_AUTO, emptySet())
+                    }
+                }
                 item(key = "all") {
                     CalendarRow("All calendars together", account = null, detail = null, selected = selectedKey == CALENDAR_ALL) {
-                        onPick(CALENDAR_ALL)
-                        onDismiss()
+                        onPick(CALENDAR_ALL, emptySet())
                     }
                 }
             }

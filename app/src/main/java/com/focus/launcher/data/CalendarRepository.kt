@@ -17,6 +17,7 @@ import java.time.ZoneOffset
 /** [Settings.calendarKey] values that are not a real calendar; real ones are [CalendarInfo.key]. */
 const val CALENDAR_AUTO = "auto"
 const val CALENDAR_ALL = "all"
+const val CALENDAR_SELECTED = "selected"
 
 data class CalEvent(
     val title: String,
@@ -66,14 +67,20 @@ object CalendarRepository {
      * comes back to its home screen a hundred times a day, so the answer is kept until the
      * calendar actually changes ([invalidate]), an event in it ends, or it is ten minutes old.
      */
-    suspend fun agenda(context: Context, key: String): Agenda {
+    suspend fun agenda(context: Context, key: String, selectedKeys: Set<String> = emptySet(), max: Int = 3): Agenda {
         val now = System.currentTimeMillis()
+        val cacheKey = "$key|${selectedKeys.sorted().joinToString(",")}|$max"
         cachedAgenda?.let { cached ->
-            val fresh = cached.key == key && now - cached.loadedAt < AGENDA_MAX_AGE_MS && cached.events.none { !it.allDay && it.end < now }
+            val fresh = cached.key == cacheKey && now - cached.loadedAt < AGENDA_MAX_AGE_MS && cached.events.none { !it.allDay && it.end < now }
             if (fresh) return cached
         }
-        val calendar = choose(context, key, calendars(context))
-        return Agenda(key, calendar, upcoming(context, calendar), now).also { cachedAgenda = it }
+        val available = calendars(context)
+        val selected = if (key == CALENDAR_SELECTED) available.filter { it.key in selectedKeys } else emptyList()
+        val calendar = if (key == CALENDAR_SELECTED) selected.singleOrNull() else choose(context, key, available)
+        val events = if (key == CALENDAR_SELECTED) {
+            selected.flatMap { upcoming(context, it, max) }.sortedBy { it.begin }.take(max)
+        } else upcoming(context, calendar, max)
+        return Agenda(cacheKey, calendar, events, now).also { cachedAgenda = it }
     }
 
     private const val AGENDA_MAX_AGE_MS = 10 * 60_000L

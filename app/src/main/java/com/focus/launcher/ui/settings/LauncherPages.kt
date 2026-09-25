@@ -119,15 +119,19 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
         Section("Sections")
         ToggleRow(
             "Calendar", settings.showCalendar,
-            subtitle = "Your next events, from one calendar. Emoji in titles are left out.",
+            subtitle = "Your next events from the calendars you choose. Emoji in titles are left out.",
         ) { v ->
             update { it.copy(showCalendar = v) }
             if (v && !CalendarRepository.hasAccess(context)) askCalendar.launch(Manifest.permission.READ_CALENDAR)
         }
         SettingRow(
-            "Calendar to show",
-            subtitle = "Only one is shown at a time. Search the list to find the one you want.",
-            value = if (settings.calendarKey == CALENDAR_ALL) "All" else shownCalendar?.shortName ?: "None found",
+            "Calendars to show",
+            subtitle = "Select several calendars, or let Focus choose one.",
+            value = when (settings.calendarKey) {
+                CALENDAR_ALL -> "All"
+                com.focus.launcher.data.CALENDAR_SELECTED -> "${settings.calendarKeys.size} selected"
+                else -> shownCalendar?.shortName ?: "None found"
+            },
             enabled = settings.showCalendar && calendars.isNotEmpty(),
             onClick = { dialog = HomeDialog.CALENDAR },
         )
@@ -138,6 +142,8 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
                     "account, it shows up here like any other calendar.",
             )
         }
+        ToggleRow("Compact calendar", settings.compactCalendar, enabled = settings.showCalendar,
+            subtitle = "Smaller text and more upcoming events.") { v -> update { it.copy(compactCalendar = v) } }
         ToggleRow(
             "Week strip", settings.showWeekStrip, enabled = settings.showCalendar,
             subtitle = "Monday to Sunday with today marked, above the events.",
@@ -202,10 +208,11 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
         HomeDialog.CALENDAR -> CalendarPickerDialog(
             calendars = calendars,
             upcomingCounts = calendarCounts,
-            selectedKey = if (settings.calendarKey == CALENDAR_ALL) CALENDAR_ALL else shownCalendar?.key,
+            selectedKey = settings.calendarKey,
+            selectedKeys = settings.calendarKeys,
             workProfileBlocked = workBlocked,
             onDismiss = close,
-            onPick = { key -> update { it.copy(calendarKey = key) } },
+            onPick = { key, keys -> update { it.copy(calendarKey = key, calendarKeys = keys) } },
         )
         HomeDialog.TIME_FORMAT -> ChoiceDialog("Time format", TimeFormat.entries.map { it to it.label }, settings.timeFormat, close) { v -> update { it.copy(timeFormat = v) } }
         HomeDialog.ALIGN -> ChoiceDialog("Alignment", HomeAlign.entries.map { it to it.label }, settings.homeAlign, close) { v -> update { it.copy(homeAlign = v) } }

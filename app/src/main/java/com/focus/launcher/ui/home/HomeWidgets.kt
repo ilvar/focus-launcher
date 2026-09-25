@@ -388,6 +388,7 @@ fun SplitCalendar(
     onLongPress: () -> Unit,
     onRequestAccess: () -> Unit,
     maxEvents: Int = 2,
+    compact: Boolean = false,
 ) {
     val c = LocalFocusColors.current
     Column(
@@ -400,9 +401,9 @@ fun SplitCalendar(
             !hasAccess -> T("Show upcoming events  →", size = 14.sp, color = c.dim, maxLines = 2, lineHeight = 20.sp)
             events.isEmpty() -> T("Nothing in the next 7 days", size = 14.sp, color = c.dim, maxLines = 2, lineHeight = 20.sp)
             else -> events.take(maxEvents).forEachIndexed { i, event ->
-                if (i > 0) VSpace(8.dp)
-                T(eventWhen(event, today, use24h), size = 12.sp, color = c.dim, maxLines = 1)
-                T(event.title, size = 15.sp, maxLines = 1)
+                if (i > 0) VSpace(if (compact) 3.dp else 8.dp)
+                T(eventWhen(event, today, use24h), size = (if (compact) 10 else 12).sp, color = c.dim, maxLines = 1)
+                T(event.title, size = (if (compact) 12 else 15).sp, maxLines = 1)
             }
         }
     }
@@ -827,6 +828,7 @@ fun CalendarWidget(
     onRequestAccess: () -> Unit,
     modifier: Modifier = Modifier,
     maxEvents: Int = 3,
+    compact: Boolean = false,
     calendarName: String? = null,
     showWeekStrip: Boolean = false,
 ) {
@@ -836,7 +838,7 @@ fun CalendarWidget(
             Label("Calendar", Modifier.weight(1f), color = c.fg)
             if (calendarName != null && hasAccess) T(calendarName, size = 12.sp, color = c.faint, maxLines = 1)
         }
-        VSpace(10.dp)
+        VSpace(if (compact) 5.dp else 10.dp)
         if (showWeekStrip) {
             WeekStrip(today, mondayStart)
             VSpace(10.dp)
@@ -845,9 +847,9 @@ fun CalendarWidget(
             !hasAccess -> T("Show upcoming events  →", Modifier.clickable(onClick = onRequestAccess).padding(vertical = 4.dp), size = 14.sp, color = c.dim)
             events.isEmpty() -> T("Nothing in the next 7 days", size = 14.sp, color = c.dim)
             else -> for (event in events.take(maxEvents)) {
-                Row(Modifier.padding(vertical = 3.dp)) {
-                    T(eventWhen(event, today, use24h), Modifier.width(118.dp), size = 14.sp, color = c.dim, maxLines = 1)
-                    T(event.title, Modifier.weight(1f), size = 14.sp, maxLines = 1)
+                Row(Modifier.padding(vertical = if (compact) 1.dp else 3.dp)) {
+                    T(eventWhen(event, today, use24h), Modifier.width(if (compact) 100.dp else 118.dp), size = (if (compact) 11 else 14).sp, color = c.dim, maxLines = 1)
+                    T(event.title, Modifier.weight(1f), size = (if (compact) 11 else 14).sp, maxLines = 1)
                 }
             }
         }
