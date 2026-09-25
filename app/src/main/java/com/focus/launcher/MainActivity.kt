@@ -9,11 +9,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -40,6 +42,8 @@ import com.focus.launcher.ui.drawer.DrawerScreen
 import com.focus.launcher.ui.home.HomeScreen
 import com.focus.launcher.ui.launchApp
 import com.focus.launcher.ui.openWebSearch
+import com.focus.launcher.ui.theme.BlackTheme
+import com.focus.launcher.ui.theme.LocalFocusColors
 import com.focus.launcher.ui.theme.FocusTheme
 import com.focus.launcher.ui.theme.applyFocusWindow
 import com.focus.launcher.util.Perms
@@ -56,7 +60,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Graph.settings.value.let { applyFocusWindow(it.dark, it.hideStatusBar) }
+        Graph.settings.value.let { applyFocusWindow(it.dark || it.showWallpaper, it.hideStatusBar, it.showWallpaper) }
         // First start ever: the introduction, once. Marked as seen here already, so that pressing
         // Home in the middle of it never brings it back.
         if (savedInstanceState == null && !Graph.state.tutorialSeen) {
@@ -65,8 +69,10 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             val settings by Graph.settings.flow.collectAsStateWithLifecycle()
-            LaunchedEffect(settings.dark, settings.hideStatusBar) { applyFocusWindow(settings.dark, settings.hideStatusBar) }
-            FocusTheme(settings) { Launcher(settings, homePresses) }
+            LaunchedEffect(settings.dark, settings.hideStatusBar, settings.showWallpaper) {
+                applyFocusWindow(settings.dark || settings.showWallpaper, settings.hideStatusBar, settings.showWallpaper)
+            }
+            FocusTheme(settings, transparentBackground = settings.showWallpaper) { Launcher(settings, homePresses) }
         }
     }
 
@@ -196,6 +202,7 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
             },
         ) {
             if (page == 0) {
+                CompositionLocalProvider(LocalFocusColors provides if (settings.showWallpaper) BlackTheme else LocalFocusColors.current) {
                 HomeScreen(
                     settings = settings,
                     apps = apps,
@@ -213,7 +220,9 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
                     onOpenSettings = { route -> context.startActivity(SettingsActivity.intent(context, route)) },
                     onOpenReview = { week -> context.startActivity(ReviewActivity.intent(context, week)) },
                 )
+                }
             } else {
+                Box(Modifier.fillMaxSize().background(LocalFocusColors.current.bg)) {
                 DrawerScreen(
                     settings = settings,
                     apps = apps,
@@ -228,6 +237,7 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
                     onAppMenu = { Graph.state.did(Tip.APP_MENU); menuApp = it },
                     hint = tip?.takeIf { it == Tip.APP_MENU }?.let { it.gesture + "  →  " + it.result },
                 )
+                }
             }
         }
     }

@@ -53,6 +53,8 @@ data class Settings(
     val textScale: Float = 1f,
     val hideStatusBar: Boolean = false,
     val launchAnimation: LaunchAnimation = LaunchAnimation.FAST,
+    val showWallpaper: Boolean = false,
+    val wallpaperBrightness: Int = 40,
 
     // Home
     val clockStyle: ClockStyle = ClockStyle.SPLIT,
@@ -86,6 +88,7 @@ data class Settings(
     val homeAlign: HomeAlign = HomeAlign.CENTER,
     val favorites: List<String> = emptyList(),
     val homeAppsCount: Int = 5,
+    val fastAppColumns: Int = 1,
     val showShortcuts: Boolean = true,
     val leftShortcut: String = SHORTCUT_PHONE,
     val rightShortcut: String = SHORTCUT_CAMERA,
@@ -139,6 +142,8 @@ data class Settings(
         put("textScale", textScale.toDouble())
         put("hideStatusBar", hideStatusBar)
         put("launchAnimation", launchAnimation.name)
+        put("showWallpaper", showWallpaper)
+        put("wallpaperBrightness", wallpaperBrightness)
 
         put("clockStyle", clockStyle.name)
         put("splitSide", splitSide.name)
@@ -159,6 +164,7 @@ data class Settings(
         put("homeAlign", homeAlign.name)
         put("favorites", JSONArray(favorites))
         put("homeAppsCount", homeAppsCount)
+        put("fastAppColumns", fastAppColumns)
         put("showShortcuts", showShortcuts)
         put("leftShortcut", leftShortcut)
         put("rightShortcut", rightShortcut)
@@ -207,6 +213,8 @@ data class Settings(
                 textScale = o.optDouble("textScale", d.textScale.toDouble()).toFloat().coerceIn(0.8f, 1.4f),
                 hideStatusBar = o.optBoolean("hideStatusBar", d.hideStatusBar),
                 launchAnimation = enumOr(o.optString("launchAnimation"), d.launchAnimation),
+                showWallpaper = o.optBoolean("showWallpaper", d.showWallpaper),
+                wallpaperBrightness = o.optInt("wallpaperBrightness", d.wallpaperBrightness).coerceIn(0, 100),
 
                 // Schema 2 made the split clock the default, at the owner's request. A ring stored by an
                 // older version was the old default, not a choice, so it moves along once; the ring stays
@@ -238,6 +246,7 @@ data class Settings(
                 homeAlign = enumOr(o.optString("homeAlign"), d.homeAlign),
                 favorites = o.optJSONArray("favorites").strings().take(MAX_FAVORITES),
                 homeAppsCount = o.optInt("homeAppsCount", d.homeAppsCount).coerceIn(0, MAX_FAVORITES),
+                fastAppColumns = o.optInt("fastAppColumns", d.fastAppColumns).coerceIn(1, 2),
                 showShortcuts = o.optBoolean("showShortcuts", d.showShortcuts),
                 leftShortcut = o.optString("leftShortcut", d.leftShortcut),
                 rightShortcut = o.optString("rightShortcut", d.rightShortcut),

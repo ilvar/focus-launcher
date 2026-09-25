@@ -1,6 +1,7 @@
 package com.focus.launcher.ui.theme
 
 import android.os.Build
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -73,7 +74,7 @@ val LocalFocusFont = staticCompositionLocalOf<FontFamily> { FontFamily.Default }
 val LocalTextScale = staticCompositionLocalOf { 1f }
 
 @Composable
-fun FocusTheme(settings: Settings, content: @Composable () -> Unit) {
+fun FocusTheme(settings: Settings, transparentBackground: Boolean = false, content: @Composable () -> Unit) {
     val colors = if (settings.dark) BlackTheme else WhiteTheme
     val font = when (settings.font) {
         FontChoice.SANS -> FontFamily.Default
@@ -86,16 +87,18 @@ fun FocusTheme(settings: Settings, content: @Composable () -> Unit) {
         LocalTextScale provides settings.textScale,
         LocalIndication provides PressIndication,
     ) {
-        Box(Modifier.fillMaxSize().background(colors.bg)) { content() }
+        Box(Modifier.fillMaxSize().then(if (transparentBackground) Modifier else Modifier.background(colors.bg))) { content() }
     }
 }
 
 /** Transparent bars over a black (or white) window, and the optional hidden status bar. */
-fun ComponentActivity.applyFocusWindow(dark: Boolean, hideStatusBar: Boolean = false) {
+fun ComponentActivity.applyFocusWindow(dark: Boolean, hideStatusBar: Boolean = false, showWallpaper: Boolean = false) {
     val transparent = android.graphics.Color.TRANSPARENT
     val style = if (dark) SystemBarStyle.dark(transparent) else SystemBarStyle.light(transparent, transparent)
     enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
-    window.setBackgroundDrawable((if (dark) android.graphics.Color.BLACK else android.graphics.Color.WHITE).toDrawable())
+    if (showWallpaper) window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+    else window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+    window.setBackgroundDrawable((if (showWallpaper) android.graphics.Color.TRANSPARENT else if (dark) android.graphics.Color.BLACK else android.graphics.Color.WHITE).toDrawable())
 
     preferHighestRefreshRate()
 

@@ -27,6 +27,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -237,7 +239,7 @@ fun HomeScreen(
         val available = (maxHeight - bars.calculateTopPadding() - bars.calculateBottomPadding()).value
         val textScale = LocalDensity.current.fontScale * settings.textScale
         val notices = (if (setupIncomplete) 1 else 0) + (if (pendingReview != null) 1 else 0) + (if (tip != null) 3 else 0) // a framed tip is about three notice lines tall
-        val rowCount = favorites.size.coerceAtLeast(2) // the empty-state hint is two lines tall
+        val rowCount = (if (settings.fastAppColumns == 2) (favorites.size + 1) / 2 else favorites.size).coerceAtLeast(2) // the empty-state hint is two lines tall
         val eventCount = events.size
         val preferredRing = (maxHeight * if (settings.showCalendar) 0.25f else 0.29f).coerceIn(140.dp, 236.dp)
 
@@ -290,6 +292,10 @@ fun HomeScreen(
         val ring = fit.ring.coerceAtLeast(132.dp)
         val favoriteSize = fit.textSp.sp
         val favoritePadding = fit.padDp.dp
+
+        if (settings.showWallpaper) {
+            Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 1f - settings.wallpaperBrightness / 100f)))
+        }
 
         Column(
             Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 18.dp),
@@ -423,23 +429,29 @@ fun HomeScreen(
                     size = 15.sp, color = c.dim, align = settings.homeAlign.text(), lineHeight = 23.sp,
                 )
             } else {
-                for (app in favorites) {
-                    Row(
-                        Modifier
-                            .press(onLongClick = { onAppMenu(app) }) { onLaunch(app) }
-                            .padding(vertical = favoritePadding, horizontal = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        T(
-                            app.label,
-                            Modifier.weight(1f, fill = false).then(if (hasColourGlyphs(app.label)) Modifier.monochrome() else Modifier),
-                            size = favoriteSize,
-                            color = if (app.key in spent) c.faint else c.fg,
-                            weight = FontWeight.Normal,
-                            maxLines = 1,
-                        )
-                        // Same marker as in the drawer, sized with the name next to it.
-                        if (app.isWorkProfile) WorkBadge(Modifier.padding(start = 10.dp), side = (favoriteSize.value * 0.62f).dp)
+                val columns = settings.fastAppColumns.coerceIn(1, 2)
+                for (appsInRow in favorites.chunked(columns)) {
+                    Row(if (columns == 2) Modifier.fillMaxWidth() else Modifier, verticalAlignment = Alignment.CenterVertically) {
+                        for (app in appsInRow) {
+                            Row(
+                                Modifier
+                                    .then(if (columns == 2) Modifier.weight(1f) else Modifier)
+                                    .press(onLongClick = { onAppMenu(app) }) { onLaunch(app) }
+                                    .padding(vertical = favoritePadding, horizontal = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                T(
+                                    app.label,
+                                    Modifier.weight(1f, fill = false).then(if (hasColourGlyphs(app.label)) Modifier.monochrome() else Modifier),
+                                    size = favoriteSize,
+                                    color = if (app.key in spent) c.faint else c.fg,
+                                    weight = FontWeight.Normal,
+                                    maxLines = 1,
+                                )
+                                if (app.isWorkProfile) WorkBadge(Modifier.padding(start = 6.dp), side = (favoriteSize.value * 0.62f).dp)
+                            }
+                        }
+                        if (appsInRow.size < columns) Spacer(Modifier.weight(1f))
                     }
                 }
             }

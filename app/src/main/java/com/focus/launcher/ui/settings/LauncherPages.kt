@@ -57,7 +57,7 @@ private fun update(transform: (Settings) -> Settings) = Graph.settings.update(tr
 
 // ---- Home screen -----------------------------------------------------------------------------
 
-private enum class HomeDialog { NONE, CLOCK, SPLIT_SIDE, RING, TAP, TIME_FORMAT, ALIGN, COUNT, LEFT, RIGHT, CALENDAR, MUSIC_APP, NOTE_APP }
+private enum class HomeDialog { NONE, CLOCK, SPLIT_SIDE, RING, TAP, TIME_FORMAT, ALIGN, COUNT, COLUMNS, LEFT, RIGHT, CALENDAR, MUSIC_APP, NOTE_APP }
 
 @Composable
 internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Unit, go: (String) -> Unit) {
@@ -171,6 +171,7 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
 
         Section("Fast apps")
         SettingRow("Apps on home screen", value = "${settings.homeAppsCount}", onClick = { dialog = HomeDialog.COUNT })
+        SettingRow("Fast app columns", value = "${settings.fastAppColumns}", onClick = { dialog = HomeDialog.COLUMNS })
         SettingRow("Fast apps", subtitle = "Choose and order your home apps.", value = "$favoriteCount / $MAX_FAVORITES", onClick = { go(Routes.FAST_APPS) })
         SettingRow("Alignment", value = settings.homeAlign.label, onClick = { dialog = HomeDialog.ALIGN })
 
@@ -183,6 +184,7 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
     when (dialog) {
         HomeDialog.NONE -> Unit
         HomeDialog.COUNT -> ChoiceDialog("Apps on home screen", (0..MAX_FAVORITES).map { it to it.toString() }, settings.homeAppsCount, close) { v -> update { it.copy(homeAppsCount = v) } }
+        HomeDialog.COLUMNS -> ChoiceDialog("Fast app columns", listOf(1 to "One", 2 to "Two"), settings.fastAppColumns, close) { v -> update { it.copy(fastAppColumns = v) } }
         HomeDialog.CLOCK -> ChoiceDialog("Clock style", ClockStyle.entries.map { it to it.label }, settings.clockStyle, close) { v -> update { it.copy(clockStyle = v) } }
         HomeDialog.SPLIT_SIDE -> ChoiceDialog(
             "Next to the clock",
@@ -320,7 +322,7 @@ internal fun HiddenAppsPage(settings: Settings, apps: List<AppEntry>, onBack: ()
 
 // ---- Appearance ------------------------------------------------------------------------------
 
-private enum class LookDialog { NONE, THEME, FONT, SIZE, LAUNCH }
+private enum class LookDialog { NONE, THEME, FONT, SIZE, LAUNCH, BRIGHTNESS }
 
 private val TEXT_SIZES = listOf(0.9f to "Small", 1f to "Default", 1.1f to "Large", 1.2f to "Larger")
 
@@ -337,10 +339,14 @@ internal fun AppearancePage(settings: Settings, onBack: () -> Unit) {
         SettingRow("Text size", value = TEXT_SIZES.firstOrNull { it.first == settings.textScale }?.second ?: "Default", onClick = { dialog = LookDialog.SIZE })
 
         Section("Screen")
+        ToggleRow("Show wallpaper", settings.showWallpaper, subtitle = "Use the system wallpaper behind the home screen.") { v -> update { it.copy(showWallpaper = v) } }
         SettingRow("Choose wallpaper", subtitle = "Open your phone’s wallpaper picker.", onClick = {
-            try { context.startActivity(Intent(Intent.ACTION_SET_WALLPAPER)) }
+            try { context.startActivity(Intent(Intent.ACTION_SET_WALLPAPER)); update { it.copy(showWallpaper = true) } }
             catch (_: ActivityNotFoundException) { Toast.makeText(context, "No wallpaper picker available", Toast.LENGTH_SHORT).show() }
         })
+        SettingRow("Wallpaper brightness", value = "${settings.wallpaperBrightness}%", enabled = settings.showWallpaper,
+            subtitle = "Higher values show more of the image; lower values keep text easier to read.",
+            onClick = { dialog = LookDialog.BRIGHTNESS })
         SettingRow(
             "Opening apps",
             subtitle = "Fast puts the app over the whole screen from its first frame. System default uses your phone's own animation.",
@@ -352,6 +358,7 @@ internal fun AppearancePage(settings: Settings, onBack: () -> Unit) {
 
     when (dialog) {
         LookDialog.NONE -> Unit
+        LookDialog.BRIGHTNESS -> ChoiceDialog("Wallpaper brightness", (0..100 step 10).map { it to "$it%" }, settings.wallpaperBrightness, close) { v -> update { it.copy(wallpaperBrightness = v) } }
         LookDialog.THEME -> ChoiceDialog("Theme", listOf(true to "Black", false to "White"), settings.dark, close) { v -> update { it.copy(dark = v) } }
         LookDialog.FONT -> ChoiceDialog("Typeface", FontChoice.entries.map { it to it.label }, settings.font, close) { v -> update { it.copy(font = v) } }
         LookDialog.LAUNCH -> ChoiceDialog("Opening apps", LaunchAnimation.entries.map { it to it.label }, settings.launchAnimation, close) { v -> update { it.copy(launchAnimation = v) } }
