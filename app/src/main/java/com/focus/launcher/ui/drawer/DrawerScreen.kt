@@ -145,23 +145,25 @@ fun DrawerScreen(
             DrawerSort.RECENT -> inProfile.sortedByDescending { if (it.isWorkProfile) 0L else stats[it.packageName]?.second ?: 0L }
         }
     }
+    val pinnedApps = remember(sorted, settings.pinned) { sorted.filter { it.key in settings.pinned } }
     // Search ignores tab and sort: it looks through both profiles and ranks by match.
     val results = remember(visible, sorted, query, searchNames) {
-        if (query.isBlank()) sorted else searchApps(visible, query, searchNames)
+        if (query.isBlank()) sorted.filterNot { it.key in settings.pinned } else searchApps(visible, query, searchNames)
     }
-    val recent = remember(inProfile, settings.showRecentInstalls) {
+    val recent = remember(inProfile, settings.showRecentInstalls, settings.pinned) {
         if (!settings.showRecentInstalls) emptyList()
         else {
             val cutoff = System.currentTimeMillis() - DAY_MS
-            inProfile.filter { it.firstInstallTime >= cutoff && it.packageName != Graph.app.packageName }
+            inProfile.filter { it.firstInstallTime >= cutoff && it.packageName != Graph.app.packageName && it.key !in settings.pinned }
                 .sortedByDescending { it.firstInstallTime }
         }
     }
     // Number of list items that come before the alphabetical block (section labels + recent apps).
-    val leadingItems = if (!searching && recent.isNotEmpty()) recent.size + 2 else 0
+    val leadingItems = (if (pinnedApps.isNotEmpty()) pinnedApps.size + 1 else 0) +
+        (if (recent.isNotEmpty()) recent.size + 2 else 0)
     // Letters only mean something in an alphabetical list.
-    val letters = remember(sorted, sort, leadingItems) {
-        if (sort == DrawerSort.ALPHA) letterIndex(sorted, leadingItems) else emptyList()
+    val letters = remember(results, sort, leadingItems, searching) {
+        if (sort == DrawerSort.ALPHA && !searching) letterIndex(results, leadingItems) else emptyList()
     }
 
     // The keyboard only ever opens on purpose: by the "open right away" setting, by swiping up on
@@ -250,6 +252,12 @@ fun DrawerScreen(
             val showIndex = !searching && sort == DrawerSort.ALPHA && letters.size > 5 && maxHeight > (letters.size * 15).dp
 
             LazyColumn(Modifier.fillMaxSize(), state = listState) {
+                if (!searching && pinnedApps.isNotEmpty()) {
+                    item(key = "label:pinned") { SectionLabel("Pinned apps") }
+                    items(pinnedApps, key = { "pinned:" + it.key }) { app ->
+                        AppRow(app, settings, today, showIndex, onLaunch, onAppMenu)
+                    }
+                }
                 if (!searching && recent.isNotEmpty()) {
                     item(key = "label:recent") { SectionLabel("Installed in the last 24 hours") }
                     items(recent, key = { "recent:" + it.key }) { app ->

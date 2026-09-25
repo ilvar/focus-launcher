@@ -1,5 +1,8 @@
 package com.focus.launcher.ui.settings
 
+import android.content.Intent
+import android.content.ActivityNotFoundException
+import android.widget.Toast
 import com.focus.launcher.ui.home.MusicAppPicker
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -54,7 +57,7 @@ private fun update(transform: (Settings) -> Settings) = Graph.settings.update(tr
 
 // ---- Home screen -----------------------------------------------------------------------------
 
-private enum class HomeDialog { NONE, CLOCK, SPLIT_SIDE, RING, TAP, TIME_FORMAT, ALIGN, LEFT, RIGHT, CALENDAR, MUSIC_APP, NOTE_APP }
+private enum class HomeDialog { NONE, CLOCK, SPLIT_SIDE, RING, TAP, TIME_FORMAT, ALIGN, COUNT, LEFT, RIGHT, CALENDAR, MUSIC_APP, NOTE_APP }
 
 @Composable
 internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Unit, go: (String) -> Unit) {
@@ -167,7 +170,8 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
         )
 
         Section("Fast apps")
-        SettingRow("Fast apps", subtitle = "Up to $MAX_FAVORITES apps, one tap from the home screen.", value = "$favoriteCount / $MAX_FAVORITES", onClick = { go(Routes.FAST_APPS) })
+        SettingRow("Apps on home screen", value = "${settings.homeAppsCount}", onClick = { dialog = HomeDialog.COUNT })
+        SettingRow("Fast apps", subtitle = "Choose and order your home apps.", value = "$favoriteCount / $MAX_FAVORITES", onClick = { go(Routes.FAST_APPS) })
         SettingRow("Alignment", value = settings.homeAlign.label, onClick = { dialog = HomeDialog.ALIGN })
 
         Section("Corner shortcuts")
@@ -178,6 +182,7 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
 
     when (dialog) {
         HomeDialog.NONE -> Unit
+        HomeDialog.COUNT -> ChoiceDialog("Apps on home screen", (0..MAX_FAVORITES).map { it to it.toString() }, settings.homeAppsCount, close) { v -> update { it.copy(homeAppsCount = v) } }
         HomeDialog.CLOCK -> ChoiceDialog("Clock style", ClockStyle.entries.map { it to it.label }, settings.clockStyle, close) { v -> update { it.copy(clockStyle = v) } }
         HomeDialog.SPLIT_SIDE -> ChoiceDialog(
             "Next to the clock",
@@ -255,7 +260,7 @@ internal fun FastAppsPage(settings: Settings, apps: List<AppEntry>, onBack: () -
         if (favorites.size < MAX_FAVORITES) {
             SettingRow("Add an app", value = "${favorites.size} / $MAX_FAVORITES", onClick = { adding = true })
         } else {
-            Note("That's the maximum. Five is plenty.")
+            Note("That's the maximum.")
         }
     }
 
@@ -321,6 +326,7 @@ private val TEXT_SIZES = listOf(0.9f to "Small", 1f to "Default", 1.1f to "Large
 
 @Composable
 internal fun AppearancePage(settings: Settings, onBack: () -> Unit) {
+    val context = LocalContext.current
     var dialog by remember { mutableStateOf(LookDialog.NONE) }
     val close = { dialog = LookDialog.NONE }
 
@@ -331,6 +337,10 @@ internal fun AppearancePage(settings: Settings, onBack: () -> Unit) {
         SettingRow("Text size", value = TEXT_SIZES.firstOrNull { it.first == settings.textScale }?.second ?: "Default", onClick = { dialog = LookDialog.SIZE })
 
         Section("Screen")
+        SettingRow("Choose wallpaper", subtitle = "Open your phone’s wallpaper picker.", onClick = {
+            try { context.startActivity(Intent(Intent.ACTION_SET_WALLPAPER)) }
+            catch (_: ActivityNotFoundException) { Toast.makeText(context, "No wallpaper picker available", Toast.LENGTH_SHORT).show() }
+        })
         SettingRow(
             "Opening apps",
             subtitle = "Fast puts the app over the whole screen from its first frame. System default uses your phone's own animation.",

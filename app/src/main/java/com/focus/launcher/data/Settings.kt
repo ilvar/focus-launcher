@@ -27,7 +27,7 @@ enum class DrawerSort(val label: String) { ALPHA("A–Z"), MOST_USED("Most used"
 
 enum class TimeFormat(val label: String) { SYSTEM("Follow system"), H24("24-hour"), H12("12-hour") }
 
-const val MAX_FAVORITES = 5
+const val MAX_FAVORITES = 8
 
 /** Corner shortcuts that resolve to whatever the phone's default dialer / camera is. */
 const val SHORTCUT_PHONE = "auto:phone"
@@ -85,6 +85,7 @@ data class Settings(
     val noteLink: String = "",
     val homeAlign: HomeAlign = HomeAlign.CENTER,
     val favorites: List<String> = emptyList(),
+    val homeAppsCount: Int = 5,
     val showShortcuts: Boolean = true,
     val leftShortcut: String = SHORTCUT_PHONE,
     val rightShortcut: String = SHORTCUT_CAMERA,
@@ -96,6 +97,7 @@ data class Settings(
     val showUsageInDrawer: Boolean = true,
     val drawerSort: DrawerSort = DrawerSort.ALPHA,
     val hidden: Set<String> = emptySet(),
+    val pinned: Set<String> = emptySet(),
     val renames: Map<String, String> = emptyMap(),
 
     // App timers
@@ -156,6 +158,7 @@ data class Settings(
         put("noteLink", noteLink)
         put("homeAlign", homeAlign.name)
         put("favorites", JSONArray(favorites))
+        put("homeAppsCount", homeAppsCount)
         put("showShortcuts", showShortcuts)
         put("leftShortcut", leftShortcut)
         put("rightShortcut", rightShortcut)
@@ -166,6 +169,7 @@ data class Settings(
         put("showUsageInDrawer", showUsageInDrawer)
         put("drawerSort", drawerSort.name)
         put("hidden", JSONArray(hidden.toList()))
+        put("pinned", JSONArray(pinned.toList()))
         put("renames", JSONObject(renames))
 
         put("timersEnabled", timersEnabled)
@@ -233,6 +237,7 @@ data class Settings(
                 noteLink = o.optString("noteLink", d.noteLink),
                 homeAlign = enumOr(o.optString("homeAlign"), d.homeAlign),
                 favorites = o.optJSONArray("favorites").strings().take(MAX_FAVORITES),
+                homeAppsCount = o.optInt("homeAppsCount", d.homeAppsCount).coerceIn(0, MAX_FAVORITES),
                 showShortcuts = o.optBoolean("showShortcuts", d.showShortcuts),
                 leftShortcut = o.optString("leftShortcut", d.leftShortcut),
                 rightShortcut = o.optString("rightShortcut", d.rightShortcut),
@@ -243,6 +248,7 @@ data class Settings(
                 showUsageInDrawer = o.optBoolean("showUsageInDrawer", d.showUsageInDrawer),
                 drawerSort = enumOr(o.optString("drawerSort"), d.drawerSort),
                 hidden = o.optJSONArray("hidden").strings().toSet(),
+                pinned = o.optJSONArray("pinned").strings().toSet(),
                 renames = o.optJSONObject("renames").stringMap(),
 
                 timersEnabled = o.optBoolean("timersEnabled", d.timersEnabled),
