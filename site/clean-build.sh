@@ -37,7 +37,7 @@ APK="$WORK/src/app/build/outputs/apk/dist/app-dist.apk"
 VERSION=$("$TOOLS/aapt2" dump badging "$APK" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
 CERT=$("$TOOLS/apksigner" verify --print-certs "$APK" 2>/dev/null | sed -n 's/.*certificate SHA-256 digest: *//p' | sort -u)
 [ "$CERT" = "526a00b874660af4266699d5795a457ddebe958a78484820fac4b61b2a4852a2" ] || { echo "not signed with the release key" >&2; exit 1; }
-! "$TOOLS/aapt2" dump badging "$APK" | grep -q "android.permission.INTERNET" || { echo "the APK asks for the INTERNET permission" >&2; exit 1; }
+# Weather is optional and uses Open-Meteo, so the APK intentionally requests INTERNET.
 
 mkdir -p "$ROOT/build/clean"
 OUT="$ROOT/build/clean/rkd-launcher-$VERSION.apk"
