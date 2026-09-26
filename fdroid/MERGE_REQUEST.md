@@ -32,7 +32,7 @@ Rkd Launcher is a fork of Focus by Chaitany Patel. It is a text-only launcher wi
 * [x] Valid YAML (`fdroid readmeta`, `fdroid rewritemeta`, `fdroid lint` pass).
 * [x] LF line endings.
 * [x] No summary, description, changelog or images in this MR; they are upstream.
-* [x] Releases are tagged (`vX.Y.Z`) and auto update is enabled. The version code is the number of commits and the last component of the tag, so `UpdateCheckData` reads both numbers from the tag name.
+* [x] Releases are tagged (`vX.Y.Z+CODE`) and auto update is enabled. The version code is the number of commits and the part after `+`, so `UpdateCheckData` reads both values from the tag name.
 * [x] There is an issue tracker, and an AuthorName.
 * [x] No srclibs and no submodules are needed.
 * [ ] Verify a release build and metadata for the new application ID before submitting.

@@ -64,15 +64,18 @@ jobs:
           base=$(sed -n 's/^val baseVersion = "\(.*\)"$/\1/p' app/build.gradle.kts)
           build=$(git rev-list --count HEAD)
           [ -n "$base" ] && [ "$build" -gt 2 ] || { echo "::error::could not work out the version (base='$base' build='$build')"; exit 1; }
-          version="$base.$build"
+          version="$base"
+          tag="v$version+$build"
           # Never publish a lower build number than one that is already out: phones refuse downgrades.
           highest=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json tagName --jq '.[].tagName' \
-            | sed -n 's/^v[0-9][0-9]*\.[0-9][0-9]*\.\([0-9][0-9]*\)$/\1/p' | sort -n | tail -1)
+            | sed -n 's/^v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*+\([0-9][0-9]*\)$/\1/p' | sort -n | tail -1)
           if [ -n "$highest" ] && [ "$build" -lt "$highest" ]; then
             echo "::error::build $build is lower than the published build $highest"; exit 1
           fi
-          if gh release view "v$version" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then exists=true; else exists=false; fi
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then exists=true; else exists=false; fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "code=$build" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "exists=$exists" >> "$GITHUB_OUTPUT"
           echo "version $version (release exists already: $exists)"
 
@@ -122,14 +125,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
+          CODE: ${{ steps.version.outputs.code }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
           mkdir -p "$RUNNER_TEMP/apk"
-          gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern "rkd-launcher-$VERSION.apk" --dir "$RUNNER_TEMP/dl"
-          mv "$RUNNER_TEMP/dl/rkd-launcher-$VERSION.apk" "$RUNNER_TEMP/apk/rkd-launcher.apk"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "rkd-launcher-$VERSION-$CODE.apk" --dir "$RUNNER_TEMP/dl"
+          mv "$RUNNER_TEMP/dl/rkd-launcher-$VERSION-$CODE.apk" "$RUNNER_TEMP/apk/rkd-launcher.apk"
 
       - name: The APK must be what it claims to be
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          CODE: ${{ steps.version.outputs.code }}
         run: |
           apk="$RUNNER_TEMP/apk/rkd-launcher.apk"
           tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
@@ -139,6 +145,8 @@ jobs:
           badging=$("$tools/aapt2" dump badging "$apk")
           name=$(printf '%s\n' "$badging" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
           [ "$name" = "$VERSION" ] || { echo "::error::the APK says version '$name', expected '$VERSION'"; exit 1; }
+          code=$(printf '%s\n' "$badging" | sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" | head -1)
+          [ "$code" = "$CODE" ] || { echo "::error::the APK says version code '$code', expected '$CODE'"; exit 1; }
           package=$(printf '%s\n' "$badging" | sed -n "s/^package: name='\([^']*\)'.*/\1/p" | head -1)
           [ "$package" = 'pw.rkd.launcher' ] || { echo "::error::wrong application ID: $package"; exit 1; }
           echo "ok: package $package, version $name, signed with the release key"
@@ -191,29 +199,33 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
+          CODE: ${{ steps.version.outputs.code }}
+          TAG: ${{ steps.version.outputs.tag }}
           APK: ${{ steps.check.outputs.apk }}
           SHA256: ${{ steps.check.outputs.sha256 }}
         run: |
-          notes="Rkd Launcher $VERSION: the same APK as on [how2me.me/focusapp]($SITE_URL/). It updates earlier pw.rkd.launcher builds signed with this release key. Back up and restore settings when moving from com.focus.launcher.
+          notes="Rkd Launcher $VERSION (build $CODE): the same APK as on [how2me.me/focusapp]($SITE_URL/). It updates earlier pw.rkd.launcher builds signed with this release key. Back up and restore settings when moving from com.focus.launcher.
 
           - SHA-256 of \`$APK\`: \`$SHA256\`
           - Signed with the project's release key (certificate SHA-256 \`$RELEASE_CERT_SHA256\`). Check it with \`apksigner verify --print-certs $APK\`.
           - Built, signed and published by the Publish workflow from commit ${GITHUB_SHA::7}, after the owner approved the run."
-          gh release create "v$VERSION" "site/public/$APK" "site/public/$APK.sha256" --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" --title "Rkd Launcher $VERSION" --notes "$notes" --generate-notes --latest
+          gh release create "$TAG" "site/public/$APK" "site/public/$APK.sha256" --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "Rkd Launcher $VERSION (build $CODE)" --notes "$notes" --generate-notes --latest
 
       - name: Summary
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          CODE: ${{ steps.version.outputs.code }}
+          TAG: ${{ steps.version.outputs.tag }}
           EXISTED: ${{ steps.version.outputs.exists }}
           APK: ${{ steps.check.outputs.apk }}
           SHA256: ${{ steps.check.outputs.sha256 }}
         run: |
           {
-            echo "### Rkd Launcher $VERSION is live"
+            echo "### Rkd Launcher $VERSION (build $CODE) is live"
             echo ""
             echo "- Site: $SITE_URL/ serves \`$APK\`"
             echo "- sha256 \`$SHA256\`"
             if [ "$EXISTED" = "true" ]; then echo "- The release already existed: its APK was put on the site again, nothing new was signed."
-            else echo "- Release: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v$VERSION"; fi
+            else echo "- Release: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG"; fi
           } >> "$GITHUB_STEP_SUMMARY"

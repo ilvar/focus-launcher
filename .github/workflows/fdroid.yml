@@ -8,7 +8,7 @@ name: F-Droid
 #
 #   check   fills fdroid/pw.rkd.launcher.yml for a tag and runs F-Droid's own tools on it, in
 #           F-Droid's build container: readmeta, rewritemeta, checkupdates, lint and, if asked,
-#           the full build, which also proves that the build is identical to the published APK.
+#           the full build from source.
 #   submit  only when asked to, and only with the owner's GitLab token (fdroid/submit.py): commits
 #           the recipe to a branch of the owner's fdroiddata fork. If his merge request is already
 #           open it is UPDATED (new commit on the same branch, a note for the reviewers); a closed
@@ -19,11 +19,11 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag, for example v1.1.25. Empty = the newest vX.Y.Z tag."
+        description: "Release tag, for example v1.2.0+57. Empty = the newest vX.Y.Z+CODE tag."
         required: false
         default: ""
       build:
-        description: "Also build it the way F-Droid does and compare with the published APK (about 20 minutes)"
+        description: "Also build it the way F-Droid does (about 20 minutes)"
         type: boolean
         default: true
       submit:
@@ -64,8 +64,8 @@ jobs:
           WANTED: ${{ inputs.tag }}
         run: |
           tag="$WANTED"
-          [ -n "$tag" ] || tag=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -1)
-          [[ "$tag" =~ ^v([0-9]+\.[0-9]+\.([0-9]+))$ ]] || { echo "::error::'$tag' is not a vX.Y.Z tag"; exit 1; }
+          [ -n "$tag" ] || tag=$(git tag --list 'v*.*.*+*' --sort=-v:refname | head -1)
+          [[ "$tag" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)\+([0-9]+)$ ]] || { echo "::error::'$tag' is not a vX.Y.Z+CODE tag"; exit 1; }
           version="${BASH_REMATCH[1]}"; code="${BASH_REMATCH[2]}"
           commit=$(git rev-list -n 1 "$tag")
           count=$(git rev-list --count "$commit")
@@ -130,13 +130,12 @@ jobs:
           echo "== fdroid lint";          fdroid lint "$APP_ID"
           if [ "$BUILD" = "true" ]; then
             echo "== fdroid build (java: $(java -version 2>&1 | head -1))"
-            # fdroid build exits 0 even when the build or the comparison with the published APK
-            # fails; its verdict is in the log. Keep what it built either way, for a diff.
+            # Check the log as well as the exit code. Keep the APK for inspecting build failures.
             fdroid build --verbose "$APP_ID" 2>&1 | tee /build/fdroid-build.log
             mkdir -p /build/kept
             cp build/"$APP_ID"/app/build/outputs/apk/release/*.apk /build/kept/ 2>/dev/null || true
             if grep -qE "Could not build app|NOT verified" /build/fdroid-build.log; then
-              echo "::error::F-Droid's build did not succeed, or is not identical to the published APK (see the log above)"; exit 1
+              echo "::error::F-Droid's build did not succeed (see the log above)"; exit 1
             fi
             grep -qE "Successfully built|verified" /build/fdroid-build.log || { echo "::error::no success message from fdroid build"; exit 1; }
           fi

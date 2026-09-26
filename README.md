@@ -165,10 +165,10 @@ The release workflow uses `RKD_PUBLISHING` and `RKD_*` secrets in the `release` 
 the optional F-Droid submit job uses `RKD_FDROID_GITLAB_TOKEN` and
 `RKD_FDROID_GITLAB_FORK`.
 
-**Versions.** `baseVersion` in `app/build.gradle.kts` is chosen by a human; the build number is the
-number of commits (`1.1.13` = base 1.1, 13 commits), and it is also the `versionCode`. A build from
-a newer commit therefore always installs over an older one, and nobody has to remember to bump
-a number before publishing.
+**Versions.** `baseVersion` in `app/build.gradle.kts` is the visible release name (now `1.2.0`).
+The Android `versionCode` is the commit count, so a later merge can update an installed APK even
+before the next named release. Tags contain both, for example `v1.2.0+57` for version code 57;
+the code must match the tagged commit's count. Bump `baseVersion` when naming a new release.
 
 **Publishing from CI** (`.github/workflows/publish.yml`). A push to `main` that changes the app
 or the site starts a run that **waits for the owner's approval**. Once approved it runs the tests
@@ -221,8 +221,8 @@ with the project's release key (certificate SHA-256
 `526a00b874660af4266699d5795a457ddebe958a78484820fac4b61b2a4852a2`; check any APK yourself with
 `apksigner verify --print-certs`). Releases are normally made by the Publish workflow (see
 Building). By hand, from the machine that has the key: run the tests and lint,
-`RKD_APK=$(site/clean-build.sh | tail -1) site/deploy.sh`, tag `v<version>`, then
-`gh release create v<version> rkd-launcher-<version>.apk rkd-launcher-<version>.apk.sha256`
+`RKD_APK=$(site/clean-build.sh | tail -1) site/deploy.sh`, tag `v<version>+<code>`, then
+`gh release create 'v<version>+<code>' rkd-launcher-<version>-<code>.apk rkd-launcher-<version>-<code>.apk.sha256`
 with the files from `site/public/`. `deploy.sh` refuses to upload an APK that differs from an
 existing release of the same version.
 

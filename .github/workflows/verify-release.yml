@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag to check, for example v1.1
+        description: Release tag to check, for example v1.2.0+57
         required: true
 
 permissions:
