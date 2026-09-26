@@ -88,7 +88,7 @@ fun ReviewScreen(settings: Settings, initialWeek: LocalDate?, onBack: () -> Unit
 
         if (!hasAccess) {
             Column(Modifier.padding(horizontal = 24.dp, vertical = 28.dp)) {
-                T("Focus needs usage access to show where your time goes.", size = 17.sp, lineHeight = 25.sp)
+                T("Rkd Launcher needs usage access to show where your time goes.", size = 17.sp, lineHeight = 25.sp)
                 VSpace(8.dp)
                 T("The numbers are computed on this phone and never leave it.", size = 14.sp, color = c.dim, lineHeight = 20.sp)
                 VSpace(22.dp)
@@ -200,7 +200,7 @@ private fun WeekTab(settings: Settings, initialWeek: LocalDate?) {
             T("No screen time recorded for this week.", size = 17.sp)
             VSpace(8.dp)
             T(
-                "Android only keeps detailed usage for about a week. Focus saves each day from now on, so future weeks stay available.",
+                "Android only keeps detailed usage for about a week. Rkd Launcher saves each day from now on, so future weeks stay available.",
                 size = 14.sp, color = c.dim, lineHeight = 20.sp,
             )
             return@Column

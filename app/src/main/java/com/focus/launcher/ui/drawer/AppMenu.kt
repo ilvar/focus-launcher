@@ -114,7 +114,7 @@ fun AppMenu(
 
         Sub.RENAME -> TextInputDialog(
             title = "Rename",
-            subtitle = "Only changes the name inside Focus. Leave empty to restore “${app.systemLabel}”.",
+            subtitle = "Only changes the name inside Rkd Launcher. Leave empty to restore “${app.systemLabel}”.",
             initial = app.label,
             placeholder = app.systemLabel,
             onDismiss = onDismiss,
@@ -205,7 +205,7 @@ fun TimerDialog(
         if (!ready) {
             Hairline()
             T(
-                "Timers only lock apps once usage access and the Focus timer service are on.  Finish setup  →",
+                "Timers only lock apps once usage access and the Rkd Launcher timer service are on.  Finish setup  →",
                 Modifier.clickable {
                     onDismiss()
                     onOpenSetup()

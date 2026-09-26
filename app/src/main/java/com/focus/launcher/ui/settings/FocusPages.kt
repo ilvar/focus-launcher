@@ -57,14 +57,14 @@ internal fun TimersPage(settings: Settings, apps: List<AppEntry>, status: SetupS
     Page("App timers", onBack) {
         ToggleRow(
             "App timers", on,
-            subtitle = "Give distracting apps a daily allowance. When it is used up, Focus locks the app for the rest of the day.",
+            subtitle = "Give distracting apps a daily allowance. When it is used up, Rkd Launcher locks the app for the rest of the day.",
         ) { v -> updateTimers { it.copy(timersEnabled = v) } }
 
         if (on && !(status.usageAccess && status.timerService)) {
             Note(
                 when {
                     !status.usageAccess -> "Timers cannot count anything until usage access is allowed.  Open setup  →"
-                    else -> "The Focus timer service is off: apps are only locked when opened from Focus, not while you are inside them.  Open setup  →"
+                    else -> "The Rkd Launcher timer service is off: apps are only locked when opened from Rkd Launcher, not while you are inside them.  Open setup  →"
                 },
             ) { go(Routes.SETUP) }
         }
@@ -90,7 +90,7 @@ internal fun TimersPage(settings: Settings, apps: List<AppEntry>, status: SetupS
         ) { v -> updateTimers { it.copy(allowBypass = v) } }
         ToggleRow(
             "Ask before every open after ignoring", settings.askAfterBypass, enabled = on && settings.allowBypass,
-            subtitle = "Ignoring a limit does not make the app free for the day: Focus still asks “open anyway?” each time.",
+            subtitle = "Ignoring a limit does not make the app free for the day: Rkd Launcher still asks “open anyway?” each time.",
         ) { v -> updateTimers { it.copy(askAfterBypass = v) } }
         SettingRow(
             "Pause before continuing",
@@ -188,7 +188,7 @@ internal fun TimerAppsPage(settings: Settings, apps: List<AppEntry>, onBack: () 
 
         if (unsure.isNotEmpty()) {
             Section("Not sure about these")
-            Note("Android files these under “social”, a label it also gives to mail, browsers and messengers. Focus leaves them alone; tap one to give it a timer.")
+            Note("Android files these under “social”, a label it also gives to mail, browsers and messengers. Rkd Launcher leaves them alone; tap one to give it a timer.")
             for (app in unsure) SettingRow(app.label, value = "Add", onClick = { editing = app })
         }
     }
@@ -239,7 +239,7 @@ internal fun WeeklyPage(settings: Settings, status: SetupStatus, onBack: () -> U
     Page("Weekly review", onBack) {
         ToggleRow(
             "Weekly review", on,
-            subtitle = "At the end of each week Focus adds it all up: total time, which apps, which hours of the day, " +
+            subtitle = "At the end of each week Rkd Launcher adds it all up: total time, which apps, which hours of the day, " +
                 "how often you went past a limit. Then it asks what you want to change.",
         ) { v -> change { it.copy(weeklyEnabled = v) } }
 

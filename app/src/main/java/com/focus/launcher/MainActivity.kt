@@ -57,17 +57,6 @@ import kotlinx.coroutines.launch
 /** The home screen (page 0) and, one swipe to the left, the app drawer (page 1). */
 class MainActivity : ComponentActivity() {
     private val homePresses = MutableSharedFlow<Boolean>(extraBufferCapacity = 4)
-    private var alreadyVisible = false
-
-    override fun onResume() {
-        super.onResume()
-        alreadyVisible = true
-    }
-
-    override fun onPause() {
-        alreadyVisible = false
-        super.onPause()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,7 +79,12 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         // A second Home press opens apps; coming back from another app starts on the home page.
-        if (intent.action == Intent.ACTION_MAIN && intent.hasCategory(Intent.CATEGORY_HOME)) homePresses.tryEmit(alreadyVisible)
+        if (intent.action == Intent.ACTION_MAIN) {
+            // The HOME intent can pause this Activity briefly. Window focus distinguishes a
+            // repeat press from returning from another task (as Android's Launcher3 does).
+            val alreadyOnHome = hasWindowFocus() && intent.flags and Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT == 0
+            homePresses.tryEmit(alreadyOnHome)
+        }
     }
 }
 

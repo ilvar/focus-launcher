@@ -274,7 +274,7 @@ fun HomeScreen(
                         {
                             Graph.state.did(Tip.DOUBLE_TAP)
                             if (!FocusAccessibilityService.lockScreen()) {
-                                Toast.makeText(context, "Turn on the Focus timer service to lock with a double tap", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Turn on the Rkd Launcher timer service to lock with a double tap", Toast.LENGTH_SHORT).show()
                             }
                         }
                     } else null,
@@ -438,7 +438,7 @@ fun HomeScreen(
                     Notice("Your weekly review is ready  →", strong = true) { onOpenReview(pendingReview) }
                 }
                 if (setupIncomplete) {
-                    Notice("Finish setting up Focus  →", strong = false) { onOpenSettings("setup") }
+                    Notice("Finish setting up Rkd Launcher  →", strong = false) { onOpenSettings("setup") }
                 }
                 // One thing a new user could not guess, until they have done it once. A tap moves on.
                 tip?.let { current ->

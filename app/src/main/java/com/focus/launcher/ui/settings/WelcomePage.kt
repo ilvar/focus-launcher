@@ -29,7 +29,7 @@ internal fun WelcomePage(onDone: (toSetup: Boolean) -> Unit) {
     val c = LocalFocusColors.current
     Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp, vertical = 24.dp)) {
         VSpace(96.dp)
-        T("Focus", size = 56.sp, weight = FontWeight.Light)
+        T("Rkd Launcher", size = 44.sp, weight = FontWeight.Light)
         VSpace(10.dp)
         T("Reclaim your time.\nSpend it touching some grass.", size = 20.sp, lineHeight = 28.sp)
         VSpace(22.dp)
@@ -37,6 +37,6 @@ internal fun WelcomePage(onDone: (toSetup: Boolean) -> Unit) {
         VSpace(72.dp)
         FocusButton("Start", Modifier.fillMaxWidth(), primary = true) { onDone(false) }
         VSpace(12.dp)
-        FocusButton("Set up Focus first", Modifier.fillMaxWidth()) { onDone(true) }
+        FocusButton("Set up Rkd Launcher first", Modifier.fillMaxWidth()) { onDone(true) }
     }
 }

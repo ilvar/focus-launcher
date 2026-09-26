@@ -132,7 +132,7 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
         }
         SettingRow(
             "Calendars to show",
-            subtitle = "Select several calendars, or let Focus choose one.",
+            subtitle = "Select several calendars, or let Rkd Launcher choose one.",
             value = when (settings.calendarKey) {
                 CALENDAR_ALL -> "All"
                 com.focus.launcher.data.CALENDAR_SELECTED -> "${settings.calendarKeys.size} selected"
@@ -144,7 +144,7 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
         if (settings.showCalendar && workBlocked) {
             Note(
                 "Calendars inside your Work profile are not listed: the organisation that manages it does not let other " +
-                    "apps read them, and Focus respects that. If you share your work calendar with a personal Google " +
+                    "apps read them, and Rkd Launcher respects that. If you share your work calendar with a personal Google " +
                     "account, it shows up here like any other calendar.",
             )
         }
@@ -407,9 +407,9 @@ internal fun GesturesPage(settings: Settings, status: SetupStatus, onBack: () ->
         // Also under App drawer. It is looked for here too: it is what swiping to the drawer does.
         ToggleRow("Keyboard opens with the drawer", settings.autoKeyboard, subtitle = "Start typing the moment you swipe to your apps.") { v -> update { it.copy(autoKeyboard = v) } }
         ToggleRow("Swipe right for web search", settings.swipeRightSearch, subtitle = "Opens the Google search box, like the page left of a stock home screen.") { v -> update { it.copy(swipeRightSearch = v) } }
-        ToggleRow("Double tap to lock", settings.doubleTapLock, subtitle = "Turns the screen off. Uses the Focus timer service.") { v -> update { it.copy(doubleTapLock = v) } }
+        ToggleRow("Double tap to lock", settings.doubleTapLock, subtitle = "Turns the screen off. Uses the Rkd Launcher timer service.") { v -> update { it.copy(doubleTapLock = v) } }
         if (settings.doubleTapLock && !status.timerService) {
-            Note("The Focus timer service is off, so double tap cannot lock yet.  Open setup  →") { go(Routes.SETUP) }
+            Note("The Rkd Launcher timer service is off, so double tap cannot lock yet.  Open setup  →") { go(Routes.SETUP) }
         }
     }
 }

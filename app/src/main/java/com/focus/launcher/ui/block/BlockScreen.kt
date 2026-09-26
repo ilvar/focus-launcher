@@ -128,7 +128,7 @@ fun BlockScreen(
 
         if (request.consent) {
             VSpace(6.dp)
-            T("You chose to ignore this limit for today. Focus still asks before every visit.", size = 14.sp, color = c.faint, lineHeight = 20.sp)
+            T("You chose to ignore this limit for today. Rkd Launcher still asks before every visit.", size = 14.sp, color = c.faint, lineHeight = 20.sp)
         }
 
         Spacer(Modifier.weight(1f))

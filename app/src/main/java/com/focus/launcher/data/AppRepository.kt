@@ -324,11 +324,11 @@ class AppRepository(
 
     /** One sentence on how [pkg] was sorted and why, shown to the user next to its timer. */
     fun describeCategory(pkg: String): String = when (categoryOf(pkg)) {
-        AppCategory.SOCIAL -> "Focus treats this as social media: it is on its list of feeds, social networks and dating apps."
-        AppCategory.GAME -> "Focus treats this as a game, because the Play Store lists it as one."
-        AppCategory.VIDEO -> "Focus treats this as a video app."
-        AppCategory.COMMUNICATION -> "Focus treats this as a communication tool (browser, mail, messenger, calls), so it never gets a limit by itself."
-        AppCategory.UNSURE -> "Android files this under “social”, a label it also gives to mail and messengers. Focus is not sure, so it gets no limit by itself."
+        AppCategory.SOCIAL -> "Rkd Launcher treats this as social media: it is on its list of feeds, social networks and dating apps."
+        AppCategory.GAME -> "Rkd Launcher treats this as a game, because the Play Store lists it as one."
+        AppCategory.VIDEO -> "Rkd Launcher treats this as a video app."
+        AppCategory.COMMUNICATION -> "Rkd Launcher treats this as a communication tool (browser, mail, messenger, calls), so it never gets a limit by itself."
+        AppCategory.UNSURE -> "Android files this under “social”, a label it also gives to mail and messengers. Rkd Launcher is not sure, so it gets no limit by itself."
         AppCategory.OTHER -> "Not social media or a game, so it only gets a limit if you set one."
     }
 

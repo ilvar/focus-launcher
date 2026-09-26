@@ -44,14 +44,14 @@ internal fun SetupPage(status: SetupStatus, onBack: () -> Unit, refresh: () -> U
 
     Page("Setup", onBack) {
         T(
-            "Three switches make Focus work. Tap one to open the right system screen, flip it, and come back.",
+            "Three switches make Rkd Launcher work. Tap one to open the right system screen, flip it, and come back.",
             Modifier.padding(horizontal = 24.dp, vertical = 10.dp), size = 15.sp, color = c.dim, lineHeight = 22.sp,
         )
 
         Section("Required")
         SettingRow(
             "1 · Default launcher",
-            subtitle = "Makes Focus the screen you land on when you press Home.",
+            subtitle = "Makes Rkd Launcher the screen you land on when you press Home.",
             value = if (status.defaultLauncher) "Done" else "Set",
             onClick = {
                 val roles = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) context.getSystemService(RoleManager::class.java) else null
@@ -70,14 +70,14 @@ internal fun SetupPage(status: SetupStatus, onBack: () -> Unit, refresh: () -> U
         )
         SettingRow(
             "2 · Usage access",
-            subtitle = "Lets Focus measure screen time: the day bar, app timers and the weekly review all depend on it.",
+            subtitle = "Lets Rkd Launcher measure screen time: the day bar, app timers and the weekly review all depend on it.",
             value = if (status.usageAccess) "Allowed" else "Allow",
             onClick = { Perms.openUsageAccess(context) },
         )
         SettingRow(
-            "3 · Focus timer service",
+            "3 · Rkd Launcher timer service",
             subtitle = "An accessibility service that notices which app is in front, so an app can be locked the moment " +
-                "its time runs out. It cannot read your screen. Find “Focus app timers” under installed or downloaded apps.",
+                "its time runs out. It cannot read your screen. Find “Rkd Launcher app timers” under installed or downloaded apps.",
             value = if (status.timerService) "On" else "Turn on",
             onClick = { Perms.openAccessibility(context) },
         )

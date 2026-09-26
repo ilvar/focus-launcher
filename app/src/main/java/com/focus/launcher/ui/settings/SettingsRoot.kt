@@ -142,7 +142,7 @@ fun SettingsRoot(settings: Settings, startRoute: String?, onExit: () -> Unit) {
                     Graph.settings.parseBackup(output.toString(Charsets.UTF_8.name()))
                 }
             }.getOrNull()
-            if (parsed == null) Toast.makeText(context, "Not a valid Focus settings backup", Toast.LENGTH_LONG).show()
+            if (parsed == null) Toast.makeText(context, "Not a valid Rkd Launcher settings backup", Toast.LENGTH_LONG).show()
             else backupToRestore = parsed
         }
     }
@@ -198,11 +198,11 @@ fun SettingsRoot(settings: Settings, startRoute: String?, onExit: () -> Unit) {
 @Composable
 private fun MainPage(settings: Settings, appCount: Int, status: SetupStatus, onBack: () -> Unit, go: (String) -> Unit,
     onBackup: () -> Unit, onRestore: () -> Unit) {
-    Page("Focus", onBack) {
+    Page("Rkd Launcher", onBack) {
         VSpace(6.dp)
         SettingRow(
             "Setup",
-            subtitle = if (status.complete) "Everything Focus needs is switched on." else "Finish these so timers and screen time work.",
+            subtitle = if (status.complete) "Everything Rkd Launcher needs is switched on." else "Finish these so timers and screen time work.",
             value = if (status.complete) "All set" else "${status.done} of 3",
             onClick = { go(Routes.SETUP) },
         )
@@ -211,7 +211,7 @@ private fun MainPage(settings: Settings, appCount: Int, status: SetupStatus, onB
         SettingRow("App drawer", subtitle = "Keyboard, search, recently installed, hidden apps", value = "$appCount apps", onClick = { go(Routes.DRAWER) })
         SettingRow("Gestures", subtitle = "Swipes, double tap, keyboard in the drawer", onClick = { go(Routes.GESTURES) })
         SettingRow("Appearance", subtitle = "Black or white, typeface, text size", onClick = { go(Routes.APPEARANCE) })
-        Section("Focus")
+        Section("App limits")
         SettingRow(
             "App timers",
             subtitle = "Daily limits that lock social apps and games",
@@ -238,7 +238,7 @@ private fun AboutPage(onBack: () -> Unit, go: (String) -> Unit) {
     Page("About", onBack) {
         SettingRow("Welcome screen and tips", subtitle = "Shows the tips on the home screen again, one at a time.", onClick = { go(Routes.WELCOME) })
         Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
-            T("Focus ${BuildConfig.VERSION_NAME}", size = 20.sp, weight = FontWeight.Medium)
+            T("Rkd Launcher ${BuildConfig.VERSION_NAME}", size = 20.sp, weight = FontWeight.Medium)
             VSpace(12.dp)
             T(
                 "A launcher with nothing to look at. No icons, no colour, no feed: the time, the few apps you " +
@@ -249,8 +249,8 @@ private fun AboutPage(onBack: () -> Unit, go: (String) -> Unit) {
             Label("Privacy")
             VSpace(8.dp)
             T(
-                "Focus has no internet permission, so nothing it knows can leave this phone. Screen time is read " +
-                    "from Android's own usage log and stored only in the app's private storage. The timer service " +
+                "Rkd Launcher sends approximate location to Open-Meteo only when Weather is enabled. Screen time is read " +
+                    "from Android's usage log and stored in the app's private storage. The timer service " +
                     "sees the name of the app in front and nothing else; it cannot read what is on your screen.",
                 size = 15.sp, color = c.dim, lineHeight = 22.sp,
             )
