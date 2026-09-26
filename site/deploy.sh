@@ -25,11 +25,12 @@ APK=$(ls public/*.apk | head -1 | xargs basename)
 
 # One version = one binary. If this version already has a release on GitHub (the Publish workflow
 # may have made it), the file on the site has to be that release's APK, not a second build.
-VERSION=${APK#rkd-launcher-}; VERSION=${VERSION%.apk}
-if command -v gh >/dev/null 2>&1 && released=$(gh release download "v$VERSION" --pattern "$APK.sha256" --output - 2>/dev/null | cut -d' ' -f1) && [ -n "$released" ]; then
+VERSION_CODE=${APK#rkd-launcher-}; VERSION_CODE=${VERSION_CODE%.apk}
+TAG="v${VERSION_CODE%-*}+${VERSION_CODE##*-}"
+if command -v gh >/dev/null 2>&1 && released=$(gh release download "$TAG" --pattern "$APK.sha256" --output - 2>/dev/null | cut -d' ' -f1) && [ -n "$released" ]; then
   if [ "$released" != "$(shasum -a 256 "public/$APK" | cut -d' ' -f1)" ]; then
-    echo "v$VERSION is already released with a different APK. Publish that file instead:" >&2
-    echo "  gh release download v$VERSION --pattern '$APK' --dir /tmp && RKD_APK=/tmp/$APK site/deploy.sh" >&2
+    echo "$TAG is already released with a different APK. Publish that file instead:" >&2
+    echo "  gh release download '$TAG' --pattern '$APK' --dir /tmp && RKD_APK=/tmp/$APK site/deploy.sh" >&2
     exit 1
   fi
 fi

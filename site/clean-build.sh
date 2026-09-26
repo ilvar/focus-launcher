@@ -35,12 +35,13 @@ SDK="${ANDROID_HOME:-$(sed -n 's/^sdk\.dir=//p' local.properties 2>/dev/null || 
 TOOLS=$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)
 APK="$WORK/src/app/build/outputs/apk/dist/app-dist.apk"
 VERSION=$("$TOOLS/aapt2" dump badging "$APK" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
+CODE=$("$TOOLS/aapt2" dump badging "$APK" | sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" | head -1)
 CERT=$("$TOOLS/apksigner" verify --print-certs "$APK" 2>/dev/null | sed -n 's/.*certificate SHA-256 digest: *//p' | sort -u)
 [ "$CERT" = "526a00b874660af4266699d5795a457ddebe958a78484820fac4b61b2a4852a2" ] || { echo "not signed with the release key" >&2; exit 1; }
 # Weather is optional and uses Open-Meteo, so the APK intentionally requests INTERNET.
 
 mkdir -p "$ROOT/build/clean"
-OUT="$ROOT/build/clean/rkd-launcher-$VERSION.apk"
+OUT="$ROOT/build/clean/rkd-launcher-$VERSION-$CODE.apk"
 cp "$APK" "$OUT"
 echo "clean build of $COMMIT: version $VERSION, release key, $(wc -c < "$OUT" | tr -d ' ') bytes" >&2
 echo "$OUT"

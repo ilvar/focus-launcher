@@ -7,11 +7,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// The version people see is "<base>.<build>". The base is chosen by a human. The build number is
-// the number of commits, so a build from a newer commit always installs over every older one and
-// nobody has to remember to bump a number before publishing. Outside a git checkout (a source
-// archive) the build number is unknown and the version falls back to the base alone.
-val baseVersion = "1.1"
+// The visible release version is chosen by a human. Android's versionCode is the commit count,
+// so every merge can update an installed build even before the next named release. Release tags
+// include both values, e.g. v1.2.0+57, for F-Droid's update checker.
+val baseVersion = "1.2.0"
 val buildNumber: Int = try {
     providers.exec {
         commandLine("git", "rev-list", "--count", "HEAD")
@@ -31,7 +30,7 @@ android {
         targetSdk = 36
         // 1.1 was published with versionCode 2; commit counts passed that long ago.
         versionCode = maxOf(buildNumber, 2)
-        versionName = if (buildNumber > 0) "$baseVersion.$buildNumber" else baseVersion
+        versionName = baseVersion
     }
 
     // The key for anything that leaves this machine. keystore.properties (git-ignored) says where

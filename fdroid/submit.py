@@ -133,7 +133,7 @@ def main():
         if changed or not opened:
             note = (f"The recipe was updated by the project's F-Droid workflow: it now builds **{VERSION}**. "
                     "Before this update the workflow ran `fdroid readmeta`, `rewritemeta`, `checkupdates`, `lint` and "
-                    "`build` in the `fdroidserver:buildserver` container, and the build was verified against the published APK.")
+                    "`build` in the `fdroidserver:buildserver` container.")
             if not opened:
                 note = "Reopened. " + note
             call("POST", f"/projects/{upstream}/merge_requests/{iid}/notes", {"body": note})

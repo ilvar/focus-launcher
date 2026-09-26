@@ -14,7 +14,9 @@ AAPT2=$(ls "$SDK"/build-tools/*/aapt2 2>/dev/null | sort -V | tail -1 || true)
 [ -n "$AAPT2" ] || { echo "aapt2 not found: set ANDROID_HOME, or sdk.dir in local.properties" >&2; exit 1; }
 VERSION=$("$AAPT2" dump badging "$APK_SRC" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
 [ -n "$VERSION" ] || { echo "could not read versionName from $APK_SRC" >&2; exit 1; }
-APK_FILE="rkd-launcher-$VERSION.apk"
+CODE=$("$AAPT2" dump badging "$APK_SRC" | sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" | head -1)
+[ -n "$CODE" ] || { echo "could not read versionCode from $APK_SRC" >&2; exit 1; }
+APK_FILE="rkd-launcher-$VERSION-$CODE.apk"
 
 rm -rf public && mkdir -p public
 cp "$APK_SRC" "public/$APK_FILE"
