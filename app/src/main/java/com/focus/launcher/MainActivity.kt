@@ -56,7 +56,18 @@ import kotlinx.coroutines.launch
 
 /** The home screen (page 0) and, one swipe to the left, the app drawer (page 1). */
 class MainActivity : ComponentActivity() {
-    private val homePresses = MutableSharedFlow<Unit>(extraBufferCapacity = 4)
+    private val homePresses = MutableSharedFlow<Boolean>(extraBufferCapacity = 4)
+    private var alreadyVisible = false
+
+    override fun onResume() {
+        super.onResume()
+        alreadyVisible = true
+    }
+
+    override fun onPause() {
+        alreadyVisible = false
+        super.onPause()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,15 +89,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // The Home button while the launcher is already showing: go back to page 0.
-        if (intent.action == Intent.ACTION_MAIN && intent.hasCategory(Intent.CATEGORY_HOME)) homePresses.tryEmit(Unit)
+        // A second Home press opens apps; coming back from another app starts on the home page.
+        if (intent.action == Intent.ACTION_MAIN && intent.hasCategory(Intent.CATEGORY_HOME)) homePresses.tryEmit(alreadyVisible)
     }
 }
 
 private var lastBackfill = 0L
 
 @Composable
-private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
+private fun Launcher(settings: Settings, homePresses: Flow<Boolean>) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -146,10 +157,10 @@ private fun Launcher(settings: Settings, homePresses: Flow<Unit>) {
     LaunchedEffect(pager.settledPage) { if (pager.settledPage == 1) Graph.state.did(Tip.SWIPE_LEFT) }
 
     LaunchedEffect(Unit) {
-        homePresses.collect {
+        homePresses.collect { openApps ->
             menuApp = null
             query = ""
-            if (pager.currentPage != 0) pager.animateScrollToPage(0)
+            pager.animateScrollToPage(if (openApps) 1 else 0)
         }
     }
 
