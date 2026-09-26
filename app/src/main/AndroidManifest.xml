@@ -52,14 +52,14 @@
             </intent-filter>
         </activity>
 
-        <!-- Shows up in the app list as "Focus Settings", so settings stay reachable from any launcher.
+        <!-- Shows up in the app list as "Rkd Launcher Settings", so settings stay reachable from any launcher.
              Its own task affinity is what makes that true: sharing the home task's, a launcher
              start (NEW_TASK) only brought the home screen forward and never opened this. -->
         <activity
             android:name=".SettingsActivity"
             android:exported="true"
             android:label="@string/settings_label"
-            android:taskAffinity="com.focus.launcher.settings"
+            android:taskAffinity="com.rkd.launcher.settings"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -79,7 +79,7 @@
             android:exported="false"
             android:launchMode="singleInstance"
             android:noHistory="false"
-            android:taskAffinity="com.focus.launcher.block" />
+            android:taskAffinity="com.rkd.launcher.block" />
 
         <service
             android:name=".service.FocusAccessibilityService"

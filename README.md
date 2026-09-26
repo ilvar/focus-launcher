@@ -1,17 +1,17 @@
-# Focus
+# Rkd Launcher
 
 **Reclaim your time. Spend it touching some grass.**
 
-[![Focus: a minimalist launcher for Android](docs/banner.png)](https://how2me.me/focusapp/)
+[![Rkd Launcher: a minimalist launcher for Android](docs/banner.png)](https://how2me.me/focusapp/)
 
-Focus is a minimalist launcher for Android: a text-only home screen built to be looked at as
+Rkd Launcher is a minimalist launcher for Android: a text-only home screen built to be looked at as
 little as possible. No icons, no colour: black and white, the time, up to five apps you chose,
 and an honest picture of where the day went. It locks social apps and games when their daily time
 is up, and once a week it shows you the week you actually had.
 
-**[Website](https://how2me.me/focusapp/)** · **[Download the APK](https://github.com/patelchaitany/focus-launcher/releases/latest)** (1.3 MB, Android 8.0+) · **[All releases](https://github.com/patelchaitany/focus-launcher/releases)** · free software (GPL-3.0-or-later) · no ads, no account, **no internet permission**
+**[Website](https://how2me.me/focusapp/)** · **[Download the APK](https://github.com/ilvar/focus-launcher/releases/latest)** (Android 8.0+) · **[All releases](https://github.com/ilvar/focus-launcher/releases)** · free software (GPL-3.0-or-later) · no ads or account
 
-[![Build](https://github.com/patelchaitany/focus-launcher/actions/workflows/build.yml/badge.svg)](https://github.com/patelchaitany/focus-launcher/actions/workflows/build.yml)
+[![Build](https://github.com/ilvar/focus-launcher/actions/workflows/build.yml/badge.svg)](https://github.com/ilvar/focus-launcher/actions/workflows/build.yml)
 
 Built with Kotlin and Jetpack Compose, without the Material library, in about 6,500 lines.
 
@@ -30,7 +30,7 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
   share of the day's 24 hours ("11% of today"), under the clock or in the right half of the split
   clock. Tapping it opens the review, where the hour-by-hour picture of the day lives.
 - Optional calendar section: the next events from **one** calendar of your choice. Until you pick,
-  Focus shows the main calendar that actually has events coming up (the first "primary" calendar
+  Rkd Launcher shows the main calendar that actually has events coming up (the first "primary" calendar
   on a phone is often an empty local account). The picker can be searched and shows how many
   events each calendar has coming up. Emoji are stripped from titles. A Mon-Sun strip
   with today marked can be switched on; it is off because the ring has the date.
@@ -69,9 +69,9 @@ Built with Kotlin and Jetpack Compose, without the Material library, in about 6,
 - When the time is used up the app is locked behind a "Time's up" wall. From there you can close
   the app, continue for a few minutes (after a short pause), or ignore the limit for the day.
   Both escape hatches can be switched off (strict mode).
-- Ignoring a limit does not make the app free for the day: Focus still asks "open anyway?" before
+- Ignoring a limit does not make the app free for the day: Rkd Launcher still asks "open anyway?" before
   **every** visit, with "Not now" as the big button and a one-tap way to bring the limit back.
-  (Opened from Focus, the launcher asks; opened from a notification or recents, the timer service
+  (Opened from Rkd Launcher, the launcher asks; opened from a notification or recents, the timer service
   does. One yes covers the visit, until you are back on a home screen or the screen turns off.)
 - Every time you go past a limit it is counted, and shown back to you.
 
@@ -115,15 +115,16 @@ decision is visible in "Limited apps" and can be overridden per app.
 | --- | --- |
 | Default launcher | Being the home screen. |
 | Usage access | All screen-time numbers: day bar, timers, weekly review. |
-| Accessibility service ("Focus app timers") | Locking an app *while you are in it*. It only listens for window changes to learn the name of the app in front; `canRetrieveWindowContent` is false, so it cannot read the screen. |
+| Accessibility service ("Rkd Launcher app timers") | Locking an app *while you are in it*. It only listens for window changes to learn the name of the app in front; `canRetrieveWindowContent` is false, so it cannot read the screen. |
 | Notifications (optional) | The weekly review reminder. |
 | Calendar (optional) | The calendar section. |
-| Notification access (optional, "Focus music section") | The song and artist in the music section. Android ties "which player is active" to this access. The service behind it reads no notification and drops its binding the moment it is connected. |
+| Approximate location and internet (optional) | Current weather from Open-Meteo when Weather is enabled. |
+| Notification access (optional, "Rkd Launcher music section") | The song and artist in the music section. Android ties "which player is active" to this access. The service behind it reads no notification and drops its binding the moment it is connected. |
 
-Without the accessibility service, timers still work at launch time: a spent app opened from Focus
+Without the accessibility service, timers still work at launch time: a spent app opened from Rkd Launcher
 shows the wall instead. With it, the wall also comes up mid-session.
 
-The app declares **no INTERNET permission**. Nothing leaves the phone.
+Screen-time and checklist data are stored locally. With Weather enabled, approximate coordinates are sent to Open-Meteo for current conditions.
 
 ## Building
 
@@ -131,10 +132,10 @@ Requirements: JDK 17–21 and the Android SDK with platform 36.
 
 ```bash
 ./gradlew :app:assembleDebug      # debuggable build
-./gradlew :app:assembleRelease    # R8-optimised build (~1.3 MB), signed with the debug key
+./gradlew :app:assembleRelease    # R8-optimised build, signed with the debug key
 ./gradlew :app:testDebugUnitTest  # usage state machine + emoji stripping
 adb install --user 0 -r app/build/outputs/apk/release/app-release.apk   # --user 0: personal profile only, not a work profile
-adb shell cmd package compile -m speed-profile -f com.focus.launcher   # optional: precompile right away
+adb shell cmd package compile -m speed-profile -f com.rkd.launcher   # optional: precompile right away
 ```
 
 **Use the release build for daily use.** Compose is markedly slower in debuggable builds; swipes
@@ -161,7 +162,7 @@ a number before publishing.
 **Publishing from CI** (`.github/workflows/publish.yml`). A push to `main` that changes the app
 or the site starts a run that **waits for the owner's approval**. Once approved it runs the tests
 and lint, builds and signs the APK with the real release key, refuses to go on unless the APK
-carries the release certificate, the expected version and no INTERNET permission, rebuilds the
+carries the release certificate, the expected version and `com.rkd.launcher` package ID, rebuilds the
 site around it, uploads it, downloads it again to compare checksums, and creates the release.
 The signing key and the upload key are secrets of the GitHub environment `release`, which hands
 them only to runs its required reviewer (the owner) approved, and only from `main`. The upload
@@ -179,9 +180,9 @@ Debug builds additionally export `ReviewActivity` and `BlockActivity`
 (`app/src/debug/AndroidManifest.xml`) so they can be opened from adb:
 
 ```bash
-adb shell am start -n com.focus.launcher/.SettingsActivity --es route timers
-adb shell am start -n com.focus.launcher/.ReviewActivity
-adb shell am start -n com.focus.launcher/.BlockActivity --es package com.instagram.android --el used 1860000 --ei limit 30 --ez preview true
+adb shell am start -n com.rkd.launcher/.SettingsActivity --es route timers
+adb shell am start -n com.rkd.launcher/.ReviewActivity
+adb shell am start -n com.rkd.launcher/.BlockActivity --es package com.instagram.android --el used 1860000 --ei limit 30 --ez preview true
 ```
 
 ## Website and public download
@@ -202,7 +203,7 @@ out with one class more than the same commit built anywhere else.
 bad upload fails loudly. The page shows that same checksum.
 
 **Releases.** Every published version is also on the
-[release page](https://github.com/patelchaitany/focus-launcher/releases), with the same APK as
+[release page](https://github.com/ilvar/focus-launcher/releases), with the same APK as
 the website (identical SHA-256) and a `.sha256` file. When a release is published,
 `.github/workflows/verify-release.yml` downloads its APKs and fails unless each one is signed
 with the project's release key (certificate SHA-256
@@ -210,7 +211,7 @@ with the project's release key (certificate SHA-256
 `apksigner verify --print-certs`). Releases are normally made by the Publish workflow (see
 Building). By hand, from the machine that has the key: run the tests and lint,
 `FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh`, tag `v<version>`, then
-`gh release create v<version> focus-launcher-<version>.apk focus-launcher-<version>.apk.sha256`
+`gh release create v<version> rkd-launcher-<version>.apk rkd-launcher-<version>.apk.sha256`
 with the files from `site/public/`. `deploy.sh` refuses to upload an APK that differs from an
 existing release of the same version.
 
@@ -240,7 +241,7 @@ existing release of the same version.
   `keystore.properties` (git-ignored). **Back both up.** If they are lost, no update can ever be
   installed over a published build. Android will not install a `dist` APK over a `debug`/`release`
   one or vice versa (different signatures): switching a phone between them means uninstalling
-  first, which resets Focus's settings.
+  first, which resets Rkd Launcher's settings. Export settings to JSON before uninstalling and restore them in the new app.
 
 ## Staying small and quiet
 
@@ -292,17 +293,17 @@ matters more than anything else. Measured on a OnePlus (Android 16), release bui
 To check for yourself:
 
 ```bash
-adb shell dumpsys meminfo com.focus.launcher | grep -E "Java Heap:|Native Heap:|Code:|Graphics:|TOTAL PSS:"
-adb shell dumpsys gfxinfo com.focus.launcher | grep "Total frames rendered"   # run twice, 10 s apart, screen idle
+adb shell dumpsys meminfo com.rkd.launcher | grep -E "Java Heap:|Native Heap:|Code:|Graphics:|TOTAL PSS:"
+adb shell dumpsys gfxinfo com.rkd.launcher | grep "Total frames rendered"   # run twice, 10 s apart, screen idle
 ```
 
 ## Code map
 
 ```
-app/src/main/java/com/focus/launcher/
+app/src/main/java/com/rkd/launcher/
   FocusApp.kt, Graph.kt        Application + hand-rolled service locator (one process, shared state)
   MainActivity.kt              Pager: home ⇄ drawer, lifecycle refresh, Home-button handling
-  SettingsActivity.kt          "Focus Settings" (also the LAUNCHER entry)
+  SettingsActivity.kt          "Rkd Launcher Settings" (also the LAUNCHER entry)
   ReviewActivity.kt            Today / weekly review
   BlockActivity.kt             The "Time's up" wall
   data/
@@ -339,7 +340,7 @@ Two things the numbers deliberately leave out, and one they cannot see. Time on 
 not counted, but only *real* launchers are excluded: the Settings app also declares a HOME
 activity (`FallbackHome`, priority -1000, shown while the phone boots), and mistaking it for a
 launcher once made all time spent in Settings vanish. And usage inside an Android Work profile is
-invisible to a normal app (`UsageStatsManager` only covers the calling user), so Focus's total can
+invisible to a normal app (`UsageStatsManager` only covers the calling user), so Rkd Launcher's total can
 be a little lower than Digital Wellbeing's on phones that have one.
 
 Note that "today" means since local midnight. Android's own daily bucket does not start at
@@ -352,9 +353,9 @@ The OS keeps raw events for only about a week, so each finished day is stored as
 
 ## F-Droid
 
-Focus is being submitted to [F-Droid](https://f-droid.org). F-Droid builds every app itself, from
+Rkd Launcher is being submitted to [F-Droid](https://f-droid.org). F-Droid builds every app itself, from
 source, following a recipe in its own repository; nothing is uploaded to it. The recipe
-(`fdroid/com.focus.launcher.yml`), what F-Droid reads from this repository
+(`fdroid/com.rkd.launcher.yml`), what F-Droid reads from this repository
 (`fastlane/metadata/android/en-US/`) and the manual "F-Droid" workflow that checks the recipe with
 F-Droid's own tools are explained in [`fdroid/README.md`](fdroid/README.md). The build is
 reproducible, so F-Droid can ship the very APK that is on the website, signed with the project's
@@ -364,7 +365,7 @@ key, after checking that its own build is identical.
 
 Copyright (C) 2026 Chaitany Patel and contributors.
 
-Focus is free software: you can redistribute it and/or modify it under the terms of the GNU
+Rkd Launcher is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version. It is distributed in the hope that it will be
 useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS

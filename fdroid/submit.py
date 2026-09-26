@@ -3,7 +3,7 @@
 
 Run by .github/workflows/fdroid.yml (job "submit"). What it does, in this order:
 
-  * Focus is already in F-Droid (the recipe is on fdroiddata's master): stop. New versions are
+  * Rkd Launcher is already in F-Droid (the recipe is on fdroiddata's master): stop. New versions are
     picked up from this repository's tags; F-Droid's bot owns the recipe from then on.
   * A merge request from the fork's branch is OPEN: update it. The new recipe is committed on top
     of the branch (no force-push, no rebase), a note tells the reviewers what changed, and no
@@ -26,12 +26,12 @@ API = os.environ.get("GITLAB_API", "https://gitlab.com/api/v4").rstrip("/")
 TOKEN = os.environ.get("GITLAB_TOKEN", "")
 FORK = os.environ.get("FORK", "")
 UPSTREAM = os.environ.get("UPSTREAM", "fdroid/fdroiddata")
-APP_ID = os.environ.get("APP_ID", "com.focus.launcher")
+APP_ID = os.environ.get("APP_ID", "com.rkd.launcher")
 VERSION = os.environ.get("VERSION", "")
 RECIPE_DIR = os.environ.get("RECIPE_DIR", "recipe")
 BRANCH = APP_ID
 FILE_PATH = f"metadata/{APP_ID}.yml"
-TITLE = "New app: Focus Launcher"
+TITLE = "New app: Rkd Launcher"
 
 
 class ApiError(Exception):
@@ -99,7 +99,7 @@ def main():
     fork = call("GET", f"/projects/{quote(FORK)}")["id"]
 
     if file_on(upstream, "master") is not None:
-        say(f"### Focus is already in F-Droid\n`{FILE_PATH}` is on fdroiddata's master. New versions are picked up from "
+        say(f"### Rkd Launcher is already in F-Droid\n`{FILE_PATH}` is on fdroiddata's master. New versions are picked up from "
             "this repository's tags by F-Droid's bot, which owns the recipe from now on. Nothing was submitted.")
         return 0
 

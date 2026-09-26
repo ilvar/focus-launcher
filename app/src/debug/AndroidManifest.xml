@@ -5,11 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools">
     <application>
         <activity
-            android:name="com.focus.launcher.ReviewActivity"
+            android:name="com.rkd.launcher.ReviewActivity"
             android:exported="true"
             tools:replace="android:exported" />
         <activity
-            android:name="com.focus.launcher.BlockActivity"
+            android:name="com.rkd.launcher.BlockActivity"
             android:exported="true"
             tools:replace="android:exported" />
     </application>

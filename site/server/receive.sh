@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs on the web server as the FORCED COMMAND of the CI upload key (site/setup-ci-publishing.sh
 # installs it). Whatever the holder of that key asks ssh to do, this is what runs instead: it
-# reads one tar archive from stdin and installs the files in it into the Focus web directory.
+# reads one tar archive from stdin and installs the files in it into the Rkd Launcher web directory.
 # It gives no shell, reads no arguments, and touches nothing outside that directory.
 #
 # Accepted: plain files with plain names, directly in the archive's root, with one of the

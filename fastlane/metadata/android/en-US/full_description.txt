@@ -1,4 +1,4 @@
-Focus is a minimalist launcher: a home screen built to be looked at as little as possible. No icons, no colour, no feed. Black and white text, the time, the few apps you chose, and an honest picture of where your day is going.
+Rkd Launcher is a minimalist launcher: a home screen built to be looked at as little as possible. No icons, no colour, no feed. Black and white text, the time, the few apps you chose, and an honest picture of where your day is going.
 
 <b>Home screen</b>
 * The clock and one section next to it (your next events, or today's screen time), with a single line between them. A ring that shows the battery, or a plain clock, are one setting away.
@@ -13,14 +13,14 @@ Focus is a minimalist launcher: a home screen built to be looked at as little as
 
 <b>Limits that hold</b>
 * Social media apps and games get a daily allowance (30 minutes by default). Any other app can have one too. Mail, browsers and messengers are never limited automatically.
-* When the time is used up the app locks. You can still get in, but only after a pause and only by saying so, and Focus keeps asking before every visit for the rest of the day.
+* When the time is used up the app locks. You can still get in, but only after a pause and only by saying so, and Rkd Launcher keeps asking before every visit for the rest of the day.
 * How often you went past a limit is counted and shown back to you.
 
 <b>A weekly look back</b>
 * Once a week, one screen: how long, which apps, what time of day, how often you pushed past a limit. Then a single question, and one line to write for next week.
 
 <b>Private by construction</b>
-* No internet permission: nothing can leave the phone. No account, no ads, no analytics.
+* No account, ads or analytics. Optional weather uses approximate location and Open-Meteo.
 * Usage access is used to count screen time. The optional accessibility service only learns which app is in front, so that it can lock it; it cannot read the screen.
 * Calendar access is optional and only used to show your next events.
 

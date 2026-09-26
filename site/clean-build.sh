@@ -40,7 +40,7 @@ CERT=$("$TOOLS/apksigner" verify --print-certs "$APK" 2>/dev/null | sed -n 's/.*
 ! "$TOOLS/aapt2" dump badging "$APK" | grep -q "android.permission.INTERNET" || { echo "the APK asks for the INTERNET permission" >&2; exit 1; }
 
 mkdir -p "$ROOT/build/clean"
-OUT="$ROOT/build/clean/focus-launcher-$VERSION.apk"
+OUT="$ROOT/build/clean/rkd-launcher-$VERSION.apk"
 cp "$APK" "$OUT"
-echo "clean build of $COMMIT: version $VERSION, release key, no INTERNET permission, $(wc -c < "$OUT" | tr -d ' ') bytes" >&2
+echo "clean build of $COMMIT: version $VERSION, release key, $(wc -c < "$OUT" | tr -d ' ') bytes" >&2
 echo "$OUT"

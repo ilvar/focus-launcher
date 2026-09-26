@@ -6,13 +6,13 @@ name: F-Droid
 # repository (gitlab.com/fdroid/fdroiddata), and the recipe gets there as a merge request. After
 # it is accepted, F-Droid finds new versions by itself from this repository's tags.
 #
-#   check   fills fdroid/com.focus.launcher.yml for a tag and runs F-Droid's own tools on it, in
+#   check   fills fdroid/com.rkd.launcher.yml for a tag and runs F-Droid's own tools on it, in
 #           F-Droid's build container: readmeta, rewritemeta, checkupdates, lint and, if asked,
 #           the full build, which also proves that the build is identical to the published APK.
 #   submit  only when asked to, and only with the owner's GitLab token (fdroid/submit.py): commits
 #           the recipe to a branch of the owner's fdroiddata fork. If his merge request is already
 #           open it is UPDATED (new commit on the same branch, a note for the reviewers); a closed
-#           one is reopened; a second one is never opened; once Focus is in F-Droid nothing is
+#           one is reopened; a second one is never opened; once Rkd Launcher is in F-Droid nothing is
 #           submitted any more. It waits for the owner's approval first (environment "release").
 
 on:
@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  APP_ID: com.focus.launcher
+  APP_ID: com.rkd.launcher
 
 jobs:
   check:

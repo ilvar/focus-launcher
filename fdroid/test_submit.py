@@ -16,7 +16,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP = "com.focus.launcher"
+APP = "com.rkd.launcher"
 FILE = f"metadata/{APP}.yml"
 UPSTREAM, FORK, OTHER_FORK = 1, 2, 3
 
@@ -139,7 +139,7 @@ class SubmitTest(unittest.TestCase):
         self.assertEqual(self.gl.commits[0]["actions"][0]["action"], "create")
         self.assertEqual(self.gl.commits[0]["commit_message"], f"New App: {APP}")
         self.assertEqual(len(self.ours()), 1)
-        self.assertEqual(self.ours()[0]["title"], "New app: Focus Launcher")
+        self.assertEqual(self.ours()[0]["title"], "New app: Rkd Launcher")
         self.assertEqual(self.gl.notes, [])
 
     def test_open_merge_request_is_updated_not_duplicated(self):

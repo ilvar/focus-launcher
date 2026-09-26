@@ -59,7 +59,7 @@ jobs:
         run: |
           aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
           version=$("$aapt2" dump badging app/build/outputs/apk/release/app-release.apk | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
-          name="focus-launcher-${version}-ci-${HEAD_SHA::7}.apk"
+          name="rkd-launcher-${version}-ci-${HEAD_SHA::7}.apk"
           mkdir -p out
           cp app/build/outputs/apk/release/app-release.apk "out/${name}"
           (cd out && sha256sum "${name}" > "${name}.sha256")

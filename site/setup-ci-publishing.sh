@@ -69,7 +69,7 @@ for k in storePassword keyAlias keyPassword; do [ -n "$(prop $k)" ] || fail "key
 
 cat <<EOF
 
-This will let GitHub Actions publish Focus for $REPO:
+This will let GitHub Actions publish Rkd Launcher for $REPO:
   - your release signing key and its passwords become secrets of the GitHub environment
     "$ENVIRONMENT"; only runs that YOU approve can use them;
   - a new, restricted upload key is installed on your server (it can only deliver site files);

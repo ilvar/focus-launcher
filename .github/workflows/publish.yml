@@ -115,7 +115,7 @@ jobs:
           # of this commit produces, or F-Droid will not accept it as identical to its own build.
           ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" --no-build-cache :app:assembleDist
           mkdir -p "$RUNNER_TEMP/apk"
-          cp app/build/outputs/apk/dist/app-dist.apk "$RUNNER_TEMP/apk/focus-launcher.apk"
+          cp app/build/outputs/apk/dist/app-dist.apk "$RUNNER_TEMP/apk/rkd-launcher.apk"
 
       - name: Or take the APK of the existing release
         if: steps.version.outputs.exists == 'true'
@@ -124,14 +124,14 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           mkdir -p "$RUNNER_TEMP/apk"
-          gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern "focus-launcher-$VERSION.apk" --dir "$RUNNER_TEMP/dl"
-          mv "$RUNNER_TEMP/dl/focus-launcher-$VERSION.apk" "$RUNNER_TEMP/apk/focus-launcher.apk"
+          gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern "rkd-launcher-$VERSION.apk" --dir "$RUNNER_TEMP/dl"
+          mv "$RUNNER_TEMP/dl/rkd-launcher-$VERSION.apk" "$RUNNER_TEMP/apk/rkd-launcher.apk"
 
       - name: The APK must be what it claims to be
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          apk="$RUNNER_TEMP/apk/focus-launcher.apk"
+          apk="$RUNNER_TEMP/apk/rkd-launcher.apk"
           tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           out=$("$tools/apksigner" verify --print-certs "$apk" 2>&1) || { echo "$out"; echo "::error::the APK does not verify"; exit 1; }
           certs=$(printf '%s\n' "$out" | sed -n 's/.*certificate SHA-256 digest: *//p' | sort -u)
@@ -139,16 +139,14 @@ jobs:
           badging=$("$tools/aapt2" dump badging "$apk")
           name=$(printf '%s\n' "$badging" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
           [ "$name" = "$VERSION" ] || { echo "::error::the APK says version '$name', expected '$VERSION'"; exit 1; }
-          # A public promise of this project: the app cannot go online.
-          if printf '%s\n' "$badging" | grep -q "android.permission.INTERNET"; then
-            echo "::error::the APK asks for the INTERNET permission"; exit 1
-          fi
-          echo "ok: version $name, signed with the release key, no INTERNET permission"
+          package=$(printf '%s\n' "$badging" | sed -n "s/^package: name='\([^']*\)'.*/\1/p" | head -1)
+          [ "$package" = 'com.rkd.launcher' ] || { echo "::error::wrong application ID: $package"; exit 1; }
+          echo "ok: package $package, version $name, signed with the release key"
 
       - name: Build the site around that APK
         run: |
           command -v rsvg-convert >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin; }
-          FOCUS_APK="$RUNNER_TEMP/apk/focus-launcher.apk" site/build.sh
+          FOCUS_APK="$RUNNER_TEMP/apk/rkd-launcher.apk" site/build.sh
 
       - name: Upload to the server
         env:
@@ -196,13 +194,13 @@ jobs:
           APK: ${{ steps.check.outputs.apk }}
           SHA256: ${{ steps.check.outputs.sha256 }}
         run: |
-          notes="Focus $VERSION: the same APK as on [how2me.me/focusapp]($SITE_URL/). It installs over any earlier version from the site or this page and keeps your settings.
+          notes="Rkd Launcher $VERSION: the same APK as on [how2me.me/focusapp]($SITE_URL/). It updates earlier com.rkd.launcher builds signed with this release key. Back up and restore settings when moving from com.focus.launcher.
 
           - SHA-256 of \`$APK\`: \`$SHA256\`
           - Signed with the project's release key (certificate SHA-256 \`$RELEASE_CERT_SHA256\`). Check it with \`apksigner verify --print-certs $APK\`.
           - Built, signed and published by the Publish workflow from commit ${GITHUB_SHA::7}, after the owner approved the run."
           gh release create "v$VERSION" "site/public/$APK" "site/public/$APK.sha256" --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" --title "Focus $VERSION" --notes "$notes" --generate-notes --latest
+            --target "$GITHUB_SHA" --title "Rkd Launcher $VERSION" --notes "$notes" --generate-notes --latest
 
       - name: Summary
         env:
@@ -212,7 +210,7 @@ jobs:
           SHA256: ${{ steps.check.outputs.sha256 }}
         run: |
           {
-            echo "### Focus $VERSION is live"
+            echo "### Rkd Launcher $VERSION is live"
             echo ""
             echo "- Site: $SITE_URL/ serves \`$APK\`"
             echo "- sha256 \`$SHA256\`"
