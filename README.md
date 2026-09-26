@@ -135,7 +135,7 @@ Requirements: JDK 17–21 and the Android SDK with platform 36.
 ./gradlew :app:assembleRelease    # R8-optimised build, signed with the debug key
 ./gradlew :app:testDebugUnitTest  # usage state machine + emoji stripping
 adb install --user 0 -r app/build/outputs/apk/release/app-release.apk   # --user 0: personal profile only, not a work profile
-adb shell cmd package compile -m speed-profile -f com.rkd.launcher   # optional: precompile right away
+adb shell cmd package compile -m speed-profile -f pw.rkd.launcher   # optional: precompile right away
 ```
 
 **Use the release build for daily use.** Compose is markedly slower in debuggable builds; swipes
@@ -154,6 +154,14 @@ over it (or the other way round). This workflow uses no secrets, so it is safe f
 from anyone; the real key is only ever used by the Publish workflow below. It passes the runner's
 JDK with `-Dorg.gradle.java.home`.
 
+The separate **Installable debug APK** workflow runs on pushes to `main` and signs with a
+persistent CI key, so its next APK updates the previous CI debug APK. Configure repository
+secrets `RKD_CI_KEYSTORE_BASE64` and `RKD_CI_KEYSTORE_PASSWORD` first. The PKCS#12 key must
+use alias `focus-ci`, with the same key and store password. Keep the key for future updates.
+The release workflow uses `RKD_PUBLISHING` and `RKD_*` secrets in the `release` environment;
+the optional F-Droid submit job uses `RKD_FDROID_GITLAB_TOKEN` and
+`RKD_FDROID_GITLAB_FORK`.
+
 **Versions.** `baseVersion` in `app/build.gradle.kts` is chosen by a human; the build number is the
 number of commits (`1.1.13` = base 1.1, 13 commits), and it is also the `versionCode`. A build from
 a newer commit therefore always installs over an older one, and nobody has to remember to bump
@@ -162,7 +170,7 @@ a number before publishing.
 **Publishing from CI** (`.github/workflows/publish.yml`). A push to `main` that changes the app
 or the site starts a run that **waits for the owner's approval**. Once approved it runs the tests
 and lint, builds and signs the APK with the real release key, refuses to go on unless the APK
-carries the release certificate, the expected version and `com.rkd.launcher` package ID, rebuilds the
+carries the release certificate, the expected version and `pw.rkd.launcher` package ID, rebuilds the
 site around it, uploads it, downloads it again to compare checksums, and creates the release.
 The signing key and the upload key are secrets of the GitHub environment `release`, which hands
 them only to runs its required reviewer (the owner) approved, and only from `main`. The upload
@@ -180,9 +188,9 @@ Debug builds additionally export `ReviewActivity` and `BlockActivity`
 (`app/src/debug/AndroidManifest.xml`) so they can be opened from adb:
 
 ```bash
-adb shell am start -n com.rkd.launcher/.SettingsActivity --es route timers
-adb shell am start -n com.rkd.launcher/.ReviewActivity
-adb shell am start -n com.rkd.launcher/.BlockActivity --es package com.instagram.android --el used 1860000 --ei limit 30 --ez preview true
+adb shell am start -n pw.rkd.launcher/com.rkd.launcher.SettingsActivity --es route timers
+adb shell am start -n pw.rkd.launcher/com.rkd.launcher.ReviewActivity
+adb shell am start -n pw.rkd.launcher/com.rkd.launcher.BlockActivity --es package com.instagram.android --el used 1860000 --ei limit 30 --ez preview true
 ```
 
 ## Website and public download
@@ -192,7 +200,7 @@ APK download. Source in `site/src`, generated output in `site/public` (git-ignor
 the APK).
 
 ```bash
-FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh   # clean signed build, build site, upload, verify
+RKD_APK=$(site/clean-build.sh | tail -1) site/deploy.sh   # clean signed build, build site, upload, verify
 ```
 
 `site/clean-build.sh` builds the APK from a fresh checkout of the current commit without Gradle's
@@ -210,7 +218,7 @@ with the project's release key (certificate SHA-256
 `526a00b874660af4266699d5795a457ddebe958a78484820fac4b61b2a4852a2`; check any APK yourself with
 `apksigner verify --print-certs`). Releases are normally made by the Publish workflow (see
 Building). By hand, from the machine that has the key: run the tests and lint,
-`FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh`, tag `v<version>`, then
+`RKD_APK=$(site/clean-build.sh | tail -1) site/deploy.sh`, tag `v<version>`, then
 `gh release create v<version> rkd-launcher-<version>.apk rkd-launcher-<version>.apk.sha256`
 with the files from `site/public/`. `deploy.sh` refuses to upload an APK that differs from an
 existing release of the same version.
@@ -293,8 +301,8 @@ matters more than anything else. Measured on a OnePlus (Android 16), release bui
 To check for yourself:
 
 ```bash
-adb shell dumpsys meminfo com.rkd.launcher | grep -E "Java Heap:|Native Heap:|Code:|Graphics:|TOTAL PSS:"
-adb shell dumpsys gfxinfo com.rkd.launcher | grep "Total frames rendered"   # run twice, 10 s apart, screen idle
+adb shell dumpsys meminfo pw.rkd.launcher | grep -E "Java Heap:|Native Heap:|Code:|Graphics:|TOTAL PSS:"
+adb shell dumpsys gfxinfo pw.rkd.launcher | grep "Total frames rendered"   # run twice, 10 s apart, screen idle
 ```
 
 ## Code map
@@ -355,11 +363,11 @@ The OS keeps raw events for only about a week, so each finished day is stored as
 
 Rkd Launcher is being submitted to [F-Droid](https://f-droid.org). F-Droid builds every app itself, from
 source, following a recipe in its own repository; nothing is uploaded to it. The recipe
-(`fdroid/com.rkd.launcher.yml`), what F-Droid reads from this repository
+(`fdroid/pw.rkd.launcher.yml`), what F-Droid reads from this repository
 (`fastlane/metadata/android/en-US/`) and the manual "F-Droid" workflow that checks the recipe with
-F-Droid's own tools are explained in [`fdroid/README.md`](fdroid/README.md). The build is
-reproducible, so F-Droid can ship the very APK that is on the website, signed with the project's
-key, after checking that its own build is identical.
+F-Droid's own tools are explained in [`fdroid/README.md`](fdroid/README.md). Its build and
+signing path is separate from the website's release key. Check the first tagged build in the
+F-Droid workflow before submitting the new app ID.
 
 ## License
 

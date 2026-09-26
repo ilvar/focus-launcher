@@ -120,8 +120,8 @@ else *unsure* and left alone. Details: `3-details/app-classification.md`.
     left-aligned) and the row sits near the top. That is a reading of the sketch, easy to change:
     alignment, sizes, which section is on the right by default.
 20. **The F-Droid merge request needs him:** a GitLab.com account, a public fork of
-    fdroid/fdroiddata, a token (`api` scope) stored with `gh secret set FDROID_GITLAB_TOKEN --env
-    release`, and `gh variable set FDROID_GITLAB_FORK`. Then: run "F-Droid" with `submit` ticked,
+    fdroid/fdroiddata, a token (`api` scope) stored with `gh secret set RKD_FDROID_GITLAB_TOKEN --env
+    release`, and `gh variable set RKD_FDROID_GITLAB_FORK`. Then: run "F-Droid" with `submit` ticked,
     approve it, and answer the reviewers on GitLab. Agents do not create accounts or enter tokens.
 21. ~~What the Play Protect fix cost.~~ He weighed it on 2026-09-20: the options stay, PR #11 was
     reverted. What is left open is the other half: **Play Protect blocks the download again**

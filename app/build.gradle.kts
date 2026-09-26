@@ -26,7 +26,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.rkd.launcher"
+        applicationId = "pw.rkd.launcher"
         minSdk = 26
         targetSdk = 36
         // 1.1 was published with versionCode 2; commit counts passed that long ago.
@@ -41,12 +41,12 @@ android {
     }
     signingConfigs {
         create("ciDebug") {
-            val ciKey = System.getenv("FOCUS_CI_KEYSTORE_PATH")
+            val ciKey = System.getenv("RKD_CI_KEYSTORE_PATH")
             if (!ciKey.isNullOrBlank()) {
                 storeFile = file(ciKey)
-                storePassword = System.getenv("FOCUS_CI_KEYSTORE_PASSWORD")
+                storePassword = System.getenv("RKD_CI_KEYSTORE_PASSWORD")
                 keyAlias = "focus-ci"
-                keyPassword = System.getenv("FOCUS_CI_KEYSTORE_PASSWORD")
+                keyPassword = System.getenv("RKD_CI_KEYSTORE_PASSWORD")
             }
         }
         create("dist") {
@@ -61,7 +61,7 @@ android {
 
     buildTypes {
         getByName("debug") {
-            if (!System.getenv("FOCUS_CI_KEYSTORE_PATH").isNullOrBlank()) {
+            if (!System.getenv("RKD_CI_KEYSTORE_PATH").isNullOrBlank()) {
                 signingConfig = signingConfigs.getByName("ciDebug")
             }
         }

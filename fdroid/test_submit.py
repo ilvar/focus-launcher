@@ -16,7 +16,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP = "com.rkd.launcher"
+APP = "pw.rkd.launcher"
 FILE = f"metadata/{APP}.yml"
 UPSTREAM, FORK, OTHER_FORK = 1, 2, 3
 
@@ -197,7 +197,7 @@ class SubmitTest(unittest.TestCase):
     def test_missing_token_stops_before_any_call(self):
         result = self.run_submit(token="")
         self.assertEqual(result.returncode, 1)
-        self.assertIn("FDROID_GITLAB_TOKEN", result.stdout)
+        self.assertIn("RKD_FDROID_GITLAB_TOKEN", result.stdout)
         self.assertEqual((self.gl.created, self.gl.commits), (0, []))
 
     def test_api_error_fails_the_job(self):

@@ -26,7 +26,7 @@ API = os.environ.get("GITLAB_API", "https://gitlab.com/api/v4").rstrip("/")
 TOKEN = os.environ.get("GITLAB_TOKEN", "")
 FORK = os.environ.get("FORK", "")
 UPSTREAM = os.environ.get("UPSTREAM", "fdroid/fdroiddata")
-APP_ID = os.environ.get("APP_ID", "com.rkd.launcher")
+APP_ID = os.environ.get("APP_ID", "pw.rkd.launcher")
 VERSION = os.environ.get("VERSION", "")
 RECIPE_DIR = os.environ.get("RECIPE_DIR", "recipe")
 BRANCH = APP_ID
@@ -88,7 +88,7 @@ def say(text):
 
 def main():
     if not TOKEN or not FORK:
-        print("::error::FDROID_GITLAB_TOKEN (secret of the release environment) or FDROID_GITLAB_FORK "
+        print("::error::RKD_FDROID_GITLAB_TOKEN (secret of the release environment) or RKD_FDROID_GITLAB_FORK "
               "(repository variable, like yourname/fdroiddata) is missing. See fdroid/README.md.")
         return 1
     recipe = open(os.path.join(RECIPE_DIR, f"{APP_ID}.yml")).read()

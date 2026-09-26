@@ -28,7 +28,7 @@ Rkd Launcher is a fork of Focus by Chaitany Patel. It is a text-only launcher wi
 
 ### Metadata
 
-* [x] Metadata is in `metadata/com.rkd.launcher.yml`.
+* [x] Metadata is in `metadata/pw.rkd.launcher.yml`.
 * [x] Valid YAML (`fdroid readmeta`, `fdroid rewritemeta`, `fdroid lint` pass).
 * [x] LF line endings.
 * [x] No summary, description, changelog or images in this MR; they are upstream.

@@ -1,11 +1,11 @@
 #!/bin/bash
 # Assembles site/public from site/src plus the signed APK.
 # Usage: site/build.sh            (expects ./gradlew :app:assembleDist to have been run)
-#        FOCUS_APK=/path/to.apk site/build.sh     (publish that APK instead, e.g. a release asset)
+#        RKD_APK=/path/to.apk site/build.sh     (publish that APK instead, e.g. a release asset)
 set -euo pipefail
 cd "$(dirname "$0")"
 ROOT=..
-APK_SRC="${FOCUS_APK:-$ROOT/app/build/outputs/apk/dist/app-dist.apk}"
+APK_SRC="${RKD_APK:-$ROOT/app/build/outputs/apk/dist/app-dist.apk}"
 [ -f "$APK_SRC" ] || { echo "Build the APK first:  ./gradlew :app:assembleDist" >&2; exit 1; }
 
 # The version on the page is read out of the APK itself, so the two can never disagree.

@@ -2,7 +2,7 @@
 # Builds the APK that gets published, from a CLEAN checkout of the current commit.
 #
 #   site/clean-build.sh              prints the path of the signed APK as its last line
-#   FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh
+#   RKD_APK=$(site/clean-build.sh | tail -1) site/deploy.sh
 #
 # Why not just ./gradlew :app:assembleDist in the working folder: that folder carries months of
 # incremental-compilation state and a build cache, and a build made there came out with one class
@@ -26,7 +26,7 @@ ln -s "$ROOT/keystore.properties" "$WORK/src/keystore.properties"
 [ -f local.properties ] && ln -s "$ROOT/local.properties" "$WORK/src/local.properties"
 
 JDK_ARGS=()
-if [ -n "${FOCUS_JDK:-}" ]; then JDK_ARGS=(-Dorg.gradle.java.home="$FOCUS_JDK")
+if [ -n "${RKD_JDK:-}" ]; then JDK_ARGS=(-Dorg.gradle.java.home="$RKD_JDK")
 elif [ -d /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ]; then JDK_ARGS=(-Dorg.gradle.java.home=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home); fi
 
 ( cd "$WORK/src" && ./gradlew "${JDK_ARGS[@]}" --console=plain -q --no-build-cache :app:testDebugUnitTest :app:lintDebug :app:assembleDist ) >&2

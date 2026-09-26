@@ -11,7 +11,7 @@ set -euo pipefail
 umask 022
 export LC_ALL=C
 
-DEST="${FOCUS_WEB_DIR:-/var/www/focusapp}"
+DEST="${RKD_WEB_DIR:-/var/www/focusapp}"
 MAX_BYTES=$((40 * 1024 * 1024))
 ALLOWED='^[A-Za-z0-9][A-Za-z0-9._-]*\.(html|css|svg|png|txt|xml|apk|sha256)$'
 

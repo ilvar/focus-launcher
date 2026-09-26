@@ -77,7 +77,7 @@ Inputs: `tag` (empty = newest `vX.Y.Z`), `build` (default on), `submit` (default
   published APK. The recipe as F-Droid's tools left it, and `fdroid/MERGE_REQUEST.md`, become the
   artifact `fdroid-recipe`.
 - **submit:** runs in the protected `release` environment (owner's approval) and calls
-  `fdroid/submit.py` with `FDROID_GITLAB_TOKEN` (environment secret) and `FDROID_GITLAB_FORK`
+  `fdroid/submit.py` with `RKD_FDROID_GITLAB_TOKEN` (environment secret) and `RKD_FDROID_GITLAB_FORK`
   (repository variable, `<gitlab user>/fdroiddata`). Everything goes through GitLab's API (no git
   push from a shallow clone). **There is only ever one merge request** (the owner asked for this
   on 2026-09-20): the recipe is committed to the fork's branch `com.focus.launcher`; an **open**
@@ -88,7 +88,7 @@ Inputs: `tag` (empty = newest `vX.Y.Z`), `build` (default on), `submit` (default
   is submitted (F-Droid's bot owns the file from then on). Only with none of these is "New app:
   Focus Launcher" opened, with the filled-in checklist. `fdroid/test_submit.py` runs nine such
   scenarios against a fake GitLab at the start of every workflow run. Agents do not create the
-  GitLab account or enter the token: the owner does (`gh secret set FDROID_GITLAB_TOKEN --env
+  GitLab account or enter the token: the owner does (`gh secret set RKD_FDROID_GITLAB_TOKEN --env
   release` prompts for it).
 
 ## What only the owner can do
