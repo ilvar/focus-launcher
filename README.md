@@ -188,9 +188,9 @@ Debug builds additionally export `ReviewActivity` and `BlockActivity`
 (`app/src/debug/AndroidManifest.xml`) so they can be opened from adb:
 
 ```bash
-adb shell am start -n pw.rkd.launcher/com.rkd.launcher.SettingsActivity --es route timers
-adb shell am start -n pw.rkd.launcher/com.rkd.launcher.ReviewActivity
-adb shell am start -n pw.rkd.launcher/com.rkd.launcher.BlockActivity --es package com.instagram.android --el used 1860000 --ei limit 30 --ez preview true
+adb shell am start -n pw.rkd.launcher/pw.rkd.launcher.SettingsActivity --es route timers
+adb shell am start -n pw.rkd.launcher/pw.rkd.launcher.ReviewActivity
+adb shell am start -n pw.rkd.launcher/pw.rkd.launcher.BlockActivity --es package com.instagram.android --el used 1860000 --ei limit 30 --ez preview true
 ```
 
 ## Website and public download
@@ -308,7 +308,7 @@ adb shell dumpsys gfxinfo pw.rkd.launcher | grep "Total frames rendered"   # run
 ## Code map
 
 ```
-app/src/main/java/com/rkd/launcher/
+app/src/main/java/pw/rkd/launcher/
   FocusApp.kt, Graph.kt        Application + hand-rolled service locator (one process, shared state)
   MainActivity.kt              Pager: home ⇄ drawer, lifecycle refresh, Home-button handling
   SettingsActivity.kt          "Rkd Launcher Settings" (also the LAUNCHER entry)

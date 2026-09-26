@@ -22,7 +22,7 @@ val buildNumber: Int = try {
 }
 
 android {
-    namespace = "com.rkd.launcher"
+    namespace = "pw.rkd.launcher"
     compileSdk = 36
 
     defaultConfig {
