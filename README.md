@@ -9,6 +9,9 @@ little as possible. No icons, no colour: black and white, the time, up to 16 app
 and an honest picture of where the day went. It locks social apps and games when their daily time
 is up, and once a week it shows you the week you actually had.
 
+Rkd Launcher is a fork of [Focus Launcher](https://github.com/patelchaitany/focus-launcher)
+by Chaitany Patel.
+
 **[Website](https://how2me.me/focusapp/)** · **[Download the APK](https://github.com/ilvar/rkd-launcher/releases/latest)** (Android 8.0+) · **[All releases](https://github.com/ilvar/rkd-launcher/releases)** · free software (GPL-3.0-or-later) · no ads or account
 
 [![Build](https://github.com/ilvar/rkd-launcher/actions/workflows/build.yml/badge.svg)](https://github.com/ilvar/rkd-launcher/actions/workflows/build.yml)

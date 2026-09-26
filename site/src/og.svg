@@ -7,7 +7,7 @@
     <text y="74" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="30" fill="#9a9a9a">Tue, 22 Sept</text>
   </g>
   <text x="90" y="150" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="500" font-size="34" fill="#fff">Rkd Launcher</text>
-  <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="300" font-size="72" fill="#fff" letter-spacing="-2">
+  <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="300" font-size="60" fill="#fff" letter-spacing="-2">
     <tspan x="90" y="300">Reclaim your time.</tspan>
     <tspan x="90" y="384" fill="#9a9a9a">Spend it touching</tspan>
     <tspan x="90" y="468" fill="#9a9a9a">some grass.</tspan>
