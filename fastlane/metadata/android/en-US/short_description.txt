@@ -1,1 +1,1 @@
-A text-only, black and white launcher with app timers and a weekly review
+A minimal launcher with fast apps, app timers, to-do and weather

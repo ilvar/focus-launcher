@@ -1,27 +1,29 @@
-Rkd Launcher is a minimalist launcher: a home screen built to be looked at as little as possible. No icons, no colour, no feed. Black and white text, the time, the few apps you chose, and an honest picture of where your day is going.
+Rkd Launcher is a minimalist, text-first home screen. Keep the time, the apps you choose and a clear view of your day without a feed or ads.
 
 <b>Home screen</b>
-* The clock and one section next to it (your next events, or today's screen time), with a single line between them. A ring that shows the battery, or a plain clock, are one setting away.
-* Up to five apps, as words. Phone and camera in the corners.
-* Tap the clock to open an app of your choice. Long-press almost anything to change it.
+* Clock, date, battery, a compact screen-time line and optional current weather.
+* Show upcoming events from the calendars you select, with a compact mode for more events.
+* Choose up to 16 fast apps in one or two columns. Phone and camera stay in the corners.
+* Show a selected wallpaper behind the text, with visibility and brightness controls.
+* Keep a to-do checklist: add tasks one at a time, hide checked tasks, view and uncheck them later. Checked tasks are removed after seven days.
+* Export and restore your launcher settings when changing phones or installations.
 
 <b>Every app, one swipe away</b>
-* A plain list with a search that understands names, initials and typos.
-* Apps installed in the last 24 hours sit on top.
+* Search app names, initials and typos. Pin apps to the top of the list.
 * Sort A to Z, by most used or by most recent. With a work profile, personal and work apps get their own tabs.
-* Rename apps, hide them, pin them to the home screen.
+* Rename or hide apps and choose which appear as fast apps on the home screen.
 
 <b>Limits that hold</b>
-* Social media apps and games get a daily allowance (30 minutes by default). Any other app can have one too. Mail, browsers and messengers are never limited automatically.
-* When the time is used up the app locks. You can still get in, but only after a pause and only by saying so, and Rkd Launcher keeps asking before every visit for the rest of the day.
-* How often you went past a limit is counted and shown back to you.
+* Social media apps and games get a daily allowance (30 minutes by default). Set a limit for other apps too. Mail, browsers and messengers are never limited automatically.
+* When time is used up, the app locks. You can continue after a pause, and Rkd Launcher asks again before later visits that day.
+* See how often you went past a limit in the weekly review.
 
 <b>A weekly look back</b>
-* Once a week, one screen: how long, which apps, what time of day, how often you pushed past a limit. Then a single question, and one line to write for next week.
+* Review screen time, apps, time of day and limit overrides. Write one line for next week.
 
-<b>Private by construction</b>
-* No account, ads or analytics. Optional weather uses approximate location and Open-Meteo.
-* Usage access is used to count screen time. The optional accessibility service only learns which app is in front, so that it can lock it; it cannot read the screen.
-* Calendar access is optional and only used to show your next events.
+<b>Privacy</b>
+* No account, ads or analytics. Optional weather sends approximate location to Open-Meteo.
+* Usage access counts screen time. The optional accessibility service detects the foreground app to enforce limits; it does not read screen contents.
+* Calendar access is optional and shows selected events on your home screen.
 
-Website: https://how2me.me/focusapp/
+Website: https://github.com/ilvar/rkd-launcher

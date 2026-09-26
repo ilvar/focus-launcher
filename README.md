@@ -5,13 +5,13 @@
 [![Rkd Launcher: a minimalist launcher for Android](docs/banner.png)](https://how2me.me/focusapp/)
 
 Rkd Launcher is a minimalist launcher for Android: a text-only home screen built to be looked at as
-little as possible. No icons, no colour: black and white, the time, up to five apps you chose,
+little as possible. No icons, no colour: black and white, the time, up to 16 apps you chose,
 and an honest picture of where the day went. It locks social apps and games when their daily time
 is up, and once a week it shows you the week you actually had.
 
-**[Website](https://how2me.me/focusapp/)** · **[Download the APK](https://github.com/ilvar/focus-launcher/releases/latest)** (Android 8.0+) · **[All releases](https://github.com/ilvar/focus-launcher/releases)** · free software (GPL-3.0-or-later) · no ads or account
+**[Website](https://how2me.me/focusapp/)** · **[Download the APK](https://github.com/ilvar/rkd-launcher/releases/latest)** (Android 8.0+) · **[All releases](https://github.com/ilvar/rkd-launcher/releases)** · free software (GPL-3.0-or-later) · no ads or account
 
-[![Build](https://github.com/ilvar/focus-launcher/actions/workflows/build.yml/badge.svg)](https://github.com/ilvar/focus-launcher/actions/workflows/build.yml)
+[![Build](https://github.com/ilvar/rkd-launcher/actions/workflows/build.yml/badge.svg)](https://github.com/ilvar/rkd-launcher/actions/workflows/build.yml)
 
 Built with Kotlin and Jetpack Compose, without the Material library, in about 6,500 lines.
 
@@ -211,7 +211,7 @@ out with one class more than the same commit built anywhere else.
 bad upload fails loudly. The page shows that same checksum.
 
 **Releases.** Every published version is also on the
-[release page](https://github.com/ilvar/focus-launcher/releases), with the same APK as
+[release page](https://github.com/ilvar/rkd-launcher/releases), with the same APK as
 the website (identical SHA-256) and a `.sha256` file. When a release is published,
 `.github/workflows/verify-release.yml` downloads its APKs and fails unless each one is signed
 with the project's release key (certificate SHA-256

@@ -2,15 +2,15 @@ Categories:
   - Launcher
 License: GPL-3.0-or-later
 AuthorName: Rkd (based on Focus by Chaitany Patel)
-WebSite: https://how2me.me/focusapp/
-SourceCode: https://github.com/ilvar/focus-launcher
-IssueTracker: https://github.com/ilvar/focus-launcher/issues
-Changelog: https://github.com/ilvar/focus-launcher/releases
+WebSite: https://github.com/ilvar/rkd-launcher
+SourceCode: https://github.com/ilvar/rkd-launcher
+IssueTracker: https://github.com/ilvar/rkd-launcher/issues
+Changelog: https://github.com/ilvar/rkd-launcher/releases
 
 AutoName: Rkd Launcher
 
 RepoType: git
-Repo: https://github.com/ilvar/focus-launcher.git
+Repo: https://github.com/ilvar/rkd-launcher.git
 
 Builds:
   - versionName: @VERSION_NAME@

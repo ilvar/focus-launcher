@@ -17,8 +17,8 @@ versions by itself from this repository's tags; nothing has to be pushed for an 
   new one is opened only if there is none, and once Rkd Launcher is in F-Droid nothing is submitted any
   more. `test_submit.py` checks all of that against a fake GitLab at the start of every run.
 - The listing (name, descriptions, icon, screenshots, changelogs) is read by F-Droid from
-  `fastlane/metadata/android/en-US/` in this repository. The screenshots are drawn by
-  `fastlane/screenshots.py`, not captured: a real screenshot shows somebody's apps and calendar.
+  `fastlane/metadata/android/en-US/` in this repository. The four phone screenshots were supplied by the project owner and show the home screen,
+  app list, to-do list, and app limit.
 
 How versions reach F-Droid: a release is a tag `v<base>.<build>` (for example `v1.1.22`). The
 build number is the number of commits, which is also the `versionCode`; F-Droid reads both
