@@ -1,7 +1,7 @@
 Rkd Launcher is a fork of Focus by Chaitany Patel. It is a text-only launcher with app timers, a checklist and optional weather. Weather sends approximate coordinates to Open-Meteo when enabled.
 
 * Source: https://github.com/ilvar/rkd-launcher (GPL-3.0-or-later)
-* Website: https://how2me.me/focusapp/
+* Website: https://github.com/ilvar/rkd-launcher
 
 ## Checklist
 

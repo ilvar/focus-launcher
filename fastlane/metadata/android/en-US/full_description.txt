@@ -26,4 +26,4 @@ Rkd Launcher is a minimalist, text-first home screen. Keep the time, the apps yo
 * Usage access counts screen time. The optional accessibility service detects the foreground app to enforce limits; it does not read screen contents.
 * Calendar access is optional and shows selected events on your home screen.
 
-Website: https://how2me.me/focusapp/
+Website: https://github.com/ilvar/rkd-launcher
