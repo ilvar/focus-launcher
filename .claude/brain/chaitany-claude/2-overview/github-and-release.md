@@ -86,7 +86,7 @@ the machine that has the key:
 4. If the app's look changed, update the site's copy and mockups; preview `site/public` locally.
 5. Audit, commit, push (a pull request lets CI prove itself first), merge.
 6. `git tag v<version>` → `gh release create` with the APK and `.sha256` from `site/public/`.
-7. Public: `FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh` (the APK file name carries
+7. Public: `RKD_APK=$(site/clean-build.sh | tail -1) site/deploy.sh` (the APK file name carries
    the version; older APKs stay on the server so old links keep working).
 
 ## Open

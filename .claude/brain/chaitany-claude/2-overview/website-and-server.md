@@ -14,7 +14,7 @@ site/build.sh              → site/public/: fills placeholders, copies the dist
                              og.png, icon, JSON-LD (from the page itself), sitemap.xml, robots.txt,
                              IndexNow key file; publishes src/google*.html if present
 site/deploy.sh             build → tar over ssh → re-download APK and compare sha256 → IndexNow ping
-site/deploy.env            FOCUS_DEPLOY_HOST / FOCUS_DEPLOY_KEY (git-ignored; see deploy.env.example)
+site/deploy.env            RKD_DEPLOY_HOST / RKD_DEPLOY_KEY (git-ignored; see deploy.env.example)
 ```
 Deploy: `./gradlew :app:assembleDist && site/deploy.sh`. Preview locally with the launch config
 `focus-site` (`.claude/launch.json`, a static file server on port 4173).

@@ -335,7 +335,7 @@ with three options. He chose **automatic, with his approval**.
 - `.github/workflows/publish.yml`: runs in the protected environment `release` (required
   reviewer: the owner; `main` only); tests, lint, signs, checks certificate / version / no INTERNET
   permission, builds the site, uploads, re-downloads and compares, pings IndexNow, creates the
-  release. Skips itself until the repository variable `FOCUS_PUBLISHING` is `on`.
+  release. Skips itself until the repository variable `RKD_PUBLISHING` is `on`.
 - `site/server/receive.sh`: the forced command of the upload key on the server. Tested there in a
   throwaway directory with 15 archives: the valid one installed, 14 hostile or broken ones refused
   with nothing written.

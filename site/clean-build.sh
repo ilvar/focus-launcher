@@ -2,7 +2,7 @@
 # Builds the APK that gets published, from a CLEAN checkout of the current commit.
 #
 #   site/clean-build.sh              prints the path of the signed APK as its last line
-#   FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh
+#   RKD_APK=$(site/clean-build.sh | tail -1) site/deploy.sh
 #
 # Why not just ./gradlew :app:assembleDist in the working folder: that folder carries months of
 # incremental-compilation state and a build cache, and a build made there came out with one class
@@ -26,7 +26,7 @@ ln -s "$ROOT/keystore.properties" "$WORK/src/keystore.properties"
 [ -f local.properties ] && ln -s "$ROOT/local.properties" "$WORK/src/local.properties"
 
 JDK_ARGS=()
-if [ -n "${FOCUS_JDK:-}" ]; then JDK_ARGS=(-Dorg.gradle.java.home="$FOCUS_JDK")
+if [ -n "${RKD_JDK:-}" ]; then JDK_ARGS=(-Dorg.gradle.java.home="$RKD_JDK")
 elif [ -d /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ]; then JDK_ARGS=(-Dorg.gradle.java.home=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home); fi
 
 ( cd "$WORK/src" && ./gradlew "${JDK_ARGS[@]}" --console=plain -q --no-build-cache :app:testDebugUnitTest :app:lintDebug :app:assembleDist ) >&2
@@ -37,10 +37,10 @@ APK="$WORK/src/app/build/outputs/apk/dist/app-dist.apk"
 VERSION=$("$TOOLS/aapt2" dump badging "$APK" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
 CERT=$("$TOOLS/apksigner" verify --print-certs "$APK" 2>/dev/null | sed -n 's/.*certificate SHA-256 digest: *//p' | sort -u)
 [ "$CERT" = "526a00b874660af4266699d5795a457ddebe958a78484820fac4b61b2a4852a2" ] || { echo "not signed with the release key" >&2; exit 1; }
-! "$TOOLS/aapt2" dump badging "$APK" | grep -q "android.permission.INTERNET" || { echo "the APK asks for the INTERNET permission" >&2; exit 1; }
+# Weather is optional and uses Open-Meteo, so the APK intentionally requests INTERNET.
 
 mkdir -p "$ROOT/build/clean"
-OUT="$ROOT/build/clean/focus-launcher-$VERSION.apk"
+OUT="$ROOT/build/clean/rkd-launcher-$VERSION.apk"
 cp "$APK" "$OUT"
-echo "clean build of $COMMIT: version $VERSION, release key, no INTERNET permission, $(wc -c < "$OUT" | tr -d ' ') bytes" >&2
+echo "clean build of $COMMIT: version $VERSION, release key, $(wc -c < "$OUT" | tr -d ' ') bytes" >&2
 echo "$OUT"

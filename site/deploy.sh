@@ -1,9 +1,9 @@
 #!/bin/bash
 # Builds the site and uploads it to https://how2me.me/focusapp/
 #
-#   FOCUS_APK=$(site/clean-build.sh | tail -1) site/deploy.sh
+#   RKD_APK=$(site/clean-build.sh | tail -1) site/deploy.sh
 #
-# (A published APK is built from a clean checkout, see site/clean-build.sh. Without FOCUS_APK the
+# (A published APK is built from a clean checkout, see site/clean-build.sh. Without RKD_APK the
 #  APK in app/build/outputs/apk/dist is used, which is fine for a trial run and wrong for a release.)
 #
 # Only files in /var/www/focusapp are touched. nginx is not: its rules were installed once
@@ -14,22 +14,22 @@ cd "$(dirname "$0")"
 # Where to deploy is machine-specific and stays out of version control: copy deploy.env.example
 # to deploy.env and fill it in (or export the variables yourself).
 [ -f deploy.env ] && . ./deploy.env
-: "${FOCUS_DEPLOY_HOST:?set FOCUS_DEPLOY_HOST (user@server) in site/deploy.env}"
-: "${FOCUS_DEPLOY_KEY:?set FOCUS_DEPLOY_KEY (path to the ssh key) in site/deploy.env}"
-KEY="$FOCUS_DEPLOY_KEY"
-HOST="$FOCUS_DEPLOY_HOST"
-URL="${FOCUS_SITE_URL:-https://how2me.me/focusapp}"
+: "${RKD_DEPLOY_HOST:?set RKD_DEPLOY_HOST (user@server) in site/deploy.env}"
+: "${RKD_DEPLOY_KEY:?set RKD_DEPLOY_KEY (path to the ssh key) in site/deploy.env}"
+KEY="$RKD_DEPLOY_KEY"
+HOST="$RKD_DEPLOY_HOST"
+URL="${RKD_SITE_URL:-https://how2me.me/focusapp}"
 
 ./build.sh
 APK=$(ls public/*.apk | head -1 | xargs basename)
 
 # One version = one binary. If this version already has a release on GitHub (the Publish workflow
 # may have made it), the file on the site has to be that release's APK, not a second build.
-VERSION=${APK#focus-launcher-}; VERSION=${VERSION%.apk}
+VERSION=${APK#rkd-launcher-}; VERSION=${VERSION%.apk}
 if command -v gh >/dev/null 2>&1 && released=$(gh release download "v$VERSION" --pattern "$APK.sha256" --output - 2>/dev/null | cut -d' ' -f1) && [ -n "$released" ]; then
   if [ "$released" != "$(shasum -a 256 "public/$APK" | cut -d' ' -f1)" ]; then
     echo "v$VERSION is already released with a different APK. Publish that file instead:" >&2
-    echo "  gh release download v$VERSION --pattern '$APK' --dir /tmp && FOCUS_APK=/tmp/$APK site/deploy.sh" >&2
+    echo "  gh release download v$VERSION --pattern '$APK' --dir /tmp && RKD_APK=/tmp/$APK site/deploy.sh" >&2
     exit 1
   fi
 fi

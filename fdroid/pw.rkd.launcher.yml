@@ -1,0 +1,30 @@
+Categories:
+  - Launcher
+License: GPL-3.0-or-later
+AuthorName: Rkd (based on Focus by Chaitany Patel)
+WebSite: https://how2me.me/focusapp/
+SourceCode: https://github.com/ilvar/focus-launcher
+IssueTracker: https://github.com/ilvar/focus-launcher/issues
+Changelog: https://github.com/ilvar/focus-launcher/releases
+
+AutoName: Rkd Launcher
+
+RepoType: git
+Repo: https://github.com/ilvar/focus-launcher.git
+
+Builds:
+  - versionName: @VERSION_NAME@
+    versionCode: @VERSION_CODE@
+    commit: @COMMIT@
+    subdir: app
+    gradle:
+      - yes
+    gradleprops:
+      - focus.unsigned
+
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
+UpdateCheckData: '|^v\d+\.\d+\.(\d+)$||^v([\d.]+)$'
+CurrentVersion: @VERSION_NAME@
+CurrentVersionCode: @VERSION_CODE@

@@ -13,7 +13,7 @@
 #      them on this machine before upload; nobody can read them back, approved runs can use them);
 #   3. makes a new upload key for the server that can do exactly one thing: hand a site archive to
 #      site/server/receive.sh. It cannot open a shell. Your own login key is NOT given to GitHub;
-#   4. sets the repository variable FOCUS_PUBLISHING=on, which the workflow checks.
+#   4. sets the repository variable RKD_PUBLISHING=on, which the workflow checks.
 # Nothing secret is printed, and the private half of the upload key is deleted from this machine
 # as soon as GitHub has it.
 set -euo pipefail
@@ -31,9 +31,9 @@ REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 [ -f site/deploy.env ] || fail "site/deploy.env is missing (copy site/deploy.env.example)"
 # shellcheck disable=SC1091
 . site/deploy.env
-: "${FOCUS_DEPLOY_HOST:?set FOCUS_DEPLOY_HOST in site/deploy.env}"
-: "${FOCUS_DEPLOY_KEY:?set FOCUS_DEPLOY_KEY in site/deploy.env}"
-SSH=(ssh -i "$FOCUS_DEPLOY_KEY" -o BatchMode=yes -o ConnectTimeout=20 "$FOCUS_DEPLOY_HOST")
+: "${RKD_DEPLOY_HOST:?set RKD_DEPLOY_HOST in site/deploy.env}"
+: "${RKD_DEPLOY_KEY:?set RKD_DEPLOY_KEY in site/deploy.env}"
+SSH=(ssh -i "$RKD_DEPLOY_KEY" -o BatchMode=yes -o ConnectTimeout=20 "$RKD_DEPLOY_HOST")
 
 remove_server_side() {
   "${SSH[@]}" "MARK=$MARK bash -s" <<'REMOTE'
@@ -52,8 +52,8 @@ REMOTE
 
 if [ "${1:-}" = "--off" ]; then
   say "Switching CI publishing off for $REPO"
-  gh variable delete FOCUS_PUBLISHING --repo "$REPO" 2>/dev/null || true
-  for s in FOCUS_KEYSTORE_B64 FOCUS_STORE_PASSWORD FOCUS_KEY_ALIAS FOCUS_KEY_PASSWORD FOCUS_DEPLOY_SSH_KEY FOCUS_DEPLOY_TARGET FOCUS_DEPLOY_KNOWN_HOSTS; do
+  gh variable delete RKD_PUBLISHING --repo "$REPO" 2>/dev/null || true
+  for s in RKD_KEYSTORE_B64 RKD_STORE_PASSWORD RKD_KEY_ALIAS RKD_KEY_PASSWORD RKD_DEPLOY_SSH_KEY RKD_DEPLOY_TARGET RKD_DEPLOY_KNOWN_HOSTS; do
     gh secret delete "$s" --env "$ENVIRONMENT" --repo "$REPO" 2>/dev/null || true
   done
   remove_server_side
@@ -69,7 +69,7 @@ for k in storePassword keyAlias keyPassword; do [ -n "$(prop $k)" ] || fail "key
 
 cat <<EOF
 
-This will let GitHub Actions publish Focus for $REPO:
+This will let GitHub Actions publish Rkd Launcher for $REPO:
   - your release signing key and its passwords become secrets of the GitHub environment
     "$ENVIRONMENT"; only runs that YOU approve can use them;
   - a new, restricted upload key is installed on your server (it can only deliver site files);
@@ -95,10 +95,10 @@ reviewers=$(gh api "repos/$REPO/environments/$ENVIRONMENT" --jq '[.protection_ru
 echo "required reviewer: $reviewers"
 
 say "2/5  Signing key -> environment secrets (values are never shown)"
-base64 < "$STORE_FILE" | tr -d '\n' | gh secret set FOCUS_KEYSTORE_B64 --env "$ENVIRONMENT" --repo "$REPO"
-printf '%s' "$(prop storePassword)" | gh secret set FOCUS_STORE_PASSWORD --env "$ENVIRONMENT" --repo "$REPO"
-printf '%s' "$(prop keyAlias)"      | gh secret set FOCUS_KEY_ALIAS      --env "$ENVIRONMENT" --repo "$REPO"
-printf '%s' "$(prop keyPassword)"   | gh secret set FOCUS_KEY_PASSWORD   --env "$ENVIRONMENT" --repo "$REPO"
+base64 < "$STORE_FILE" | tr -d '\n' | gh secret set RKD_KEYSTORE_B64 --env "$ENVIRONMENT" --repo "$REPO"
+printf '%s' "$(prop storePassword)" | gh secret set RKD_STORE_PASSWORD --env "$ENVIRONMENT" --repo "$REPO"
+printf '%s' "$(prop keyAlias)"      | gh secret set RKD_KEY_ALIAS      --env "$ENVIRONMENT" --repo "$REPO"
+printf '%s' "$(prop keyPassword)"   | gh secret set RKD_KEY_PASSWORD   --env "$ENVIRONMENT" --repo "$REPO"
 
 say "3/5  A restricted upload key, and its receiver, on the server"
 TMP=$(mktemp -d); chmod 700 "$TMP"; trap 'rm -rf "$TMP"' EXIT
@@ -122,11 +122,11 @@ REMOTE
 "${SSH[@]}" true || fail "your own login stopped working: restore ~/.ssh/authorized_keys.bak-* from the server console"
 
 say "4/5  Proving the new key is locked down"
-HOST_ONLY=${FOCUS_DEPLOY_HOST#*@}
+HOST_ONLY=${RKD_DEPLOY_HOST#*@}
 KNOWN=$(ssh-keygen -F "$HOST_ONLY" 2>/dev/null | grep -v '^#' | awk -v h="$HOST_ONLY" '{print h" "$2" "$3}')
 [ -n "$KNOWN" ] || fail "the server's host key is not in ~/.ssh/known_hosts"
 printf '%s\n' "$KNOWN" > "$TMP/known_hosts"
-CI_SSH=(ssh -i "$TMP/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$TMP/known_hosts" -o LogLevel=ERROR -o ConnectTimeout=20 "$FOCUS_DEPLOY_HOST")
+CI_SSH=(ssh -i "$TMP/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$TMP/known_hosts" -o LogLevel=ERROR -o ConnectTimeout=20 "$RKD_DEPLOY_HOST")
 reply=$("${CI_SSH[@]}" 'echo A-SHELL-WAS-GIVEN; id' </dev/null 2>&1 || true)
 case "$reply" in
   *A-SHELL-WAS-GIVEN*) fail "the new key can run commands: the forced command is not in effect" ;;
@@ -135,11 +135,11 @@ case "$reply" in
 esac
 
 say "5/5  Upload key -> environment secrets, then the switch"
-gh secret set FOCUS_DEPLOY_SSH_KEY --env "$ENVIRONMENT" --repo "$REPO" < "$TMP/key"
-printf '%s' "$FOCUS_DEPLOY_HOST" | gh secret set FOCUS_DEPLOY_TARGET      --env "$ENVIRONMENT" --repo "$REPO"
-printf '%s' "$KNOWN"             | gh secret set FOCUS_DEPLOY_KNOWN_HOSTS --env "$ENVIRONMENT" --repo "$REPO"
+gh secret set RKD_DEPLOY_SSH_KEY --env "$ENVIRONMENT" --repo "$REPO" < "$TMP/key"
+printf '%s' "$RKD_DEPLOY_HOST" | gh secret set RKD_DEPLOY_TARGET      --env "$ENVIRONMENT" --repo "$REPO"
+printf '%s' "$KNOWN"             | gh secret set RKD_DEPLOY_KNOWN_HOSTS --env "$ENVIRONMENT" --repo "$REPO"
 rm -rf "$TMP"
-gh variable set FOCUS_PUBLISHING --body on --repo "$REPO"
+gh variable set RKD_PUBLISHING --body on --repo "$REPO"
 
 cat <<EOF
 

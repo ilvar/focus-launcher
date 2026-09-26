@@ -42,7 +42,7 @@ site". Offered three ways (automatic with his approval / fully automatic / keep 
   deployments from `main` only. GitHub hands the environment's secrets to a run only after he
   approves it ("Review deployments" → Approve). A collaborator can merge, and can even edit the
   workflow, but cannot make GitHub release those secrets.
-- **Switch:** repository variable `FOCUS_PUBLISHING`. Until it is `on` the job is skipped, so no
+- **Switch:** repository variable `RKD_PUBLISHING`. Until it is `on` the job is skipped, so no
   empty "deployments" appear. `site/setup-ci-publishing.sh` sets it last.
 - **Steps:** version → (tests, lint, `assembleDist` with a `keystore.properties` written from the
   secrets and deleted by a trap) → the APK must carry the release certificate, the expected
@@ -63,8 +63,8 @@ site". Offered three ways (automatic with his approval / fully automatic / keep 
   stay. Tested on the server's OS with 15 archives (valid, `../`, absolute path, sub-directory,
   symlink, hard link, bad extension, dot file, duplicate name, no index, tiny or fake APK, not a
   tar, empty, oversized): 1 installed, 14 refused with nothing written.
-- The server's address and the host key are secrets too (`FOCUS_DEPLOY_TARGET`,
-  `FOCUS_DEPLOY_KNOWN_HOSTS`), the host part is masked in the log, and ssh runs with
+- The server's address and the host key are secrets too (`RKD_DEPLOY_TARGET`,
+  `RKD_DEPLOY_KNOWN_HOSTS`), the host part is masked in the log, and ssh runs with
   `StrictHostKeyChecking=yes` against the key the owner's machine already trusts.
 - **`site/setup-ci-publishing.sh` is run by the owner, never by an agent.** It handles the release
   key, its passwords and a new server key: entering credentials anywhere is not an agent's job,

@@ -5,7 +5,7 @@ name: Verify release
 # A red run here means an APK on the release page did not come from the owner's signing key.
 #
 # The fingerprint below is public information: it can be read from any official APK with
-#   apksigner verify --print-certs focus-launcher-<version>.apk
+#   apksigner verify --print-certs rkd-launcher-<version>.apk
 
 on:
   release:

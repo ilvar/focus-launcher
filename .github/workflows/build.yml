@@ -59,7 +59,7 @@ jobs:
         run: |
           aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
           version=$("$aapt2" dump badging app/build/outputs/apk/release/app-release.apk | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
-          name="focus-launcher-${version}-ci-${HEAD_SHA::7}.apk"
+          name="rkd-launcher-${version}-ci-${HEAD_SHA::7}.apk"
           mkdir -p out
           cp app/build/outputs/apk/release/app-release.apk "out/${name}"
           (cd out && sha256sum "${name}" > "${name}.sha256")
@@ -79,7 +79,7 @@ jobs:
           APK_NAME: ${{ steps.apk.outputs.name }}
         run: |
           command -v rsvg-convert >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin; }
-          FOCUS_APK="$GITHUB_WORKSPACE/out/$APK_NAME" site/build.sh   # absolute: build.sh changes directory
+          RKD_APK="$GITHUB_WORKSPACE/out/$APK_NAME" bash site/build.sh   # absolute: build.sh changes directory
           test -s site/public/index.html && ! grep -q '{{' site/public/index.html
           ls -l site/public
 

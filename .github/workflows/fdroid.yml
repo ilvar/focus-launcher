@@ -6,13 +6,13 @@ name: F-Droid
 # repository (gitlab.com/fdroid/fdroiddata), and the recipe gets there as a merge request. After
 # it is accepted, F-Droid finds new versions by itself from this repository's tags.
 #
-#   check   fills fdroid/com.focus.launcher.yml for a tag and runs F-Droid's own tools on it, in
+#   check   fills fdroid/pw.rkd.launcher.yml for a tag and runs F-Droid's own tools on it, in
 #           F-Droid's build container: readmeta, rewritemeta, checkupdates, lint and, if asked,
 #           the full build, which also proves that the build is identical to the published APK.
 #   submit  only when asked to, and only with the owner's GitLab token (fdroid/submit.py): commits
 #           the recipe to a branch of the owner's fdroiddata fork. If his merge request is already
 #           open it is UPDATED (new commit on the same branch, a note for the reviewers); a closed
-#           one is reopened; a second one is never opened; once Focus is in F-Droid nothing is
+#           one is reopened; a second one is never opened; once Rkd Launcher is in F-Droid nothing is
 #           submitted any more. It waits for the owner's approval first (environment "release").
 
 on:
@@ -27,7 +27,7 @@ on:
         type: boolean
         default: true
       submit:
-        description: "Update your open merge request on GitLab, or open it if there is none (needs FDROID_GITLAB_TOKEN and FDROID_GITLAB_FORK)"
+        description: "Update your open merge request on GitLab, or open it if there is none (needs RKD_FDROID_GITLAB_TOKEN and RKD_FDROID_GITLAB_FORK)"
         type: boolean
         default: false
 
@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  APP_ID: com.focus.launcher
+  APP_ID: pw.rkd.launcher
 
 jobs:
   check:
@@ -194,8 +194,8 @@ jobs:
 
       - name: Put the recipe on the fork; update the open merge request, or open one if there is none
         env:
-          GITLAB_TOKEN: ${{ secrets.FDROID_GITLAB_TOKEN }}
-          FORK: ${{ vars.FDROID_GITLAB_FORK }}
+          GITLAB_TOKEN: ${{ secrets.RKD_FDROID_GITLAB_TOKEN }}
+          FORK: ${{ vars.RKD_FDROID_GITLAB_FORK }}
           VERSION: ${{ needs.check.outputs.version }}
           RECIPE_DIR: recipe
         run: python3 fdroid/submit.py

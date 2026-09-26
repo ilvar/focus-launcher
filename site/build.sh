@@ -1,11 +1,11 @@
 #!/bin/bash
 # Assembles site/public from site/src plus the signed APK.
 # Usage: site/build.sh            (expects ./gradlew :app:assembleDist to have been run)
-#        FOCUS_APK=/path/to.apk site/build.sh     (publish that APK instead, e.g. a release asset)
+#        RKD_APK=/path/to.apk site/build.sh     (publish that APK instead, e.g. a release asset)
 set -euo pipefail
 cd "$(dirname "$0")"
 ROOT=..
-APK_SRC="${FOCUS_APK:-$ROOT/app/build/outputs/apk/dist/app-dist.apk}"
+APK_SRC="${RKD_APK:-$ROOT/app/build/outputs/apk/dist/app-dist.apk}"
 [ -f "$APK_SRC" ] || { echo "Build the APK first:  ./gradlew :app:assembleDist" >&2; exit 1; }
 
 # The version on the page is read out of the APK itself, so the two can never disagree.
@@ -14,7 +14,7 @@ AAPT2=$(ls "$SDK"/build-tools/*/aapt2 2>/dev/null | sort -V | tail -1 || true)
 [ -n "$AAPT2" ] || { echo "aapt2 not found: set ANDROID_HOME, or sdk.dir in local.properties" >&2; exit 1; }
 VERSION=$("$AAPT2" dump badging "$APK_SRC" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)
 [ -n "$VERSION" ] || { echo "could not read versionName from $APK_SRC" >&2; exit 1; }
-APK_FILE="focus-launcher-$VERSION.apk"
+APK_FILE="rkd-launcher-$VERSION.apk"
 
 rm -rf public && mkdir -p public
 cp "$APK_SRC" "public/$APK_FILE"
@@ -46,8 +46,8 @@ assert len(faq) >= 5, 'FAQ entries not found'
 app = {
     '@context': 'https://schema.org',
     '@type': 'MobileApplication',
-    'name': 'Focus',
-    'alternateName': ['Focus Launcher', 'Focus minimalist launcher'],
+    'name': 'Rkd Launcher',
+    'alternateName': ['Rkd Launcher', 'Rkd Launcher minimalist launcher'],
     'description': description,
     'url': BASE,
     'image': BASE + 'og.png',
@@ -60,14 +60,14 @@ app = {
     'installUrl': BASE + env['APK_FILE'],
     'isAccessibleForFree': True,
     'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD'},
-    'permissions': 'Usage access; accessibility service (optional); notifications (optional); calendar (optional). No internet permission.',
+    'permissions': 'Usage access; accessibility service (optional); notifications (optional); calendar and approximate location (optional). Internet for optional weather.',
     'featureList': [
         'Text-only, black and white home screen without icons',
         'Daily time limits that lock social media apps and games',
         'Today\'s screen time in plain words on the home screen, hour by hour in the review',
         'Weekly screen time review',
         'App search, rename and hide',
-        'No internet permission, no account, no ads',
+        'No account or ads; optional weather uses approximate location',
     ],
 }
 questions = {
