@@ -174,6 +174,10 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
             enabled = settings.showNote,
             onClick = { dialog = HomeDialog.NOTE_APP },
         )
+        ToggleRow("To-do checklist", settings.showTodo,
+            subtitle = "Add one task at a time on the home screen. Checked tasks are hidden for a week.") { v ->
+            update { it.copy(showTodo = v) }
+        }
 
         Section("Fast apps")
         SettingRow("Apps on home screen", value = "${settings.homeAppsCount}", onClick = { dialog = HomeDialog.COUNT })

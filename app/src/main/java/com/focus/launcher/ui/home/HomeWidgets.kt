@@ -7,6 +7,7 @@ import android.os.SystemClock
 import androidx.compose.foundation.layout.offset
 import com.focus.launcher.Graph
 import com.focus.launcher.data.AppEntry
+import com.focus.launcher.data.TodoItem
 import com.focus.launcher.ui.components.AppPickerDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -734,6 +735,27 @@ fun NoteSection(note: String, appLabel: String?, maxLines: Int, onEdit: () -> Un
         }
         if (note.isBlank()) T("Tap to write a note", size = 14.sp, color = c.dim, maxLines = 1)
         else T(note, if (hasColourGlyphs(note)) Modifier.monochrome() else Modifier, size = 14.sp, color = c.dim, maxLines = maxLines, lineHeight = 20.sp)
+        VSpace(8.dp)
+    }
+}
+
+@Composable
+fun TodoSection(items: List<TodoItem>, maxLines: Int, onCheck: (String) -> Unit, onAdd: () -> Unit, onShowChecked: () -> Unit) {
+    val c = LocalFocusColors.current
+    val active = items.filter { it.checkedAt == null }
+    val completed = items.count { it.checkedAt != null }
+    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Label("To-do", Modifier.weight(1f).padding(vertical = 10.dp), color = c.fg)
+            if (completed > 0) T("Checked ($completed)", Modifier.clickable(onClick = onShowChecked).padding(10.dp), size = 12.sp, color = c.dim)
+            T("+ Add", Modifier.clickable(onClick = onAdd).padding(10.dp), size = 13.sp, color = c.fg)
+        }
+        if (active.isEmpty()) T("No tasks yet. Tap Add.", size = 14.sp, color = c.dim)
+        active.take(maxLines).forEach { item ->
+            T("□  ${item.text}", Modifier.fillMaxWidth().clickable { onCheck(item.id) }.padding(vertical = 3.dp),
+                size = 14.sp, color = c.dim, maxLines = 1)
+        }
+        if (active.size > maxLines) T("${active.size - maxLines} more tasks", Modifier.clickable(onClick = onShowChecked).padding(vertical = 4.dp), size = 12.sp, color = c.dim)
         VSpace(8.dp)
     }
 }

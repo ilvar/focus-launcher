@@ -81,6 +81,8 @@ data class Settings(
     /** A few lines of the user's own as a section of the home screen; [note] is the text. */
     val showNote: Boolean = false,
     val note: String = "",
+    val showTodo: Boolean = false,
+    val todos: List<TodoItem> = emptyList(),
     /** [AppEntry.key] opened by a tap on the music section while nothing is playing. "" = not chosen yet: the first tap asks. */
     val musicApp: String = "",
     /** [AppEntry.key] of the notes app offered next to the note's title; "" = none. */
@@ -162,6 +164,12 @@ data class Settings(
         put("musicAutoHide", musicAutoHide)
         put("showNote", showNote)
         put("note", note)
+        put("showTodo", showTodo)
+        put("todos", JSONArray().also { array -> todos.forEach { item ->
+            array.put(JSONObject().put("id", item.id).put("text", item.text).apply {
+                item.checkedAt?.let { put("checkedAt", it) }
+            })
+        } })
         put("musicApp", musicApp)
         put("noteApp", noteApp)
         put("noteLink", noteLink)
@@ -246,6 +254,14 @@ data class Settings(
                 musicAutoHide = o.optBoolean("musicAutoHide", d.musicAutoHide),
                 showNote = o.optBoolean("showNote", d.showNote),
                 note = o.optString("note", d.note),
+                showTodo = o.optBoolean("showTodo", false),
+                todos = o.optJSONArray("todos")?.let { array -> (0 until array.length()).mapNotNull { i ->
+                    array.optJSONObject(i)?.let { item ->
+                        val id = item.optString("id")
+                        val text = item.optString("text").trim()
+                        if (id.isBlank() || text.isBlank()) null else TodoItem(id, text, if (item.has("checkedAt")) item.optLong("checkedAt") else null)
+                    }
+                } }?.withoutExpiredTodos() ?: emptyList(),
                 musicApp = o.optString("musicApp", d.musicApp),
                 noteApp = o.optString("noteApp", d.noteApp),
                 noteLink = o.optString("noteLink", d.noteLink),

@@ -21,14 +21,15 @@ class SettingsStore(context: Context) {
 
     @Synchronized
     fun update(transform: (Settings) -> Settings) {
-        val next = transform(_flow.value)
+        val transformed = transform(_flow.value)
+        val next = transformed.copy(todos = transformed.todos.withoutExpiredTodos())
         if (next == _flow.value) return
         _flow.value = next
         prefs.edit { putString(KEY, next.toJson().toString()) }
     }
 
     /** Export only launcher preferences. System permissions and usage history are not part of this file. */
-    fun exportBackup(): String = value.toJson().toString(2)
+    fun exportBackup(): String = value.copy(todos = value.todos.withoutExpiredTodos()).toJson().toString(2)
 
     /** Reject unrelated or newer files before replacing the current preferences. */
     fun parseBackup(raw: String): Settings? = try {
@@ -41,14 +42,19 @@ class SettingsStore(context: Context) {
 
     @Synchronized
     fun restoreBackup(settings: Settings) {
-        prefs.edit { putString(KEY, settings.toJson().toString()) }
-        _flow.value = settings
+        val cleaned = settings.copy(todos = settings.todos.withoutExpiredTodos())
+        prefs.edit { putString(KEY, cleaned.toJson().toString()) }
+        _flow.value = cleaned
     }
 
     private fun load(): Settings {
         val raw = prefs.getString(KEY, null) ?: return Settings()
         return try {
-            Settings.fromJson(JSONObject(raw))
+            Settings.fromJson(JSONObject(raw)).also { cleaned ->
+                if (cleaned.todos.size != (JSONObject(raw).optJSONArray("todos")?.length() ?: 0)) {
+                    prefs.edit { putString(KEY, cleaned.toJson().toString()) }
+                }
+            }
         } catch (_: Exception) {
             Settings()
         }
