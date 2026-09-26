@@ -146,7 +146,7 @@ jobs:
       - name: Build the site around that APK
         run: |
           command -v rsvg-convert >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin; }
-          FOCUS_APK="$RUNNER_TEMP/apk/rkd-launcher.apk" site/build.sh
+          FOCUS_APK="$RUNNER_TEMP/apk/rkd-launcher.apk" bash site/build.sh
 
       - name: Upload to the server
         env:
