@@ -69,6 +69,7 @@ data class Settings(
     val calendarKey: String = CALENDAR_AUTO,
     val calendarKeys: Set<String> = emptySet(),
     val compactCalendar: Boolean = false,
+    val showWeather: Boolean = false,
     /** The Mon-Sun strip with today marked. Off: the ring already carries the date. */
     val showWeekStrip: Boolean = false,
     /** Previous, play or pause, next, and what is playing, as a section of the home screen. */
@@ -159,6 +160,7 @@ data class Settings(
         put("calendarKey", calendarKey)
         put("calendarKeys", JSONArray(calendarKeys.sorted()))
         put("compactCalendar", compactCalendar)
+        put("showWeather", showWeather)
         put("showWeekStrip", showWeekStrip)
         put("showMusic", showMusic)
         put("musicAutoHide", musicAutoHide)
@@ -249,6 +251,7 @@ data class Settings(
                 },
                 calendarKeys = o.optJSONArray("calendarKeys").strings().filter { it.startsWith("p:") || it.startsWith("w:") }.toSet(),
                 compactCalendar = o.optBoolean("compactCalendar", false),
+                showWeather = o.optBoolean("showWeather", false),
                 showWeekStrip = o.optBoolean("showWeekStrip", d.showWeekStrip),
                 showMusic = o.optBoolean("showMusic", d.showMusic),
                 musicAutoHide = o.optBoolean("musicAutoHide", d.musicAutoHide),

@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,6 +81,8 @@ import com.focus.launcher.data.TAP_CALENDAR
 import com.focus.launcher.data.TAP_NOTHING
 import com.focus.launcher.data.TAP_SCREEN_TIME
 import com.focus.launcher.data.TimeFormat
+import com.focus.launcher.data.WeatherNow
+import com.focus.launcher.data.WeatherRepository
 import com.focus.launcher.service.FocusAccessibilityService
 import com.focus.launcher.ui.components.AppPickerDialog
 import com.focus.launcher.ui.components.ChoiceDialog
@@ -129,6 +132,19 @@ fun HomeScreen(
     var calendarAccess by remember { mutableStateOf(CalendarRepository.hasAccess(context)) }
     var events by remember { mutableStateOf(emptyList<CalEvent>()) }
     val askCalendar = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { calendarAccess = it }
+    var weatherAccess by remember { mutableStateOf(WeatherRepository.hasAccess(context)) }
+    var weather by remember { mutableStateOf<WeatherNow?>(null) }
+    var weatherRetry by remember { mutableStateOf(0) }
+    val askWeather = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        weatherAccess = it
+        weatherRetry++
+    }
+    LaunchedEffect(settings.showWeather, resumeCount, weatherRetry) {
+        if (settings.showWeather) {
+            weatherAccess = WeatherRepository.hasAccess(context)
+            weather = if (weatherAccess) WeatherRepository.current(context) else null
+        }
+    }
     var shownCalendar by remember { mutableStateOf<CalendarInfo?>(null) }
     LaunchedEffect(settings.showCalendar, settings.calendarKey, settings.calendarKeys, settings.compactCalendar, resumeCount, calendarAccess) {
         if (settings.showCalendar) {
@@ -283,8 +299,9 @@ fun HomeScreen(
             val lines = if (sectionCount > 0) (sectionCount + 1) * 1f else 0f
             val shortcuts = if (settings.showShortcuts) 28f + 20f * textScale else 20f
             val rows = rowCount * (fit.textSp * 1.2f * textScale + fit.padDp * 2)
-            val screenTime = if (sideScreenTime) 0f else 25f + 64f * textScale // gap, title, total, share of the day
-            return clock + screenTime + noticeLines + calendar + musicHeight + note + todo + lines + rows + shortcuts + 6f + 36f // 36 = air
+            val screenTime = if (sideScreenTime) 0f else 12f + 18f * textScale
+            val weatherHeight = if (settings.showWeather) 24f * textScale + 4f else 0f
+            return clock + screenTime + weatherHeight + noticeLines + calendar + musicHeight + note + todo + lines + rows + shortcuts + 6f + 36f // 36 = air
         }
 
         val options = listOf(
@@ -354,13 +371,25 @@ fun HomeScreen(
 
             if (!sideScreenTime) {
                 VSpace(10.dp)
-                val ringed = settings.clockStyle == ClockStyle.RING
                 ScreenTimeLine(
                     today = today,
                     hasAccess = usageAccess,
-                    align = if (ringed) Alignment.CenterHorizontally else settings.homeAlign.horizontal(),
                     onClick = openScreenTime,
-                    modifier = (if (ringed) Modifier.align(Alignment.CenterHorizontally) else Modifier).tipTarget(tip == Tip.SCREEN_TIME, c.fg),
+                    modifier = Modifier.tipTarget(tip == Tip.SCREEN_TIME, c.fg),
+                )
+            }
+            if (settings.showWeather) {
+                T(
+                    when {
+                        !weatherAccess -> "Weather  ·  Allow location  →"
+                        weather != null -> "${weather!!.temperature}°  ·  ${weather!!.description}"
+                        else -> "Weather unavailable  ·  Retry  →"
+                    },
+                    Modifier.fillMaxWidth().clickable {
+                        if (!weatherAccess) askWeather.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        else weatherRetry++
+                    }.padding(horizontal = 12.dp, vertical = 3.dp),
+                    size = 13.sp, color = c.dim, align = TextAlign.Center, maxLines = 1,
                 )
             }
 

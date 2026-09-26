@@ -452,19 +452,12 @@ fun HourScale(modifier: Modifier = Modifier) {
  * enough to read at a glance, and what share of the day's 24 hours that is. A tap opens the review, where the hour-by-hour picture lives.
  */
 @Composable
-fun ScreenTimeLine(today: DayUsage?, hasAccess: Boolean, align: Alignment.Horizontal, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun ScreenTimeLine(today: DayUsage?, hasAccess: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val c = LocalFocusColors.current
-    Column(modifier.press(onClick = onClick).padding(horizontal = 12.dp, vertical = 6.dp), horizontalAlignment = align) {
-        T("Screen Time", size = 15.sp, color = c.dim, maxLines = 1)
-        VSpace(3.dp)
-        if (hasAccess) {
-            val total = today?.total ?: 0L
-            T(formatDuration(total), size = 24.sp, maxLines = 1)
-            // Of all 24 hours, sleep included: the same yardstick every day, at any time of day.
-            T("${total * 100 / (24 * DayUsage.HOUR_MS)}% of today", size = 13.sp, color = c.dim, maxLines = 1)
-        } else {
-            T("Allow usage access  →", size = 14.sp, color = c.dim, maxLines = 1)
-        }
+    Row(modifier.fillMaxWidth().press(onClick = onClick).padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        T("Screen time  ·  ", size = 13.sp, color = c.dim, maxLines = 1)
+        T(if (hasAccess) formatDuration(today?.total ?: 0L) else "Allow access  →", size = 14.sp, maxLines = 1)
     }
 }
 

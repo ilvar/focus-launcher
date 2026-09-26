@@ -16,6 +16,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Optional calendar section on the home screen. -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <!-- Optional weather: approximate foreground location is enough. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Swipe down on the home screen to open notifications. -->
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
 

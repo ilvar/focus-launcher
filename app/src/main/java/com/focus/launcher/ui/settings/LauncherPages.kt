@@ -40,6 +40,7 @@ import com.focus.launcher.data.SHORTCUT_PHONE
 import com.focus.launcher.data.Settings
 import com.focus.launcher.data.SplitSide
 import com.focus.launcher.data.TimeFormat
+import com.focus.launcher.data.WeatherRepository
 import com.focus.launcher.ui.components.AppPickerDialog
 import com.focus.launcher.ui.components.ChoiceDialog
 import com.focus.launcher.ui.components.FocusDialog
@@ -68,6 +69,7 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
     // Switching the calendar section on is also the moment to ask for the permission it needs.
     var calendarGrants by remember { mutableIntStateOf(0) }
     val askCalendar = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { calendarGrants++ }
+    val askWeather = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     var calendars by remember { mutableStateOf(emptyList<CalendarInfo>()) }
     var shownCalendar by remember { mutableStateOf<CalendarInfo?>(null) }
     var calendarCounts by remember { mutableStateOf(emptyMap<String, Int>()) }
@@ -115,6 +117,11 @@ internal fun HomePage(settings: Settings, apps: List<AppEntry>, onBack: () -> Un
         SettingRow("Tap on the clock", subtitle = "Opens an app of your choice, or alarms, calendar, screen time. Long-pressing the clock gets you here too.", value = clockTapLabel(settings.clockTap, apps), onClick = { dialog = HomeDialog.TAP })
         SettingRow("Time format", value = settings.timeFormat.label, onClick = { dialog = HomeDialog.TIME_FORMAT })
         ToggleRow("Show the date", settings.showDate) { v -> update { it.copy(showDate = v) } }
+        ToggleRow("Weather", settings.showWeather,
+            subtitle = "Current temperature and conditions below the clock. Uses approximate location and Open-Meteo.") { v ->
+            update { it.copy(showWeather = v) }
+            if (v && !WeatherRepository.hasAccess(context)) askWeather.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
 
         Section("Sections")
         ToggleRow(
