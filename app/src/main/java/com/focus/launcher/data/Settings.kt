@@ -54,6 +54,8 @@ data class Settings(
     val hideStatusBar: Boolean = false,
     val launchAnimation: LaunchAnimation = LaunchAnimation.FAST,
     val showWallpaper: Boolean = false,
+    /** Document URI of the image chosen for the launcher; access is held with a persisted grant. */
+    val wallpaperUri: String = "",
     val wallpaperBrightness: Int = 40,
 
     // Home
@@ -148,6 +150,7 @@ data class Settings(
         put("hideStatusBar", hideStatusBar)
         put("launchAnimation", launchAnimation.name)
         put("showWallpaper", showWallpaper)
+        put("wallpaperUri", wallpaperUri)
         put("wallpaperBrightness", wallpaperBrightness)
 
         put("clockStyle", clockStyle.name)
@@ -228,6 +231,7 @@ data class Settings(
                 hideStatusBar = o.optBoolean("hideStatusBar", d.hideStatusBar),
                 launchAnimation = enumOr(o.optString("launchAnimation"), d.launchAnimation),
                 showWallpaper = o.optBoolean("showWallpaper", d.showWallpaper),
+                wallpaperUri = o.optString("wallpaperUri", d.wallpaperUri),
                 wallpaperBrightness = o.optInt("wallpaperBrightness", d.wallpaperBrightness).coerceIn(0, 100),
 
                 // Schema 2 made the split clock the default, at the owner's request. A ring stored by an

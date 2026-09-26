@@ -1,7 +1,6 @@
 package com.focus.launcher.ui.settings
 
 import android.content.Intent
-import android.content.ActivityNotFoundException
 import android.widget.Toast
 import com.focus.launcher.ui.home.MusicAppPicker
 import android.Manifest
@@ -349,6 +348,15 @@ private val TEXT_SIZES = listOf(0.9f to "Small", 1f to "Default", 1.1f to "Large
 @Composable
 internal fun AppearancePage(settings: Settings, onBack: () -> Unit) {
     val context = LocalContext.current
+    val pickWallpaper = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            val saved = runCatching {
+                context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }.isSuccess
+            if (saved) update { it.copy(wallpaperUri = uri.toString(), showWallpaper = true) }
+            else Toast.makeText(context, "Could not keep access to that image", Toast.LENGTH_LONG).show()
+        }
+    }
     var dialog by remember { mutableStateOf(LookDialog.NONE) }
     val close = { dialog = LookDialog.NONE }
 
@@ -359,11 +367,13 @@ internal fun AppearancePage(settings: Settings, onBack: () -> Unit) {
         SettingRow("Text size", value = TEXT_SIZES.firstOrNull { it.first == settings.textScale }?.second ?: "Default", onClick = { dialog = LookDialog.SIZE })
 
         Section("Screen")
-        ToggleRow("Show wallpaper", settings.showWallpaper, subtitle = "Use the system wallpaper behind the home screen.") { v -> update { it.copy(showWallpaper = v) } }
-        SettingRow("Choose wallpaper", subtitle = "Open your phone’s wallpaper picker.", onClick = {
-            try { context.startActivity(Intent(Intent.ACTION_SET_WALLPAPER)); update { it.copy(showWallpaper = true) } }
-            catch (_: ActivityNotFoundException) { Toast.makeText(context, "No wallpaper picker available", Toast.LENGTH_SHORT).show() }
-        })
+        ToggleRow("Show wallpaper", settings.showWallpaper, subtitle = "Display your chosen image on the home screen.") { v ->
+            if (v && settings.wallpaperUri.isBlank()) pickWallpaper.launch(arrayOf("image/*"))
+            else update { it.copy(showWallpaper = v) }
+        }
+        SettingRow("Choose wallpaper image", subtitle = "Select the same photo as your phone wallpaper from Files or Photos.",
+            value = if (settings.wallpaperUri.isBlank()) "Choose" else "Selected",
+            onClick = { pickWallpaper.launch(arrayOf("image/*")) })
         SettingRow("Wallpaper brightness", value = "${settings.wallpaperBrightness}%", enabled = settings.showWallpaper,
             subtitle = "Higher values show more of the image; lower values keep text easier to read.",
             onClick = { dialog = LookDialog.BRIGHTNESS })

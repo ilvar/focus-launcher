@@ -13,6 +13,11 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
 import android.database.ContentObserver
 import android.os.Handler
 import android.os.Looper
@@ -24,6 +29,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +55,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -95,6 +103,8 @@ import com.focus.launcher.ui.components.press
 import com.focus.launcher.ui.launchOptions
 import com.focus.launcher.ui.theme.LocalFocusColors
 import com.focus.launcher.util.Perms
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 /**
@@ -123,6 +133,27 @@ fun HomeScreen(
     val c = LocalFocusColors.current
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
+    var wallpaperImage by remember { mutableStateOf<Bitmap?>(null) }
+    LaunchedEffect(settings.showWallpaper, settings.wallpaperUri) {
+        wallpaperImage = if (settings.showWallpaper && settings.wallpaperUri.isNotBlank()) withContext(Dispatchers.IO) {
+            runCatching {
+                val uri = Uri.parse(settings.wallpaperUri)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri)) { decoder, info, _ ->
+                        val width = info.size.width
+                        val height = info.size.height
+                        val scale = (maxOf(width, height).toFloat() / 2048f).coerceAtLeast(1f)
+                        decoder.setTargetSize((width / scale).toInt().coerceAtLeast(1), (height / scale).toInt().coerceAtLeast(1))
+                    }
+                } else {
+                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+                    val sample = generateSequence(1) { it * 2 }.first { maxOf(bounds.outWidth, bounds.outHeight) / it <= 2048 }
+                    context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample }) }
+                }
+            }.getOrNull()
+        } else null
+    }
     val now by rememberNow()
     // The gesture detectors below outlive recompositions, so they must call the latest callbacks.
     val openDrawer by rememberUpdatedState(onOpenDrawer)
@@ -318,7 +349,10 @@ fun HomeScreen(
         val favoritePadding = fit.padDp.dp
 
         if (settings.showWallpaper) {
-            Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 1f - settings.wallpaperBrightness / 100f)))
+            wallpaperImage?.let { image ->
+                Image(image.asImageBitmap(), contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            }
+            Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = if (wallpaperImage == null) 1f else 1f - settings.wallpaperBrightness / 100f)))
         }
 
         Column(
@@ -377,6 +411,10 @@ fun HomeScreen(
                     onClick = openScreenTime,
                     modifier = Modifier.tipTarget(tip == Tip.SCREEN_TIME, c.fg),
                 )
+            }
+            if (settings.showWallpaper && wallpaperImage == null) {
+                T("Choose wallpaper image  →", Modifier.fillMaxWidth().clickable { onOpenSettings("appearance") }.padding(vertical = 4.dp),
+                    size = 13.sp, color = c.dim, align = TextAlign.Center, maxLines = 1)
             }
             if (settings.showWeather) {
                 T(
